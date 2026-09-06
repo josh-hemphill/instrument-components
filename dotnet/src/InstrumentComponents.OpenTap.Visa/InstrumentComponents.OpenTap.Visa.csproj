@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>InstrumentComponents.OpenTap.Visa</RootNamespace>
+    <AssemblyName>InstrumentComponents.OpenTap.Visa</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\InstrumentComponents.OpenTap\InstrumentComponents.OpenTap.csproj" />
+    <ProjectReference Include="..\InstrumentComponents.Visa\InstrumentComponents.Visa.csproj" />
+  </ItemGroup>
+
+</Project>

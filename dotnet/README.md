@@ -10,6 +10,7 @@ See [docs/dotnet-getting-started.md](../docs/dotnet-getting-started.md) for the 
 |---|---|
 | `InstrumentComponents` | Discovery, typed classes (DMM, PSU, FGen, oscilloscope, switch, counter, power meter, spectrum analyzer), mocks — no VISA runtime (`net8.0`) |
 | `InstrumentComponents.OpenTap` | OpenTAP plugin: eight instrument types + typed function steps. Host injects `IScpiIo`; no VISA. |
+| `InstrumentComponents.OpenTap.Visa` | Optional companion: registers a VISA `IOpenTapScpiIoProvider` for TUI-without-host. Not in the TapPackage. |
 | `InstrumentComponents.Visa` | VISA transport via IviFoundation.Visa (`net8.0`; Windows **or** Linux with a vendor VISA install) |
 
 ## Mock quick start (CI, no VISA)
@@ -90,6 +91,8 @@ var volts = await dmm.MeasureVoltageDcAsync();
 cd dotnet
 dotnet test tests/InstrumentComponents.Tests
 dotnet test tests/InstrumentComponents.Visa.Tests --filter "Category!=Hardware"
+dotnet test tests/InstrumentComponents.OpenTap.Tests
+dotnet test tests/InstrumentComponents.OpenTap.Visa.Tests --filter "Category!=Hardware"
 ```
 
 ## Registry / shared-table drift check

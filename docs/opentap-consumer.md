@@ -101,10 +101,11 @@ when the host attaches a session and OpenTAP calls `Instrument.Open` during
 execute.
 
 TUI/Editor execute without HardwareTest: `Open()` throws a clear
-“no SCPI session attached” error. v1 does **not** open IVI from the pack.
-A later optional `InstrumentComponents.OpenTap.Visa` assembly (not loaded by
-HardwareTest) can add standalone Find/Open if TUI-without-host becomes a
-product need.
+“no SCPI session attached” error unless a host registered
+`OpenTapScpiIo.Provider`. v1 does **not** open IVI from the main pack.
+The optional `InstrumentComponents.OpenTap.Visa` companion (not loaded by
+HardwareTest, not in the TapPackage) can register that provider for
+standalone TUI Find/Open.
 
 ### 2. OpenTAP pack: ship every instrument class
 

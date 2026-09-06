@@ -14,6 +14,8 @@ public class ArchitectureTests
             "IviFoundation.Visa",
             "HardwareTest.Core",
             "InstrumentComponents.Visa",
+            "InstrumentComponents.OpenTap.Visa",
+            "OpenTapVisa",
         ];
         foreach (var file in Directory.EnumerateFiles(packDir, "*.*", SearchOption.AllDirectories))
         {
