@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Shared OpenTAP sample-loop and optional-limit primitives so scalar steps apply inclusive limits consistently
 - Generated OpenTAP DMM steps (AC/current/resistance, configure, INIT/FETC/READ/*TRG) from `spec/opentap-operations.json`
 - Generated OpenTAP Base-capability steps for the remaining classes (PSU set/read/OVP, FGen duty/burst, scope timebase/trigger/run, switch `IsClosed`, counter gate/totalize, power-meter configure/initiate/fetch, spec-an center/span/RBW/trace/sweep)
+- OpenTAP generated-step TapPlan setting round-trips and mixed-plan Phase I value coverage across all eight classes
 
 ### Changed
 
