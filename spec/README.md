@@ -26,4 +26,5 @@ deno run --allow-read --allow-write --allow-run=rustfmt tools/gen-shared-tables.
 deno run --allow-read --allow-write --allow-run=rustfmt tools/gen-dialects.ts
 deno run --allow-read --allow-write dotnet/tools/gen-registry.ts
 deno run --allow-read tools/validate-opentap-operations.ts
+deno run --allow-read --allow-write tools/gen-opentap-steps.ts
 ```

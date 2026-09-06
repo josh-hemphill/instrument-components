@@ -109,6 +109,350 @@
       }
     ]
   },
+  "DmmConfigureVoltageDcStep": {
+    "fullName": "InstrumentComponents.OpenTap.DmmConfigureVoltageDcStep",
+    "displayName": "Configure DC Voltage",
+    "groups": [
+      "Instrument Components",
+      "DMM",
+      "Configure"
+    ],
+    "description": "Configure DC voltage range and resolution.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.DmmInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Range",
+        "type": "System.Double?",
+        "displayName": "Range",
+        "order": 2,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Resolution",
+        "type": "System.Double?",
+        "displayName": "Resolution",
+        "order": 3,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Configure DC Voltage"
+      }
+    ]
+  },
+  "DmmFetchStep": {
+    "fullName": "InstrumentComponents.OpenTap.DmmFetchStep",
+    "displayName": "Fetch",
+    "groups": [
+      "Instrument Components",
+      "DMM",
+      "Acquire"
+    ],
+    "description": "Fetch the last DMM reading (FETC?).",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.DmmInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitLow",
+        "type": "System.Double?",
+        "displayName": "Limit low",
+        "order": 90,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitHigh",
+        "type": "System.Double?",
+        "displayName": "Limit high",
+        "order": 91,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Fetch"
+      }
+    ]
+  },
+  "DmmInitiateStep": {
+    "fullName": "InstrumentComponents.OpenTap.DmmInitiateStep",
+    "displayName": "Initiate",
+    "groups": [
+      "Instrument Components",
+      "DMM",
+      "Acquire"
+    ],
+    "description": "Start a DMM acquisition (INIT).",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.DmmInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Initiate"
+      }
+    ]
+  },
+  "DmmMeasureCurrentAcStep": {
+    "fullName": "InstrumentComponents.OpenTap.DmmMeasureCurrentAcStep",
+    "displayName": "Measure AC Current",
+    "groups": [
+      "Instrument Components",
+      "DMM",
+      "Measure"
+    ],
+    "description": "Measure AC current using the selected DMM.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.DmmInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Range",
+        "type": "System.Double?",
+        "displayName": "Range",
+        "order": 2,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitLow",
+        "type": "System.Double?",
+        "displayName": "Limit low",
+        "order": 90,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitHigh",
+        "type": "System.Double?",
+        "displayName": "Limit high",
+        "order": 91,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Measure AC Current"
+      }
+    ]
+  },
+  "DmmMeasureCurrentDcStep": {
+    "fullName": "InstrumentComponents.OpenTap.DmmMeasureCurrentDcStep",
+    "displayName": "Measure DC Current",
+    "groups": [
+      "Instrument Components",
+      "DMM",
+      "Measure"
+    ],
+    "description": "Measure DC current using the selected DMM.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.DmmInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Range",
+        "type": "System.Double?",
+        "displayName": "Range",
+        "order": 2,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitLow",
+        "type": "System.Double?",
+        "displayName": "Limit low",
+        "order": 90,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitHigh",
+        "type": "System.Double?",
+        "displayName": "Limit high",
+        "order": 91,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Measure DC Current"
+      }
+    ]
+  },
+  "DmmMeasureResistance2WireStep": {
+    "fullName": "InstrumentComponents.OpenTap.DmmMeasureResistance2WireStep",
+    "displayName": "Measure 2-Wire Resistance",
+    "groups": [
+      "Instrument Components",
+      "DMM",
+      "Measure"
+    ],
+    "description": "Measure two-wire resistance using the selected DMM.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.DmmInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Range",
+        "type": "System.Double?",
+        "displayName": "Range",
+        "order": 2,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitLow",
+        "type": "System.Double?",
+        "displayName": "Limit low",
+        "order": 90,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitHigh",
+        "type": "System.Double?",
+        "displayName": "Limit high",
+        "order": 91,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Measure 2-Wire Resistance"
+      }
+    ]
+  },
   "DmmMeasureScalarStep": {
     "fullName": "InstrumentComponents.OpenTap.DmmMeasureScalarStep",
     "displayName": "DMM Measure Scalar",
@@ -180,6 +524,70 @@
       }
     ]
   },
+  "DmmMeasureVoltageAcStep": {
+    "fullName": "InstrumentComponents.OpenTap.DmmMeasureVoltageAcStep",
+    "displayName": "Measure AC Voltage",
+    "groups": [
+      "Instrument Components",
+      "DMM",
+      "Measure"
+    ],
+    "description": "Measure AC voltage using the selected DMM.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.DmmInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Range",
+        "type": "System.Double?",
+        "displayName": "Range",
+        "order": 2,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitLow",
+        "type": "System.Double?",
+        "displayName": "Limit low",
+        "order": 90,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitHigh",
+        "type": "System.Double?",
+        "displayName": "Limit high",
+        "order": 91,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Measure AC Voltage"
+      }
+    ]
+  },
   "DmmMeasureVoltageDcStep": {
     "fullName": "InstrumentComponents.OpenTap.DmmMeasureVoltageDcStep",
     "displayName": "DMM Measure Voltage DC",
@@ -240,6 +648,102 @@
           "Common"
         ],
         "defaultValue": "DMM Measure Voltage DC"
+      }
+    ]
+  },
+  "DmmReadStep": {
+    "fullName": "InstrumentComponents.OpenTap.DmmReadStep",
+    "displayName": "Read",
+    "groups": [
+      "Instrument Components",
+      "DMM",
+      "Acquire"
+    ],
+    "description": "Read a DMM measurement (READ?).",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.DmmInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitLow",
+        "type": "System.Double?",
+        "displayName": "Limit low",
+        "order": 90,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitHigh",
+        "type": "System.Double?",
+        "displayName": "Limit high",
+        "order": 91,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Read"
+      }
+    ]
+  },
+  "DmmSoftwareTriggerStep": {
+    "fullName": "InstrumentComponents.OpenTap.DmmSoftwareTriggerStep",
+    "displayName": "Software Trigger",
+    "groups": [
+      "Instrument Components",
+      "DMM",
+      "Acquire"
+    ],
+    "description": "Issue a DMM software trigger.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.DmmInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Software Trigger"
       }
     ]
   },

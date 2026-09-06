@@ -4,7 +4,6 @@ on:
   push:
     branches: [latest, main, master]
   pull_request:
-    branches: [latest, main, master]
   workflow_call:
 
 env:
@@ -24,6 +23,8 @@ jobs:
       - run: deno run --allow-read --allow-write --allow-run=rustfmt tools/gen-shared-tables.ts
       - run: deno run --allow-read --allow-write --allow-run=rustfmt tools/gen-dialects.ts
       - run: deno run --allow-read tools/validate-opentap-operations.ts
+      - run: deno run --allow-read --allow-write tools/gen-opentap-steps.ts
+      - run: git diff --exit-code -- spec/opentap-operations.json spec/opentap-operations.schema.json dotnet/src/InstrumentComponents.OpenTap/Steps/Generated/
       - run: rustfmt crates/instrument-core/src/classifier/probes.rs crates/instrument-core/src/scpi_commands.rs crates/instrument-core/src/dialect.rs
       - run: git diff --exit-code -- dotnet/src/InstrumentComponents/Data/model_registry.json dotnet/src/InstrumentComponents/Classifier/CapabilityProbes.cs dotnet/src/InstrumentComponents/Classes/ScpiCommands.cs crates/instrument-core/src/classifier/probes.rs crates/instrument-core/src/scpi_commands.rs crates/instrument-core/src/dialect.rs dotnet/src/InstrumentComponents/Dialects/DialectRegistry.cs
 

@@ -129,6 +129,7 @@
         "mode": {
           "enum": ["none", "identity", "sample", "scalar", "sampleAndScalar", "multiScalar"]
         },
+        "name": { "type": "string", "minLength": 1 },
         "unit": { "type": "string" },
         "supportsLimits": { "type": "boolean" }
       }

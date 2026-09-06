@@ -350,6 +350,184 @@
         { "method": "MarkerY", "returns": "double", "dialectKey": "marker_y" }
       ],
       "publish": { "mode": "multiScalar" }
+    },
+    {
+      "id": "dmm_measure_voltage_ac",
+      "stepTypeName": "DmmMeasureVoltageAcStep",
+      "implementation": "generated",
+      "kind": "invoke",
+      "instrumentKind": "Dmm",
+      "instrumentType": "DmmInstrument",
+      "accessor": "Dmm",
+      "displayName": "Measure AC Voltage",
+      "displayGroups": ["Instrument Components", "DMM", "Measure"],
+      "description": "Measure AC voltage using the selected DMM.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [
+        { "name": "Range", "displayName": "Range", "type": "nullableDouble", "order": 2, "unit": "V" },
+        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
+        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+      ],
+      "invoke": { "method": "MeasureVoltageAc", "returns": "double", "dialectKey": "measure_voltage_ac", "args": [{ "parameter": "Range" }] },
+      "publish": { "mode": "scalar", "name": "Voltage AC", "unit": "V", "supportsLimits": true }
+    },
+    {
+      "id": "dmm_measure_current_dc",
+      "stepTypeName": "DmmMeasureCurrentDcStep",
+      "implementation": "generated",
+      "kind": "invoke",
+      "instrumentKind": "Dmm",
+      "instrumentType": "DmmInstrument",
+      "accessor": "Dmm",
+      "displayName": "Measure DC Current",
+      "displayGroups": ["Instrument Components", "DMM", "Measure"],
+      "description": "Measure DC current using the selected DMM.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [
+        { "name": "Range", "displayName": "Range", "type": "nullableDouble", "order": 2, "unit": "A" },
+        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
+        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+      ],
+      "invoke": { "method": "MeasureCurrentDc", "returns": "double", "dialectKey": "measure_current_dc", "args": [{ "parameter": "Range" }] },
+      "publish": { "mode": "scalar", "name": "Current DC", "unit": "A", "supportsLimits": true }
+    },
+    {
+      "id": "dmm_measure_current_ac",
+      "stepTypeName": "DmmMeasureCurrentAcStep",
+      "implementation": "generated",
+      "kind": "invoke",
+      "instrumentKind": "Dmm",
+      "instrumentType": "DmmInstrument",
+      "accessor": "Dmm",
+      "displayName": "Measure AC Current",
+      "displayGroups": ["Instrument Components", "DMM", "Measure"],
+      "description": "Measure AC current using the selected DMM.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [
+        { "name": "Range", "displayName": "Range", "type": "nullableDouble", "order": 2, "unit": "A" },
+        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
+        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+      ],
+      "invoke": { "method": "MeasureCurrentAc", "returns": "double", "dialectKey": "measure_current_ac", "args": [{ "parameter": "Range" }] },
+      "publish": { "mode": "scalar", "name": "Current AC", "unit": "A", "supportsLimits": true }
+    },
+    {
+      "id": "dmm_measure_resistance_2w",
+      "stepTypeName": "DmmMeasureResistance2WireStep",
+      "implementation": "generated",
+      "kind": "invoke",
+      "instrumentKind": "Dmm",
+      "instrumentType": "DmmInstrument",
+      "accessor": "Dmm",
+      "displayName": "Measure 2-Wire Resistance",
+      "displayGroups": ["Instrument Components", "DMM", "Measure"],
+      "description": "Measure two-wire resistance using the selected DMM.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [
+        { "name": "Range", "displayName": "Range", "type": "nullableDouble", "order": 2, "unit": "Ohm" },
+        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
+        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+      ],
+      "invoke": { "method": "MeasureResistance2Wire", "returns": "double", "dialectKey": "measure_resistance_2w", "args": [{ "parameter": "Range" }] },
+      "publish": { "mode": "scalar", "name": "Resistance", "unit": "Ohm", "supportsLimits": true }
+    },
+    {
+      "id": "dmm_configure_voltage_dc",
+      "stepTypeName": "DmmConfigureVoltageDcStep",
+      "implementation": "generated",
+      "kind": "invoke",
+      "instrumentKind": "Dmm",
+      "instrumentType": "DmmInstrument",
+      "accessor": "Dmm",
+      "displayName": "Configure DC Voltage",
+      "displayGroups": ["Instrument Components", "DMM", "Configure"],
+      "description": "Configure DC voltage range and resolution.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [
+        { "name": "Range", "displayName": "Range", "type": "nullableDouble", "order": 2, "unit": "V" },
+        { "name": "Resolution", "displayName": "Resolution", "type": "nullableDouble", "order": 3, "unit": "V" }
+      ],
+      "invoke": { "method": "ConfigureVoltageDc", "returns": "void", "dialectKey": "configure_voltage_dc", "args": [{ "parameter": "Range" }, { "parameter": "Resolution" }] },
+      "publish": { "mode": "none" }
+    },
+    {
+      "id": "dmm_initiate",
+      "stepTypeName": "DmmInitiateStep",
+      "implementation": "generated",
+      "kind": "invoke",
+      "instrumentKind": "Dmm",
+      "instrumentType": "DmmInstrument",
+      "accessor": "Dmm",
+      "displayName": "Initiate",
+      "displayGroups": ["Instrument Components", "DMM", "Acquire"],
+      "description": "Start a DMM acquisition (INIT).",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [],
+      "invoke": { "method": "Initiate", "returns": "void", "dialectKey": "initiate" },
+      "publish": { "mode": "none" }
+    },
+    {
+      "id": "dmm_fetch",
+      "stepTypeName": "DmmFetchStep",
+      "implementation": "generated",
+      "kind": "invoke",
+      "instrumentKind": "Dmm",
+      "instrumentType": "DmmInstrument",
+      "accessor": "Dmm",
+      "displayName": "Fetch",
+      "displayGroups": ["Instrument Components", "DMM", "Acquire"],
+      "description": "Fetch the last DMM reading (FETC?).",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [
+        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
+        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+      ],
+      "invoke": { "method": "Fetch", "returns": "double", "dialectKey": "fetch" },
+      "publish": { "mode": "scalar", "name": "Fetch", "unit": "V", "supportsLimits": true }
+    },
+    {
+      "id": "dmm_read",
+      "stepTypeName": "DmmReadStep",
+      "implementation": "generated",
+      "kind": "invoke",
+      "instrumentKind": "Dmm",
+      "instrumentType": "DmmInstrument",
+      "accessor": "Dmm",
+      "displayName": "Read",
+      "displayGroups": ["Instrument Components", "DMM", "Acquire"],
+      "description": "Read a DMM measurement (READ?).",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [
+        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
+        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+      ],
+      "invoke": { "method": "Read", "returns": "double", "dialectKey": "read" },
+      "publish": { "mode": "scalar", "name": "Read", "unit": "V", "supportsLimits": true }
+    },
+    {
+      "id": "dmm_software_trigger",
+      "stepTypeName": "DmmSoftwareTriggerStep",
+      "implementation": "generated",
+      "kind": "invoke",
+      "instrumentKind": "Dmm",
+      "instrumentType": "DmmInstrument",
+      "accessor": "Dmm",
+      "displayName": "Software Trigger",
+      "displayGroups": ["Instrument Components", "DMM", "Acquire"],
+      "description": "Issue a DMM software trigger.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [],
+      "invoke": { "method": "SoftwareTrigger", "returns": "void", "dialectKey": "software_trigger" },
+      "publish": { "mode": "none" }
     }
   ]
 }

@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Shared OpenTAP `InstrumentBoundStep<T>` with Editor validation, units, and formatted step names for all 17 function steps
 - OpenTAP operation catalog (`spec/opentap-operations.json`) covering the shipped 17 steps as a stable TapPlan contract
 - Shared OpenTAP sample-loop and optional-limit primitives so scalar steps apply inclusive limits consistently
+- Generated OpenTAP DMM steps (AC/current/resistance, configure, INIT/FETC/READ/*TRG) from `spec/opentap-operations.json`
 
 ### Changed
 
