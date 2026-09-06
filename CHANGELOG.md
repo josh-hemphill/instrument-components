@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Golden OpenTAP public-contract catalogs and real `.TapPlan` round-trips for all eight instruments and 17 function steps (no broker / VISA)
 - Shared OpenTAP `InstrumentBoundStep<T>` with Editor validation, units, and formatted step names for all 17 function steps
 - OpenTAP operation catalog (`spec/opentap-operations.json`) covering the shipped 17 steps as a stable TapPlan contract
+- Shared OpenTAP sample-loop and optional-limit primitives so scalar steps apply inclusive limits consistently
 
 ### Changed
 

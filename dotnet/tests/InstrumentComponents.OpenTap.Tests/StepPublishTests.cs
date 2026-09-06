@@ -42,6 +42,29 @@ public class StepPublishTests
     }
 
     [Fact]
+    public void CounterScalarFailsWhenOutOfBand()
+    {
+        var io = new ScriptedIo(("*IDN?", "Acme,CNT1,SN,1.0"), (":MEASure:FREQuency?", "10"));
+        var counter = new CounterInstrument(io) { VisaAddress = "mock://counter" };
+        var step = new CounterMeasureFrequencyStep { Instrument = counter, LimitLow = 100 };
+        var plan = new TestPlan();
+        plan.ChildTestSteps.Add(step);
+        var run = plan.Execute();
+        Assert.Equal(Verdict.Fail, run.Verdict);
+    }
+
+    [Fact]
+    public void ScalarPassesWhenEqualToInclusiveLimits()
+    {
+        var io = new ScriptedIo(("*IDN?", "Acme,DMM1,SN,1.0"), (":MEAS:VOLT:DC?", "1.0"));
+        var dmm = new DmmInstrument(io) { VisaAddress = "mock://dmm" };
+        var step = new DmmMeasureScalarStep { Instrument = dmm, LimitLow = 1.0, LimitHigh = 1.0 };
+        var plan = new TestPlan();
+        plan.ChildTestSteps.Add(step);
+        Assert.Equal(Verdict.Pass, plan.Execute().Verdict);
+    }
+
+    [Fact]
     public void DmmScalarFailsWhenOutOfBand()
     {
         var io = new ScriptedIo(("*IDN?", "Acme,DMM1,SN,1.0"), (":MEAS:VOLT:DC?", "0.1"));

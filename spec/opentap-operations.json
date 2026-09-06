@@ -69,8 +69,8 @@
       "parameters": [
         { "name": "MetricName", "displayName": "Name", "type": "string", "order": 2, "default": "VDC" },
         { "name": "Unit", "displayName": "Unit", "type": "string", "order": 3, "default": "V" },
-        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 4, "unit": "V" },
-        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 5, "unit": "V" }
+        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
+        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
       ],
       "invoke": { "method": "MeasureVoltageDc", "returns": "double", "dialectKey": "measure_voltage_dc" },
       "publish": { "mode": "scalar", "unit": "V", "supportsLimits": true }
@@ -166,10 +166,12 @@
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 }
+        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 },
+        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
+        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
       ],
       "invoke": { "method": "MeasureVpp", "returns": "double", "dialectKey": "measure_vpp", "args": [{ "parameter": "Channel" }] },
-      "publish": { "mode": "scalar", "unit": "V" }
+      "publish": { "mode": "scalar", "unit": "V", "supportsLimits": true }
     },
     {
       "id": "scope_measure_frequency",
@@ -185,10 +187,12 @@
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 }
+        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 },
+        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
+        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
       ],
       "invoke": { "method": "MeasureFrequency", "returns": "double", "dialectKey": "measure_frequency", "args": [{ "parameter": "Channel" }] },
-      "publish": { "mode": "scalar", "unit": "Hz" }
+      "publish": { "mode": "scalar", "unit": "Hz", "supportsLimits": true }
     },
     {
       "id": "scope_capture_trace",
@@ -279,9 +283,12 @@
       "description": "Measure frequency.",
       "capability": "base",
       "since": "0.1.0",
-      "parameters": [],
+      "parameters": [
+        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
+        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+      ],
       "invoke": { "method": "MeasureFrequency", "returns": "double", "dialectKey": "measure_frequency" },
-      "publish": { "mode": "scalar", "unit": "Hz" }
+      "publish": { "mode": "scalar", "unit": "Hz", "supportsLimits": true }
     },
     {
       "id": "counter_measure_period",
@@ -296,9 +303,12 @@
       "description": "Measure period.",
       "capability": "base",
       "since": "0.1.0",
-      "parameters": [],
+      "parameters": [
+        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
+        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+      ],
       "invoke": { "method": "MeasurePeriod", "returns": "double", "dialectKey": "measure_period" },
-      "publish": { "mode": "scalar", "unit": "s" }
+      "publish": { "mode": "scalar", "unit": "s", "supportsLimits": true }
     },
     {
       "id": "power_meter_read",
@@ -313,9 +323,12 @@
       "description": "Read power.",
       "capability": "base",
       "since": "0.1.0",
-      "parameters": [],
+      "parameters": [
+        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
+        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+      ],
       "invoke": { "method": "Read", "returns": "double", "dialectKey": "read" },
-      "publish": { "mode": "scalar" }
+      "publish": { "mode": "scalar", "supportsLimits": true }
     },
     {
       "id": "specan_marker_peak",

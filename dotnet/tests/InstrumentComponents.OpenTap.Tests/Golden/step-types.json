@@ -17,6 +17,22 @@
         "defaultValue": null
       },
       {
+        "name": "LimitLow",
+        "type": "System.Double?",
+        "displayName": "Limit low",
+        "order": 90,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitHigh",
+        "type": "System.Double?",
+        "displayName": "Limit high",
+        "order": 91,
+        "group": [],
+        "defaultValue": null
+      },
+      {
         "name": "Enabled",
         "type": "System.Boolean",
         "displayName": "Enabled",
@@ -52,6 +68,22 @@
         "type": "InstrumentComponents.OpenTap.CounterInstrument",
         "displayName": "Instrument",
         "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitLow",
+        "type": "System.Double?",
+        "displayName": "Limit low",
+        "order": 90,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitHigh",
+        "type": "System.Double?",
+        "displayName": "Limit high",
+        "order": 91,
         "group": [],
         "defaultValue": null
       },
@@ -114,7 +146,7 @@
         "name": "LimitLow",
         "type": "System.Double?",
         "displayName": "Limit low",
-        "order": 4,
+        "order": 90,
         "group": [],
         "defaultValue": null
       },
@@ -122,7 +154,7 @@
         "name": "LimitHigh",
         "type": "System.Double?",
         "displayName": "Limit high",
-        "order": 5,
+        "order": 91,
         "group": [],
         "defaultValue": null
       },
@@ -343,6 +375,22 @@
         "type": "InstrumentComponents.OpenTap.PowerMeterInstrument",
         "displayName": "Instrument",
         "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitLow",
+        "type": "System.Double?",
+        "displayName": "Limit low",
+        "order": 90,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitHigh",
+        "type": "System.Double?",
+        "displayName": "Limit high",
+        "order": 91,
         "group": [],
         "defaultValue": null
       },
@@ -598,6 +646,22 @@
         "defaultValue": "1"
       },
       {
+        "name": "LimitLow",
+        "type": "System.Double?",
+        "displayName": "Limit low",
+        "order": 90,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitHigh",
+        "type": "System.Double?",
+        "displayName": "Limit high",
+        "order": 91,
+        "group": [],
+        "defaultValue": null
+      },
+      {
         "name": "Enabled",
         "type": "System.Boolean",
         "displayName": "Enabled",
@@ -643,6 +707,22 @@
         "order": 2,
         "group": [],
         "defaultValue": "1"
+      },
+      {
+        "name": "LimitLow",
+        "type": "System.Double?",
+        "displayName": "Limit low",
+        "order": 90,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitHigh",
+        "type": "System.Double?",
+        "displayName": "Limit high",
+        "order": 91,
+        "group": [],
+        "defaultValue": null
       },
       {
         "name": "Enabled",
