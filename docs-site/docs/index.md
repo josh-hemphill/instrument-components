@@ -18,6 +18,7 @@ High-level control for VISA / SCPI instruments in **Rust** and **C#**: auto-disc
 | Discover real instruments | [Discovery](discovery.md) |
 | Use a typed class | [Instrument classes](classes/dmm.md) |
 | Async I/O | [Rust async](rust/async.md) · [C# async](csharp/async.md) |
+| Author OpenTAP plans | [C# OpenTAP pack](csharp/opentap.md) |
 | See what's implemented | [Capability matrix](capability-matrix.md) |
 
 ## Install
