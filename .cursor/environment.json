@@ -1,5 +1,5 @@
 {
-  "name": "instrument-components-rs",
+  "name": "instrument-components",
   "user": "ubuntu",
   "install": "bash .cursor/install.sh"
 }
