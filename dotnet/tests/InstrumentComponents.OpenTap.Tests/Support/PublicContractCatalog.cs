@@ -25,9 +25,13 @@ internal static class PublicContractCatalog
 
     public static JsonObject Steps()
     {
-        var root = new JsonObject();
-        foreach (var type in OpenTapCatalog.StepTypes())
-            root[type.Name] = Snapshot(type, OpenTapCatalog.Create(type));
+        JsonObject root = null!;
+        InstrumentSettingsScope.Run(() =>
+        {
+            root = new JsonObject();
+            foreach (var type in OpenTapCatalog.StepTypes())
+                root[type.Name] = Snapshot(type, OpenTapCatalog.Create(type));
+        });
         return root;
     }
 

@@ -12,7 +12,7 @@
         "name": "Instrument",
         "type": "InstrumentComponents.OpenTap.CounterInstrument",
         "displayName": "Instrument",
-        "order": -10000,
+        "order": 1,
         "group": [],
         "defaultValue": null
       },
@@ -51,7 +51,7 @@
         "name": "Instrument",
         "type": "InstrumentComponents.OpenTap.CounterInstrument",
         "displayName": "Instrument",
-        "order": -10000,
+        "order": 1,
         "group": [],
         "defaultValue": null
       },
@@ -92,7 +92,7 @@
         "displayName": "Instrument",
         "order": 1,
         "group": [],
-        "defaultValue": "Bench DMM"
+        "defaultValue": null
       },
       {
         "name": "MetricName",
@@ -163,7 +163,7 @@
         "displayName": "Instrument",
         "order": 1,
         "group": [],
-        "defaultValue": "Bench DMM"
+        "defaultValue": null
       },
       {
         "name": "Channel",
@@ -303,7 +303,7 @@
         "name": "Instrument",
         "type": "InstrumentComponents.OpenTap.ScpiInstrument",
         "displayName": "Instrument",
-        "order": -10000,
+        "order": 1,
         "group": [],
         "defaultValue": null
       },
@@ -342,7 +342,7 @@
         "name": "Instrument",
         "type": "InstrumentComponents.OpenTap.PowerMeterInstrument",
         "displayName": "Instrument",
-        "order": -10000,
+        "order": 1,
         "group": [],
         "defaultValue": null
       },
@@ -499,9 +499,9 @@
         "name": "Instrument",
         "type": "InstrumentComponents.OpenTap.ScpiInstrument",
         "displayName": "Instrument",
-        "order": -10000,
+        "order": 1,
         "group": [],
-        "defaultValue": "Bench DMM"
+        "defaultValue": null
       },
       {
         "name": "Enabled",
@@ -679,7 +679,7 @@
         "name": "Instrument",
         "type": "InstrumentComponents.OpenTap.SpectrumAnalyzerInstrument",
         "displayName": "Instrument",
-        "order": -10000,
+        "order": 1,
         "group": [],
         "defaultValue": null
       },
@@ -773,7 +773,7 @@
         "name": "Instrument",
         "type": "InstrumentComponents.OpenTap.SwitchInstrument",
         "displayName": "Instrument",
-        "order": -10000,
+        "order": 1,
         "group": [],
         "defaultValue": null
       },

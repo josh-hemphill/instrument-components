@@ -13,7 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - C# `IScpiIo` message session plus `InstrumentSession.FromIo` so a host can inject Write/Query without wrapping VISA as `ITransport`
 - `QueryIdn` / `OutputOff` / `Reset` on all eight typed classes (`IInstrumentIdentity`, `IInstrumentShutdown`)
 - OpenTAP pack `InstrumentComponents.OpenTap` with all eight instrument types, injected sessions, and pack-safe VisaAddress discovery
+- Thin OpenTAP function steps that publish Phase I `Sample` / `Scalar` (and Identity) tables for every class
 - Golden OpenTAP public-contract catalogs and real `.TapPlan` round-trips for all eight instruments and 17 function steps (no broker / VISA)
+- Shared OpenTAP `InstrumentBoundStep<T>` with Editor validation, units, and formatted step names for all 17 function steps
 
 ### Changed
 

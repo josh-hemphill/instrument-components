@@ -2,34 +2,35 @@ using OpenTap;
 
 namespace InstrumentComponents.OpenTap;
 
-[Display("DMM Measure Voltage DC", Groups: ["Instrument Components", "DMM"], Description: "Acquire VDC samples.")]
-public sealed class DmmMeasureVoltageDcStep : TestStep
+[Display("DMM Measure Voltage DC", Groups: [OpenTapDisplayGroups.Root, OpenTapDisplayGroups.Dmm], Description: "Acquire VDC samples.")]
+public sealed class DmmMeasureVoltageDcStep : InstrumentBoundStep<DmmInstrument>
 {
-    [Display("Instrument", Order: 1)]
-    public DmmInstrument Instrument { get; set; } = null!;
-
-    [Display("Channel", Order: 2)]
+    [Display("Channel", Order: 2, Description: "Result channel label.")]
     public string Channel { get; set; } = "VDC";
 
-    [Display("Sample Count", Order: 3)]
+    [Display("Sample Count", Order: 3, Description: "Number of sequential readings.")]
     public int SampleCount { get; set; } = 1;
 
-    [Display("Interval Ms", Order: 4)]
+    [Display("Interval Ms", Order: 4, Description: "Delay between samples.")]
+    [Unit("ms")]
     public int IntervalMs { get; set; }
+
+    public DmmMeasureVoltageDcStep()
+    {
+        Rules.Add(() => SampleCount >= 1, "Sample count must be at least 1.", nameof(SampleCount));
+        Rules.Add(() => IntervalMs >= 0, "Interval must be zero or positive.", nameof(IntervalMs));
+    }
 
     public override void Run()
     {
-        if (Instrument is null)
-        {
-            UpgradeVerdict(Verdict.Error);
+        if (!TryGetInstrument(out var instrument))
             return;
-        }
 
         var count = Math.Max(1, SampleCount);
         for (var i = 0; i < count; i++)
         {
             TapThread.ThrowIfAborted();
-            var value = Instrument.Dmm.MeasureVoltageDc();
+            var value = instrument.Dmm.MeasureVoltageDc();
             PhaseIResults.PublishSample(Results, Channel, i, value);
             if (IntervalMs > 0 && i < count - 1)
                 TapThread.Sleep(IntervalMs);
@@ -39,33 +40,38 @@ public sealed class DmmMeasureVoltageDcStep : TestStep
     }
 }
 
-[Display("DMM Measure Scalar", Groups: ["Instrument Components", "DMM"], Description: "One VDC reading with optional limits.")]
-public sealed class DmmMeasureScalarStep : TestStep
+[Display("DMM Measure Scalar", Groups: [OpenTapDisplayGroups.Root, OpenTapDisplayGroups.Dmm], Description: "One VDC reading with optional limits.")]
+public sealed class DmmMeasureScalarStep : InstrumentBoundStep<DmmInstrument>
 {
-    [Display("Instrument", Order: 1)]
-    public DmmInstrument Instrument { get; set; } = null!;
-
-    [Display("Name", Order: 2)]
+    [Display("Name", Order: 2, Description: "Scalar result name.")]
     public string MetricName { get; set; } = "VDC";
 
-    [Display("Unit", Order: 3)]
+    [Display("Unit", Order: 3, Description: "Scalar result unit.")]
     public string Unit { get; set; } = "V";
 
-    [Display("Limit low", Order: 4)]
+    [Display("Limit low", Order: 4, Description: "Optional inclusive lower limit.")]
+    [Unit("V")]
     public double? LimitLow { get; set; }
 
-    [Display("Limit high", Order: 5)]
+    [Display("Limit high", Order: 5, Description: "Optional inclusive upper limit.")]
+    [Unit("V")]
     public double? LimitHigh { get; set; }
+
+    public DmmMeasureScalarStep()
+    {
+        Rules.Add(
+            () => LimitLow is null || LimitHigh is null || LimitLow <= LimitHigh,
+            "Limit low must not exceed limit high.",
+            nameof(LimitLow),
+            nameof(LimitHigh));
+    }
 
     public override void Run()
     {
-        if (Instrument is null)
-        {
-            UpgradeVerdict(Verdict.Error);
+        if (!TryGetInstrument(out var instrument))
             return;
-        }
 
-        var value = Instrument.Dmm.MeasureVoltageDc();
+        var value = instrument.Dmm.MeasureVoltageDc();
         PhaseIResults.PublishScalar(Results, MetricName, value, Unit, LimitLow, LimitHigh);
         if (PhaseIResults.IsOutOfBand(value, LimitLow, LimitHigh))
         {

@@ -2,46 +2,32 @@ using OpenTap;
 
 namespace InstrumentComponents.OpenTap;
 
-[Display("Identity Query", Groups: ["Instrument Components", "Identity"], Description: "Query instrument *IDN?.")]
-public sealed class IdentityQueryStep : TestStep
+[Display("Identity Query", Groups: [OpenTapDisplayGroups.Root, OpenTapDisplayGroups.Identity], Description: "Query instrument *IDN?.")]
+public sealed class IdentityQueryStep : InstrumentBoundStep<ScpiInstrument>
 {
-    [Display("Instrument")]
-    public ScpiInstrument Instrument { get; set; } = null!;
-
     public override void Run()
     {
-        if (Instrument is null)
-        {
-            UpgradeVerdict(Verdict.Error);
-            Log.Error("No instrument assigned.");
+        if (!TryGetInstrument(out var instrument))
             return;
-        }
 
-        var idn = Instrument.QueryIdn();
+        var idn = instrument.QueryIdn();
         Log.Info("IDN={0}", idn.FormatResponse());
         PhaseIResults.PublishIdentity(Results, idn.FormatResponse(), string.Empty);
         UpgradeVerdict(Verdict.Pass);
     }
 }
 
-[Display("Safe Shutdown", Groups: ["Instrument Components", "Safety"], Description: "Output off, then *RST.")]
-public sealed class SafeShutdownStep : TestStep
+[Display("Safe Shutdown", Groups: [OpenTapDisplayGroups.Root, OpenTapDisplayGroups.Safety], Description: "Output off, then *RST.")]
+public sealed class SafeShutdownStep : InstrumentBoundStep<ScpiInstrument>
 {
-    [Display("Instrument")]
-    public ScpiInstrument Instrument { get; set; } = null!;
-
     public override void Run()
     {
-        if (Instrument is null)
-        {
-            UpgradeVerdict(Verdict.Error);
-            Log.Error("No instrument assigned.");
+        if (!TryGetInstrument(out var instrument))
             return;
-        }
 
-        Instrument.OutputOff();
-        Instrument.Reset();
-        Log.Info("Safe shutdown complete for {0}", Instrument.Name);
+        instrument.OutputOff();
+        instrument.Reset();
+        Log.Info("Safe shutdown complete for {0}", instrument.Name);
         UpgradeVerdict(Verdict.Pass);
     }
 }
