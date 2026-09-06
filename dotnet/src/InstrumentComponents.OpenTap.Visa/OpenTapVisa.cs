@@ -2,6 +2,8 @@ using InstrumentComponents.Address;
 using InstrumentComponents.Connect;
 using InstrumentComponents.Errors;
 using InstrumentComponents.Scpi;
+using InstrumentComponents.Session;
+using InstrumentComponents.Transport;
 using InstrumentComponents.Visa;
 
 namespace InstrumentComponents.OpenTap.Visa;
@@ -21,6 +23,17 @@ public static class OpenTapVisa
 /// <summary>Opens NI/Keysight VISA message sessions for OpenTAP <c>VisaAddress</c>.</summary>
 public sealed class OpenTapVisaScpiIoProvider : IOpenTapScpiIoProvider
 {
+    private readonly ISessionOpener _opener;
+
+    public OpenTapVisaScpiIoProvider() : this(new VisaSessionOpener())
+    {
+    }
+
+    public OpenTapVisaScpiIoProvider(ISessionOpener opener)
+    {
+        _opener = opener ?? throw new ArgumentNullException(nameof(opener));
+    }
+
     public IScpiIo Open(string visaAddress, TimeSpan ioTimeout)
     {
         if (string.IsNullOrWhiteSpace(visaAddress))
@@ -39,8 +52,17 @@ public sealed class OpenTapVisaScpiIoProvider : IOpenTapScpiIoProvider
             PerOpTimeout = timeout,
             ResetOnConnect = false,
         };
-        var transport = new VisaSessionOpener().Open(address, opts);
-        return new ScpiSession(transport, opts);
+
+        ITransport? transport = null;
+        try
+        {
+            transport = _opener.Open(address, opts);
+            return new ScpiSession(transport, opts);
+        }
+        catch
+        {
+            (transport as IDisposable)?.Dispose();
+            throw;
+        }
     }
 }
-

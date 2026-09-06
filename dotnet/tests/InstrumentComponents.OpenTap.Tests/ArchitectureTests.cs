@@ -43,6 +43,7 @@ public class ArchitectureTests
         Assert.Contains("InstrumentComponents.OpenTap.dll", xml, StringComparison.Ordinal);
         Assert.Contains("InstrumentComponents.dll", xml, StringComparison.Ordinal);
         Assert.DoesNotContain("InstrumentComponents.Visa", xml, StringComparison.Ordinal);
+        Assert.DoesNotContain("InstrumentComponents.OpenTap.Visa", xml, StringComparison.Ordinal);
         Assert.DoesNotContain("Ivi.Visa", xml, StringComparison.Ordinal);
     }
 }

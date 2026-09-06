@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - OpenTAP `.TapPackage` create/verify/install smoke on net9 (`CreateOpenTapPackage`, plugin + core DLLs, no VISA)
 - Optional `IOpenTapScpiIoProvider` seam so OpenTAP `Open()` can obtain SCPI I/O without `AttachSession` (pack still never references VISA)
 - Optional `InstrumentComponents.OpenTap.Visa` companion that registers a VISA `IOpenTapScpiIoProvider` without the main pack importing IVI
+- OpenTAP VISA companion disposes the transport if SCPI session construction fails after the resource manager opens
 
 ### Changed
 
