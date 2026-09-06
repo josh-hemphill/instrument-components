@@ -1,0 +1,342 @@
+{
+  "$schema": "./opentap-operations.schema.json",
+  "version": 1,
+  "operations": [
+    {
+      "id": "identity_query",
+      "stepTypeName": "IdentityQueryStep",
+      "implementation": "handwritten",
+      "kind": "utility",
+      "instrumentKind": "Scpi",
+      "instrumentType": "ScpiInstrument",
+      "displayName": "Identity Query",
+      "displayGroups": ["Instrument Components", "Identity"],
+      "description": "Query instrument *IDN?.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [],
+      "publish": { "mode": "identity" }
+    },
+    {
+      "id": "safe_shutdown",
+      "stepTypeName": "SafeShutdownStep",
+      "implementation": "handwritten",
+      "kind": "utility",
+      "instrumentKind": "Scpi",
+      "instrumentType": "ScpiInstrument",
+      "displayName": "Safe Shutdown",
+      "displayGroups": ["Instrument Components", "Safety"],
+      "description": "Output off, then *RST.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [],
+      "publish": { "mode": "none" }
+    },
+    {
+      "id": "dmm_measure_voltage_dc",
+      "stepTypeName": "DmmMeasureVoltageDcStep",
+      "implementation": "handwritten",
+      "kind": "invoke",
+      "instrumentKind": "Dmm",
+      "instrumentType": "DmmInstrument",
+      "accessor": "Dmm",
+      "displayName": "DMM Measure Voltage DC",
+      "displayGroups": ["Instrument Components", "DMM"],
+      "description": "Acquire VDC samples.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [
+        { "name": "Channel", "displayName": "Channel", "type": "string", "order": 2, "default": "VDC" },
+        { "name": "SampleCount", "displayName": "Sample Count", "type": "int", "order": 3, "default": 1 },
+        { "name": "IntervalMs", "displayName": "Interval Ms", "type": "int", "order": 4, "unit": "ms", "default": 0 }
+      ],
+      "invoke": { "method": "MeasureVoltageDc", "returns": "double", "dialectKey": "measure_voltage_dc" },
+      "publish": { "mode": "sample", "unit": "V" }
+    },
+    {
+      "id": "dmm_measure_scalar",
+      "stepTypeName": "DmmMeasureScalarStep",
+      "implementation": "handwritten",
+      "kind": "invoke",
+      "instrumentKind": "Dmm",
+      "instrumentType": "DmmInstrument",
+      "accessor": "Dmm",
+      "displayName": "DMM Measure Scalar",
+      "displayGroups": ["Instrument Components", "DMM"],
+      "description": "One VDC reading with optional limits.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [
+        { "name": "MetricName", "displayName": "Name", "type": "string", "order": 2, "default": "VDC" },
+        { "name": "Unit", "displayName": "Unit", "type": "string", "order": 3, "default": "V" },
+        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 4, "unit": "V" },
+        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 5, "unit": "V" }
+      ],
+      "invoke": { "method": "MeasureVoltageDc", "returns": "double", "dialectKey": "measure_voltage_dc" },
+      "publish": { "mode": "scalar", "unit": "V", "supportsLimits": true }
+    },
+    {
+      "id": "psu_configure_output",
+      "stepTypeName": "PsuConfigureOutputStep",
+      "implementation": "handwritten",
+      "kind": "composite",
+      "instrumentKind": "DcPowerSupply",
+      "instrumentType": "DcPowerSupplyInstrument",
+      "accessor": "Supply",
+      "displayName": "PSU Configure Output",
+      "displayGroups": ["Instrument Components", "PSU"],
+      "description": "Set voltage, current limit, and output enable.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [
+        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 },
+        { "name": "Voltage", "displayName": "Voltage", "type": "double", "order": 3, "unit": "V", "default": 0 },
+        { "name": "CurrentLimit", "displayName": "Current limit", "type": "double", "order": 4, "unit": "A", "default": 0 },
+        { "name": "OutputEnabled", "displayName": "Output enabled", "type": "bool", "order": 5, "default": true }
+      ],
+      "composite": [
+        { "method": "SetVoltage", "returns": "void", "dialectKey": "set_voltage", "args": [{ "parameter": "Channel" }, { "parameter": "Voltage" }] },
+        { "method": "SetCurrentLimit", "returns": "void", "dialectKey": "set_current_limit", "args": [{ "parameter": "Channel" }, { "parameter": "CurrentLimit" }] },
+        { "method": "OutputEnable", "returns": "void", "dialectKey": "output_enable", "args": [{ "parameter": "Channel" }, { "parameter": "OutputEnabled" }] }
+      ],
+      "publish": { "mode": "multiScalar" }
+    },
+    {
+      "id": "psu_readback",
+      "stepTypeName": "PsuReadbackStep",
+      "implementation": "handwritten",
+      "kind": "composite",
+      "instrumentKind": "DcPowerSupply",
+      "instrumentType": "DcPowerSupplyInstrument",
+      "accessor": "Supply",
+      "displayName": "PSU Readback",
+      "displayGroups": ["Instrument Components", "PSU"],
+      "description": "Read voltage and current.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [
+        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 }
+      ],
+      "composite": [
+        { "method": "ReadVoltage", "returns": "double", "dialectKey": "read_voltage", "args": [{ "parameter": "Channel" }] },
+        { "method": "ReadCurrent", "returns": "double", "dialectKey": "read_current", "args": [{ "parameter": "Channel" }] }
+      ],
+      "publish": { "mode": "sampleAndScalar" }
+    },
+    {
+      "id": "fgen_configure_output",
+      "stepTypeName": "FgenConfigureOutputStep",
+      "implementation": "handwritten",
+      "kind": "composite",
+      "instrumentKind": "FunctionGenerator",
+      "instrumentType": "FunctionGeneratorInstrument",
+      "accessor": "Generator",
+      "displayName": "FGen Configure Output",
+      "displayGroups": ["Instrument Components", "FGen"],
+      "description": "Set waveform and output.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [
+        { "name": "Waveform", "displayName": "Waveform", "type": "enum", "enumType": "InstrumentComponents.Classes.Waveform", "order": 2, "default": "Sine" },
+        { "name": "FrequencyHz", "displayName": "Frequency (Hz)", "type": "double", "order": 3, "unit": "Hz", "default": 1000 },
+        { "name": "AmplitudeVpp", "displayName": "Amplitude (Vpp)", "type": "double", "order": 4, "unit": "V", "default": 1 },
+        { "name": "OffsetVolts", "displayName": "Offset (V)", "type": "double", "order": 5, "unit": "V", "default": 0 },
+        { "name": "OutputEnabled", "displayName": "Output enabled", "type": "bool", "order": 6, "default": true }
+      ],
+      "composite": [
+        { "method": "SetWaveform", "returns": "void", "dialectKey": "set_waveform", "args": [{ "parameter": "Waveform" }] },
+        { "method": "SetFrequency", "returns": "void", "dialectKey": "set_frequency", "args": [{ "parameter": "FrequencyHz" }] },
+        { "method": "SetAmplitude", "returns": "void", "dialectKey": "set_amplitude", "args": [{ "parameter": "AmplitudeVpp" }] },
+        { "method": "SetOffset", "returns": "void", "dialectKey": "set_offset", "args": [{ "parameter": "OffsetVolts" }] },
+        { "method": "OutputEnable", "returns": "void", "dialectKey": "output_enable", "args": [{ "parameter": "OutputEnabled" }] }
+      ],
+      "publish": { "mode": "multiScalar" }
+    },
+    {
+      "id": "scope_measure_vpp",
+      "stepTypeName": "ScopeMeasureVppStep",
+      "implementation": "handwritten",
+      "kind": "invoke",
+      "instrumentKind": "Oscilloscope",
+      "instrumentType": "OscilloscopeInstrument",
+      "accessor": "Scope",
+      "displayName": "Scope Measure Vpp",
+      "displayGroups": ["Instrument Components", "Scope"],
+      "description": "Peak-to-peak voltage.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [
+        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 }
+      ],
+      "invoke": { "method": "MeasureVpp", "returns": "double", "dialectKey": "measure_vpp", "args": [{ "parameter": "Channel" }] },
+      "publish": { "mode": "scalar", "unit": "V" }
+    },
+    {
+      "id": "scope_measure_frequency",
+      "stepTypeName": "ScopeMeasureFrequencyStep",
+      "implementation": "handwritten",
+      "kind": "invoke",
+      "instrumentKind": "Oscilloscope",
+      "instrumentType": "OscilloscopeInstrument",
+      "accessor": "Scope",
+      "displayName": "Scope Measure Frequency",
+      "displayGroups": ["Instrument Components", "Scope"],
+      "description": "Frequency measurement.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [
+        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 }
+      ],
+      "invoke": { "method": "MeasureFrequency", "returns": "double", "dialectKey": "measure_frequency", "args": [{ "parameter": "Channel" }] },
+      "publish": { "mode": "scalar", "unit": "Hz" }
+    },
+    {
+      "id": "scope_capture_trace",
+      "stepTypeName": "ScopeCaptureTraceStep",
+      "implementation": "handwritten",
+      "kind": "invoke",
+      "instrumentKind": "Oscilloscope",
+      "instrumentType": "OscilloscopeInstrument",
+      "accessor": "Scope",
+      "displayName": "Scope Capture Trace",
+      "displayGroups": ["Instrument Components", "Scope"],
+      "description": "ASCII voltage trace as Sample rows.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [
+        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 }
+      ],
+      "invoke": { "method": "CaptureVoltageTrace", "returns": "trace", "args": [{ "parameter": "Channel" }] },
+      "publish": { "mode": "sample", "unit": "V" }
+    },
+    {
+      "id": "switch_close_route",
+      "stepTypeName": "SwitchCloseRouteStep",
+      "implementation": "handwritten",
+      "kind": "invoke",
+      "instrumentKind": "Switch",
+      "instrumentType": "SwitchInstrument",
+      "accessor": "Matrix",
+      "displayName": "Switch Close Route",
+      "displayGroups": ["Instrument Components", "Switch"],
+      "description": "Close a matrix route.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [
+        { "name": "Channel1", "displayName": "Channel 1", "type": "uint", "order": 2, "default": 1 },
+        { "name": "Channel2", "displayName": "Channel 2", "type": "uint", "order": 3, "default": 2 }
+      ],
+      "invoke": { "method": "CloseRoute", "returns": "void", "dialectKey": "close_route", "args": [{ "parameter": "Channel1" }, { "parameter": "Channel2" }] },
+      "publish": { "mode": "none" }
+    },
+    {
+      "id": "switch_open_route",
+      "stepTypeName": "SwitchOpenRouteStep",
+      "implementation": "handwritten",
+      "kind": "invoke",
+      "instrumentKind": "Switch",
+      "instrumentType": "SwitchInstrument",
+      "accessor": "Matrix",
+      "displayName": "Switch Open Route",
+      "displayGroups": ["Instrument Components", "Switch"],
+      "description": "Open a matrix route.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [
+        { "name": "Channel1", "displayName": "Channel 1", "type": "uint", "order": 2, "default": 1 },
+        { "name": "Channel2", "displayName": "Channel 2", "type": "uint", "order": 3, "default": 2 }
+      ],
+      "invoke": { "method": "OpenRoute", "returns": "void", "dialectKey": "open_route", "args": [{ "parameter": "Channel1" }, { "parameter": "Channel2" }] },
+      "publish": { "mode": "none" }
+    },
+    {
+      "id": "switch_open_all",
+      "stepTypeName": "SwitchOpenAllStep",
+      "implementation": "handwritten",
+      "kind": "invoke",
+      "instrumentKind": "Switch",
+      "instrumentType": "SwitchInstrument",
+      "accessor": "Matrix",
+      "displayName": "Switch Open All",
+      "displayGroups": ["Instrument Components", "Switch"],
+      "description": "Open all routes.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [],
+      "invoke": { "method": "OpenAll", "returns": "void", "dialectKey": "open_all" },
+      "publish": { "mode": "none" }
+    },
+    {
+      "id": "counter_measure_frequency",
+      "stepTypeName": "CounterMeasureFrequencyStep",
+      "implementation": "handwritten",
+      "kind": "invoke",
+      "instrumentKind": "Counter",
+      "instrumentType": "CounterInstrument",
+      "accessor": "Counter",
+      "displayName": "Counter Measure Frequency",
+      "displayGroups": ["Instrument Components", "Counter"],
+      "description": "Measure frequency.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [],
+      "invoke": { "method": "MeasureFrequency", "returns": "double", "dialectKey": "measure_frequency" },
+      "publish": { "mode": "scalar", "unit": "Hz" }
+    },
+    {
+      "id": "counter_measure_period",
+      "stepTypeName": "CounterMeasurePeriodStep",
+      "implementation": "handwritten",
+      "kind": "invoke",
+      "instrumentKind": "Counter",
+      "instrumentType": "CounterInstrument",
+      "accessor": "Counter",
+      "displayName": "Counter Measure Period",
+      "displayGroups": ["Instrument Components", "Counter"],
+      "description": "Measure period.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [],
+      "invoke": { "method": "MeasurePeriod", "returns": "double", "dialectKey": "measure_period" },
+      "publish": { "mode": "scalar", "unit": "s" }
+    },
+    {
+      "id": "power_meter_read",
+      "stepTypeName": "PowerMeterReadStep",
+      "implementation": "handwritten",
+      "kind": "invoke",
+      "instrumentKind": "PowerMeter",
+      "instrumentType": "PowerMeterInstrument",
+      "accessor": "Meter",
+      "displayName": "Power Meter Read",
+      "displayGroups": ["Instrument Components", "PowerMeter"],
+      "description": "Read power.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [],
+      "invoke": { "method": "Read", "returns": "double", "dialectKey": "read" },
+      "publish": { "mode": "scalar" }
+    },
+    {
+      "id": "specan_marker_peak",
+      "stepTypeName": "SpectrumAnalyzerMarkerPeakStep",
+      "implementation": "handwritten",
+      "kind": "composite",
+      "instrumentKind": "SpectrumAnalyzer",
+      "instrumentType": "SpectrumAnalyzerInstrument",
+      "accessor": "Analyzer",
+      "displayName": "Spectrum Analyzer Marker Peak",
+      "displayGroups": ["Instrument Components", "SpecAn"],
+      "description": "Peak marker X/Y.",
+      "capability": "base",
+      "since": "0.1.0",
+      "parameters": [],
+      "composite": [
+        { "method": "MarkerPeak", "returns": "void", "dialectKey": "marker_peak" },
+        { "method": "MarkerX", "returns": "double", "dialectKey": "marker_x" },
+        { "method": "MarkerY", "returns": "double", "dialectKey": "marker_y" }
+      ],
+      "publish": { "mode": "multiScalar" }
+    }
+  ]
+}
