@@ -8,4 +8,10 @@
   <Dependencies>
     <PackageDependency Package="OpenTAP" Version="^9.32.0" />
   </Dependencies>
+  <Files>
+    <File Path="InstrumentComponents.OpenTap.dll">
+      <SetAssemblyInfo Attributes="Version" />
+    </File>
+    <File Path="InstrumentComponents.dll" />
+  </Files>
 </Package>

@@ -44,6 +44,29 @@ jobs:
       - run: dotnet test dotnet/tests/InstrumentComponents.OpenTap.Tests/InstrumentComponents.OpenTap.Tests.csproj --no-build -c Release
       - run: dotnet run --project dotnet/examples/OpenTapMockPlan/OpenTapMockPlan.csproj -c Release
 
+  tappackage:
+    name: OpenTAP package (net9)
+    needs: registry-drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+      - uses: denoland/setup-deno@v2
+      - run: dotnet build dotnet/src/InstrumentComponents.OpenTap/InstrumentComponents.OpenTap.csproj -c Release -p:CreateOpenTapPackage=true
+      - run: deno run --allow-read --allow-run=unzip tools/verify-opentap-package.ts
+      - name: Install smoke
+        working-directory: dotnet/src/InstrumentComponents.OpenTap/bin/Release/net8.0
+        run: |
+          ./tap package list -i | grep InstrumentComponents.OpenTap
+          ./tap package uninstall InstrumentComponents.OpenTap -f
+          ./tap package install ./InstrumentComponents.OpenTap.0.1.0.TapPackage
+          ./tap package show InstrumentComponents.OpenTap
+          ./tap package list -i | grep InstrumentComponents.OpenTap
+
   build-visa-windows:
     name: Build VISA package (Windows)
     needs: registry-drift
