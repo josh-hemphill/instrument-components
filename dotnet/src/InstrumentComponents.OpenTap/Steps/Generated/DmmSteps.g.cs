@@ -3,6 +3,111 @@ using OpenTap;
 
 namespace InstrumentComponents.OpenTap;
 
+[Display("Configure AC Current", Groups: ["Instrument Components", "DMM", "Configure"], Description: "Configure AC current range and resolution.")]
+public sealed class DmmConfigureCurrentAcStep : InstrumentBoundStep<DmmInstrument>
+{
+    [Display("Range", Order: 2)]
+    [Unit("A")]
+    public double? Range { get; set; }
+
+    [Display("Resolution", Order: 3)]
+    [Unit("A")]
+    public double? Resolution { get; set; }
+
+    public override void Run()
+    {
+        if (!TryGetInstrument(out var instrument))
+            return;
+
+        instrument.Dmm.ConfigureCurrentAc(Range, Resolution);
+        UpgradeVerdict(Verdict.Pass);
+    }
+}
+
+[Display("Configure DC Current", Groups: ["Instrument Components", "DMM", "Configure"], Description: "Configure DC current range and resolution.")]
+public sealed class DmmConfigureCurrentDcStep : InstrumentBoundStep<DmmInstrument>
+{
+    [Display("Range", Order: 2)]
+    [Unit("A")]
+    public double? Range { get; set; }
+
+    [Display("Resolution", Order: 3)]
+    [Unit("A")]
+    public double? Resolution { get; set; }
+
+    public override void Run()
+    {
+        if (!TryGetInstrument(out var instrument))
+            return;
+
+        instrument.Dmm.ConfigureCurrentDc(Range, Resolution);
+        UpgradeVerdict(Verdict.Pass);
+    }
+}
+
+[Display("Configure 4-Wire Resistance", Groups: ["Instrument Components", "DMM", "Configure"], Description: "Configure four-wire resistance range and resolution.")]
+public sealed class DmmConfigureResistance4WireStep : InstrumentBoundStep<DmmInstrument>
+{
+    [Display("Range", Order: 2)]
+    [Unit("Ohm")]
+    public double? Range { get; set; }
+
+    [Display("Resolution", Order: 3)]
+    [Unit("Ohm")]
+    public double? Resolution { get; set; }
+
+    public override void Run()
+    {
+        if (!TryGetInstrument(out var instrument))
+            return;
+
+        instrument.Dmm.ConfigureResistance4Wire(Range, Resolution);
+        UpgradeVerdict(Verdict.Pass);
+    }
+}
+
+[Display("Configure Resistance", Groups: ["Instrument Components", "DMM", "Configure"], Description: "Configure two-wire resistance range and resolution.")]
+public sealed class DmmConfigureResistanceStep : InstrumentBoundStep<DmmInstrument>
+{
+    [Display("Range", Order: 2)]
+    [Unit("Ohm")]
+    public double? Range { get; set; }
+
+    [Display("Resolution", Order: 3)]
+    [Unit("Ohm")]
+    public double? Resolution { get; set; }
+
+    public override void Run()
+    {
+        if (!TryGetInstrument(out var instrument))
+            return;
+
+        instrument.Dmm.ConfigureResistance(Range, Resolution);
+        UpgradeVerdict(Verdict.Pass);
+    }
+}
+
+[Display("Configure AC Voltage", Groups: ["Instrument Components", "DMM", "Configure"], Description: "Configure AC voltage range and resolution.")]
+public sealed class DmmConfigureVoltageAcStep : InstrumentBoundStep<DmmInstrument>
+{
+    [Display("Range", Order: 2)]
+    [Unit("V")]
+    public double? Range { get; set; }
+
+    [Display("Resolution", Order: 3)]
+    [Unit("V")]
+    public double? Resolution { get; set; }
+
+    public override void Run()
+    {
+        if (!TryGetInstrument(out var instrument))
+            return;
+
+        instrument.Dmm.ConfigureVoltageAc(Range, Resolution);
+        UpgradeVerdict(Verdict.Pass);
+    }
+}
+
 [Display("Configure DC Voltage", Groups: ["Instrument Components", "DMM", "Configure"], Description: "Configure DC voltage range and resolution.")]
 public sealed class DmmConfigureVoltageDcStep : InstrumentBoundStep<DmmInstrument>
 {
@@ -94,6 +199,37 @@ public sealed class DmmMeasureResistance2WireStep : OptionalLimitStep<DmmInstrum
             return;
 
         PublishScalar("Resistance", instrument.Dmm.MeasureResistance2Wire(Range), "Ohm");
+    }
+}
+
+[Display("Measure 4-Wire Resistance", Groups: ["Instrument Components", "DMM", "Measure"], Description: "Measure four-wire resistance using the selected DMM.")]
+public sealed class DmmMeasureResistance4WireStep : OptionalLimitStep<DmmInstrument>
+{
+    [Display("Range", Order: 2)]
+    [Unit("Ohm")]
+    public double? Range { get; set; }
+
+    public override void Run()
+    {
+        if (!TryGetInstrument(out var instrument))
+            return;
+
+        PublishScalar("Resistance 4W", instrument.Dmm.MeasureResistance4Wire(Range), "Ohm");
+    }
+}
+
+[Display("Measure Temperature", Groups: ["Instrument Components", "DMM", "Measure"], Description: "Measure temperature using the selected DMM.")]
+public sealed class DmmMeasureTemperatureStep : OptionalLimitStep<DmmInstrument>
+{
+    [Display("Range", Order: 2)]
+    public double? Range { get; set; }
+
+    public override void Run()
+    {
+        if (!TryGetInstrument(out var instrument))
+            return;
+
+        PublishScalar("Temperature", instrument.Dmm.MeasureTemperature(Range), "C");
     }
 }
 
