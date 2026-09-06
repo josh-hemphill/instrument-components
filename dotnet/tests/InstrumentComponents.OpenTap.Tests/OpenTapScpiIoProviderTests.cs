@@ -114,6 +114,41 @@ public class OpenTapScpiIoProviderTests
     }
 
     [Fact]
+    public void Open_FailedIdn_DisposesProviderIo_AndOpensFreshOnRetry()
+    {
+        var provider = new FakeProvider { ThrowOnIdn = true };
+        var previous = OpenTapScpiIo.Provider;
+        OpenTapScpiIo.Provider = provider;
+        try
+        {
+            var instrument = new DmmInstrument { VisaAddress = "USB0::0x2A8D::0x1301::INSTR" };
+            Assert.Throws<InstrumentComponents.Errors.CommunicationException>(instrument.Open);
+            Assert.False(instrument.IsConnected);
+            Assert.True(provider.LastIo!.Disposed);
+            Assert.Equal(1, provider.OpenCount);
+
+            provider.ThrowOnIdn = false;
+            instrument.VisaAddress = "USB0::0x2A8D::0x1302::INSTR";
+            instrument.Open();
+            try
+            {
+                Assert.Equal(2, provider.OpenCount);
+                Assert.Equal("USB0::0x2A8D::0x1302::INSTR", provider.LastAddress);
+                Assert.False(provider.LastIo.Disposed);
+                Assert.Equal("Acme", instrument.QueryIdn().Manufacturer);
+            }
+            finally
+            {
+                instrument.Close();
+            }
+        }
+        finally
+        {
+            OpenTapScpiIo.Provider = previous;
+        }
+    }
+
+    [Fact]
     public void Open_WithProvider_RequiresVisaAddress()
     {
         var previous = OpenTapScpiIo.Provider;
@@ -135,12 +170,15 @@ public class OpenTapScpiIoProviderTests
         public int OpenCount { get; private set; }
         public string? LastAddress { get; private set; }
         public ScriptedIo? LastIo { get; private set; }
+        public bool ThrowOnIdn { get; set; }
 
         public IScpiIo Open(string visaAddress, TimeSpan ioTimeout)
         {
             OpenCount++;
             LastAddress = visaAddress;
-            LastIo = new ScriptedIo(("*IDN?", "Acme,DMM1,SN-1,2.0"));
+            LastIo = ThrowOnIdn
+                ? new ScriptedIo { ThrowOnQuery = true }
+                : new ScriptedIo(("*IDN?", "Acme,DMM1,SN-1,2.0"));
             return LastIo;
         }
     }
@@ -158,6 +196,7 @@ public class OpenTapScpiIoProviderTests
         }
 
         public bool Disposed { get; private set; }
+        public bool ThrowOnQuery { get; set; }
         public TimeSpan IoTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
         public void Write(string command)
@@ -168,6 +207,8 @@ public class OpenTapScpiIoProviderTests
         public string Query(string command)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
+            if (ThrowOnQuery)
+                throw new InstrumentComponents.Errors.InstrumentTimeoutException();
             return _queries.TryGetValue(command.Trim(), out var response) ? response : "";
         }
 

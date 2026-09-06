@@ -68,9 +68,17 @@ public abstract class ScpiInstrument : Instrument, IInstrumentIdentity, IInstrum
         if (IsConnected && _session is not null)
             return;
 
-        ConnectAttached();
-        if (!IsConnected)
-            base.Open();
+        try
+        {
+            ConnectAttached();
+            if (!IsConnected)
+                base.Open();
+        }
+        catch
+        {
+            AbandonFailedOpen();
+            throw;
+        }
     }
 
     public override void Close()
@@ -157,12 +165,18 @@ public abstract class ScpiInstrument : Instrument, IInstrumentIdentity, IInstrum
         }
         catch
         {
-            DropSession();
-            ClearIdentity();
-            if (IsConnected)
-                base.Close();
+            AbandonFailedOpen();
             throw;
         }
+    }
+
+    private void AbandonFailedOpen()
+    {
+        DropSession();
+        DisposeOwnedAttached();
+        ClearIdentity();
+        if (IsConnected)
+            base.Close();
     }
 
     private void DropSession()

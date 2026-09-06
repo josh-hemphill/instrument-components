@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - OpenTAP pack Release builds keep `CreateOpenTapPackage` off unless `-p:CreateOpenTapPackage=true` (OpenTAP's props otherwise run `tap` and need net9)
+- Failed OpenTAP `Open()` disposes provider-created SCPI I/O so a retry does not reuse a stale VISA session
 - Queries retry the write+read pair after a timed-out read, flushing stale data first
 - Framed reads do not reconnect; query retry flushes first, then reconnects once
 - C# zero-byte reads time out without a second failure record or reconnect
