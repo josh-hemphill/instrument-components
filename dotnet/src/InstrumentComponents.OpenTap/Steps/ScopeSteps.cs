@@ -3,7 +3,7 @@ using OpenTap;
 namespace InstrumentComponents.OpenTap;
 
 [Display("Scope Measure Vpp", Groups: [OpenTapDisplayGroups.Root, OpenTapDisplayGroups.Oscilloscope], Description: "Peak-to-peak voltage.")]
-public sealed class ScopeMeasureVppStep : InstrumentBoundStep<OscilloscopeInstrument>
+public sealed class ScopeMeasureVppStep : OptionalLimitStep<OscilloscopeInstrument>
 {
     [Display("Channel", Order: 2, Description: "1-based scope channel.")]
     public uint Channel { get; set; } = 1;
@@ -18,14 +18,12 @@ public sealed class ScopeMeasureVppStep : InstrumentBoundStep<OscilloscopeInstru
         if (!TryGetInstrument(out var instrument))
             return;
 
-        var value = instrument.Scope.MeasureVpp(Channel);
-        PhaseIResults.PublishScalar(Results, $"CH{Channel}.Vpp", value, "V");
-        UpgradeVerdict(Verdict.Pass);
+        PublishScalar($"CH{Channel}.Vpp", instrument.Scope.MeasureVpp(Channel), "V");
     }
 }
 
 [Display("Scope Measure Frequency", Groups: [OpenTapDisplayGroups.Root, OpenTapDisplayGroups.Oscilloscope], Description: "Frequency measurement.")]
-public sealed class ScopeMeasureFrequencyStep : InstrumentBoundStep<OscilloscopeInstrument>
+public sealed class ScopeMeasureFrequencyStep : OptionalLimitStep<OscilloscopeInstrument>
 {
     [Display("Channel", Order: 2, Description: "1-based scope channel.")]
     public uint Channel { get; set; } = 1;
@@ -40,9 +38,7 @@ public sealed class ScopeMeasureFrequencyStep : InstrumentBoundStep<Oscilloscope
         if (!TryGetInstrument(out var instrument))
             return;
 
-        var value = instrument.Scope.MeasureFrequency(Channel);
-        PhaseIResults.PublishScalar(Results, $"CH{Channel}.Freq", value, "Hz");
-        UpgradeVerdict(Verdict.Pass);
+        PublishScalar($"CH{Channel}.Freq", instrument.Scope.MeasureFrequency(Channel), "Hz");
     }
 }
 
