@@ -1,0 +1,426 @@
+{
+  "CounterInstrument": {
+    "fullName": "InstrumentComponents.OpenTap.CounterInstrument",
+    "displayName": "Counter",
+    "groups": [
+      "Instrument Components"
+    ],
+    "description": "SCPI frequency counter.",
+    "settings": [
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Name",
+        "order": -3,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Counter"
+      },
+      {
+        "name": "VisaAddress",
+        "type": "System.String",
+        "displayName": "Visa Address",
+        "order": 1,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
+        "name": "IoTimeoutMilliseconds",
+        "type": "System.Int32",
+        "displayName": "IO Timeout (ms)",
+        "order": 2,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": "5000"
+      },
+      {
+        "name": "IdentityFields",
+        "type": "InstrumentComponents.OpenTap.ScpiIdentityFields",
+        "displayName": "Identity",
+        "order": 10,
+        "group": [],
+        "defaultValue": {
+          "manufacturer": "",
+          "model": "",
+          "serial": "",
+          "firmware": ""
+        }
+      }
+    ]
+  },
+  "DcPowerSupplyInstrument": {
+    "fullName": "InstrumentComponents.OpenTap.DcPowerSupplyInstrument",
+    "displayName": "DC Power Supply",
+    "groups": [
+      "Instrument Components"
+    ],
+    "description": "SCPI DC power supply.",
+    "settings": [
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Name",
+        "order": -3,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "DC Power Supply"
+      },
+      {
+        "name": "VisaAddress",
+        "type": "System.String",
+        "displayName": "Visa Address",
+        "order": 1,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
+        "name": "IoTimeoutMilliseconds",
+        "type": "System.Int32",
+        "displayName": "IO Timeout (ms)",
+        "order": 2,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": "5000"
+      },
+      {
+        "name": "IdentityFields",
+        "type": "InstrumentComponents.OpenTap.ScpiIdentityFields",
+        "displayName": "Identity",
+        "order": 10,
+        "group": [],
+        "defaultValue": {
+          "manufacturer": "",
+          "model": "",
+          "serial": "",
+          "firmware": ""
+        }
+      }
+    ]
+  },
+  "DmmInstrument": {
+    "fullName": "InstrumentComponents.OpenTap.DmmInstrument",
+    "displayName": "DMM",
+    "groups": [
+      "Instrument Components"
+    ],
+    "description": "SCPI digital multimeter.",
+    "settings": [
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Name",
+        "order": -3,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "DMM"
+      },
+      {
+        "name": "VisaAddress",
+        "type": "System.String",
+        "displayName": "Visa Address",
+        "order": 1,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
+        "name": "IoTimeoutMilliseconds",
+        "type": "System.Int32",
+        "displayName": "IO Timeout (ms)",
+        "order": 2,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": "5000"
+      },
+      {
+        "name": "IdentityFields",
+        "type": "InstrumentComponents.OpenTap.ScpiIdentityFields",
+        "displayName": "Identity",
+        "order": 10,
+        "group": [],
+        "defaultValue": {
+          "manufacturer": "",
+          "model": "",
+          "serial": "",
+          "firmware": ""
+        }
+      }
+    ]
+  },
+  "FunctionGeneratorInstrument": {
+    "fullName": "InstrumentComponents.OpenTap.FunctionGeneratorInstrument",
+    "displayName": "Function Generator",
+    "groups": [
+      "Instrument Components"
+    ],
+    "description": "SCPI function generator.",
+    "settings": [
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Name",
+        "order": -3,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Function Generator"
+      },
+      {
+        "name": "VisaAddress",
+        "type": "System.String",
+        "displayName": "Visa Address",
+        "order": 1,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
+        "name": "IoTimeoutMilliseconds",
+        "type": "System.Int32",
+        "displayName": "IO Timeout (ms)",
+        "order": 2,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": "5000"
+      },
+      {
+        "name": "IdentityFields",
+        "type": "InstrumentComponents.OpenTap.ScpiIdentityFields",
+        "displayName": "Identity",
+        "order": 10,
+        "group": [],
+        "defaultValue": {
+          "manufacturer": "",
+          "model": "",
+          "serial": "",
+          "firmware": ""
+        }
+      }
+    ]
+  },
+  "OscilloscopeInstrument": {
+    "fullName": "InstrumentComponents.OpenTap.OscilloscopeInstrument",
+    "displayName": "Oscilloscope",
+    "groups": [
+      "Instrument Components"
+    ],
+    "description": "SCPI oscilloscope.",
+    "settings": [
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Name",
+        "order": -3,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Oscilloscope"
+      },
+      {
+        "name": "VisaAddress",
+        "type": "System.String",
+        "displayName": "Visa Address",
+        "order": 1,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
+        "name": "IoTimeoutMilliseconds",
+        "type": "System.Int32",
+        "displayName": "IO Timeout (ms)",
+        "order": 2,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": "5000"
+      },
+      {
+        "name": "IdentityFields",
+        "type": "InstrumentComponents.OpenTap.ScpiIdentityFields",
+        "displayName": "Identity",
+        "order": 10,
+        "group": [],
+        "defaultValue": {
+          "manufacturer": "",
+          "model": "",
+          "serial": "",
+          "firmware": ""
+        }
+      }
+    ]
+  },
+  "PowerMeterInstrument": {
+    "fullName": "InstrumentComponents.OpenTap.PowerMeterInstrument",
+    "displayName": "Power Meter",
+    "groups": [
+      "Instrument Components"
+    ],
+    "description": "SCPI RF power meter.",
+    "settings": [
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Name",
+        "order": -3,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Power Meter"
+      },
+      {
+        "name": "VisaAddress",
+        "type": "System.String",
+        "displayName": "Visa Address",
+        "order": 1,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
+        "name": "IoTimeoutMilliseconds",
+        "type": "System.Int32",
+        "displayName": "IO Timeout (ms)",
+        "order": 2,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": "5000"
+      },
+      {
+        "name": "IdentityFields",
+        "type": "InstrumentComponents.OpenTap.ScpiIdentityFields",
+        "displayName": "Identity",
+        "order": 10,
+        "group": [],
+        "defaultValue": {
+          "manufacturer": "",
+          "model": "",
+          "serial": "",
+          "firmware": ""
+        }
+      }
+    ]
+  },
+  "SpectrumAnalyzerInstrument": {
+    "fullName": "InstrumentComponents.OpenTap.SpectrumAnalyzerInstrument",
+    "displayName": "Spectrum Analyzer",
+    "groups": [
+      "Instrument Components"
+    ],
+    "description": "SCPI spectrum analyzer.",
+    "settings": [
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Name",
+        "order": -3,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Spectrum Analyzer"
+      },
+      {
+        "name": "VisaAddress",
+        "type": "System.String",
+        "displayName": "Visa Address",
+        "order": 1,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
+        "name": "IoTimeoutMilliseconds",
+        "type": "System.Int32",
+        "displayName": "IO Timeout (ms)",
+        "order": 2,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": "5000"
+      },
+      {
+        "name": "IdentityFields",
+        "type": "InstrumentComponents.OpenTap.ScpiIdentityFields",
+        "displayName": "Identity",
+        "order": 10,
+        "group": [],
+        "defaultValue": {
+          "manufacturer": "",
+          "model": "",
+          "serial": "",
+          "firmware": ""
+        }
+      }
+    ]
+  },
+  "SwitchInstrument": {
+    "fullName": "InstrumentComponents.OpenTap.SwitchInstrument",
+    "displayName": "Switch",
+    "groups": [
+      "Instrument Components"
+    ],
+    "description": "SCPI switch / matrix.",
+    "settings": [
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Name",
+        "order": -3,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Switch"
+      },
+      {
+        "name": "VisaAddress",
+        "type": "System.String",
+        "displayName": "Visa Address",
+        "order": 1,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
+        "name": "IoTimeoutMilliseconds",
+        "type": "System.Int32",
+        "displayName": "IO Timeout (ms)",
+        "order": 2,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": "5000"
+      },
+      {
+        "name": "IdentityFields",
+        "type": "InstrumentComponents.OpenTap.ScpiIdentityFields",
+        "displayName": "Identity",
+        "order": 10,
+        "group": [],
+        "defaultValue": {
+          "manufacturer": "",
+          "model": "",
+          "serial": "",
+          "firmware": ""
+        }
+      }
+    ]
+  }
+}

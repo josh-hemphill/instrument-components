@@ -5,7 +5,7 @@ public class ArchitectureTests
     [Fact]
     public void PackSourcesDoNotReferenceIviVisa()
     {
-        var packDir = Path.Combine(RepoRoot(), "dotnet", "src", "InstrumentComponents.OpenTap");
+        var packDir = Path.Combine(RepoPaths.Root(), "dotnet", "src", "InstrumentComponents.OpenTap");
         Assert.True(Directory.Exists(packDir), packDir);
         string[] forbidden =
         [
@@ -33,16 +33,4 @@ public class ArchitectureTests
         }
     }
 
-    private static string RepoRoot()
-    {
-        var dir = new DirectoryInfo(AppContext.BaseDirectory);
-        while (dir is not null)
-        {
-            if (File.Exists(Path.Combine(dir.FullName, "spec", "scpi-vectors.json")))
-                return dir.FullName;
-            dir = dir.Parent;
-        }
-
-        throw new DirectoryNotFoundException("could not find repo root");
-    }
 }
