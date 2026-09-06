@@ -1,0 +1,27 @@
+{
+  "sample": {
+    "table": "Sample",
+    "columns": [
+      "Channel",
+      "Index",
+      "Value"
+    ]
+  },
+  "scalar": {
+    "table": "Scalar",
+    "columns": [
+      "Name",
+      "Value",
+      "Unit",
+      "LimitLow",
+      "LimitHigh"
+    ]
+  },
+  "identity": {
+    "table": "Identity",
+    "columns": [
+      "Idn",
+      "DutSerial"
+    ]
+  }
+}

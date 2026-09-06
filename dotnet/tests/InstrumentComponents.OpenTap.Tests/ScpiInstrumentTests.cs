@@ -239,20 +239,38 @@ public class ScpiInstrumentTests
     [Fact]
     public void TestPlanRoundTripsDmmTypeWithoutBroker()
     {
+        var original = new DmmInstrument
+        {
+            Name = "Bench DMM",
+            VisaAddress = "TCPIP0::192.0.2.10::inst0::INSTR",
+            IoTimeoutMilliseconds = 2500,
+        };
         var plan = new TestPlan();
         var path = Path.Combine(Path.GetTempPath(), $"ic-dmm-{Guid.NewGuid():N}.TapPlan");
-        plan.Save(path);
-        try
+        InstrumentSettingsScope.Run(() =>
         {
-            var loaded = TestPlan.Load(path);
-            Assert.NotNull(loaded);
-            Assert.Contains("DmmInstrument", typeof(DmmInstrument).FullName);
-            Assert.Equal("InstrumentComponents.OpenTap.DmmInstrument", typeof(DmmInstrument).FullName);
-        }
-        finally
-        {
-            File.Delete(path);
-        }
+            InstrumentSettings.Current.Add(original);
+            plan.ChildTestSteps.Add(new IdentityQueryStep { Instrument = original });
+            plan.ChildTestSteps.Add(new DmmMeasureVoltageDcStep { Instrument = original, SampleCount = 2 });
+            plan.Save(path);
+            try
+            {
+                var xml = File.ReadAllText(path);
+                Assert.Contains("InstrumentComponents.OpenTap.DmmInstrument", xml, StringComparison.Ordinal);
+                Assert.Contains("InstrumentComponents.OpenTap.DmmMeasureVoltageDcStep", xml, StringComparison.Ordinal);
+                Assert.Contains("InstrumentComponents.OpenTap.IdentityQueryStep", xml, StringComparison.Ordinal);
+
+                var loaded = TestPlan.Load(path);
+                var measure = Assert.IsType<DmmMeasureVoltageDcStep>(loaded.ChildTestSteps[1]);
+                Assert.Equal(2, measure.SampleCount);
+                Assert.Equal("Bench DMM", measure.Instrument.Name);
+                Assert.Equal(original.VisaAddress, measure.Instrument.VisaAddress);
+            }
+            finally
+            {
+                File.Delete(path);
+            }
+        });
     }
 
     private sealed class ScriptedIo : IScpiIo

@@ -1,0 +1,857 @@
+{
+  "CounterMeasureFrequencyStep": {
+    "fullName": "InstrumentComponents.OpenTap.CounterMeasureFrequencyStep",
+    "displayName": "Counter Measure Frequency",
+    "groups": [
+      "Instrument Components",
+      "Counter"
+    ],
+    "description": "Measure frequency.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.CounterInstrument",
+        "displayName": "Instrument",
+        "order": -10000,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Counter Measure Frequency"
+      }
+    ]
+  },
+  "CounterMeasurePeriodStep": {
+    "fullName": "InstrumentComponents.OpenTap.CounterMeasurePeriodStep",
+    "displayName": "Counter Measure Period",
+    "groups": [
+      "Instrument Components",
+      "Counter"
+    ],
+    "description": "Measure period.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.CounterInstrument",
+        "displayName": "Instrument",
+        "order": -10000,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Counter Measure Period"
+      }
+    ]
+  },
+  "DmmMeasureScalarStep": {
+    "fullName": "InstrumentComponents.OpenTap.DmmMeasureScalarStep",
+    "displayName": "DMM Measure Scalar",
+    "groups": [
+      "Instrument Components",
+      "DMM"
+    ],
+    "description": "One VDC reading with optional limits.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.DmmInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": "Bench DMM"
+      },
+      {
+        "name": "MetricName",
+        "type": "System.String",
+        "displayName": "Name",
+        "order": 2,
+        "group": [],
+        "defaultValue": "VDC"
+      },
+      {
+        "name": "Unit",
+        "type": "System.String",
+        "displayName": "Unit",
+        "order": 3,
+        "group": [],
+        "defaultValue": "V"
+      },
+      {
+        "name": "LimitLow",
+        "type": "System.Double?",
+        "displayName": "Limit low",
+        "order": 4,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitHigh",
+        "type": "System.Double?",
+        "displayName": "Limit high",
+        "order": 5,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "DMM Measure Scalar"
+      }
+    ]
+  },
+  "DmmMeasureVoltageDcStep": {
+    "fullName": "InstrumentComponents.OpenTap.DmmMeasureVoltageDcStep",
+    "displayName": "DMM Measure Voltage DC",
+    "groups": [
+      "Instrument Components",
+      "DMM"
+    ],
+    "description": "Acquire VDC samples.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.DmmInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": "Bench DMM"
+      },
+      {
+        "name": "Channel",
+        "type": "System.String",
+        "displayName": "Channel",
+        "order": 2,
+        "group": [],
+        "defaultValue": "VDC"
+      },
+      {
+        "name": "SampleCount",
+        "type": "System.Int32",
+        "displayName": "Sample Count",
+        "order": 3,
+        "group": [],
+        "defaultValue": "1"
+      },
+      {
+        "name": "IntervalMs",
+        "type": "System.Int32",
+        "displayName": "Interval Ms",
+        "order": 4,
+        "group": [],
+        "defaultValue": "0"
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "DMM Measure Voltage DC"
+      }
+    ]
+  },
+  "FgenConfigureOutputStep": {
+    "fullName": "InstrumentComponents.OpenTap.FgenConfigureOutputStep",
+    "displayName": "FGen Configure Output",
+    "groups": [
+      "Instrument Components",
+      "FGen"
+    ],
+    "description": "Set waveform and output.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.FunctionGeneratorInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Waveform",
+        "type": "InstrumentComponents.Classes.Waveform",
+        "displayName": "Waveform",
+        "order": 2,
+        "group": [],
+        "defaultValue": "Sine"
+      },
+      {
+        "name": "FrequencyHz",
+        "type": "System.Double",
+        "displayName": "Frequency (Hz)",
+        "order": 3,
+        "group": [],
+        "defaultValue": "1000"
+      },
+      {
+        "name": "AmplitudeVpp",
+        "type": "System.Double",
+        "displayName": "Amplitude (Vpp)",
+        "order": 4,
+        "group": [],
+        "defaultValue": "1"
+      },
+      {
+        "name": "OffsetVolts",
+        "type": "System.Double",
+        "displayName": "Offset (V)",
+        "order": 5,
+        "group": [],
+        "defaultValue": "0"
+      },
+      {
+        "name": "OutputEnabled",
+        "type": "System.Boolean",
+        "displayName": "Output enabled",
+        "order": 6,
+        "group": [],
+        "defaultValue": true
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "FGen Configure Output"
+      }
+    ]
+  },
+  "IdentityQueryStep": {
+    "fullName": "InstrumentComponents.OpenTap.IdentityQueryStep",
+    "displayName": "Identity Query",
+    "groups": [
+      "Instrument Components",
+      "Identity"
+    ],
+    "description": "Query instrument *IDN?.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.ScpiInstrument",
+        "displayName": "Instrument",
+        "order": -10000,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Identity Query"
+      }
+    ]
+  },
+  "PowerMeterReadStep": {
+    "fullName": "InstrumentComponents.OpenTap.PowerMeterReadStep",
+    "displayName": "Power Meter Read",
+    "groups": [
+      "Instrument Components",
+      "PowerMeter"
+    ],
+    "description": "Read power.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.PowerMeterInstrument",
+        "displayName": "Instrument",
+        "order": -10000,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Power Meter Read"
+      }
+    ]
+  },
+  "PsuConfigureOutputStep": {
+    "fullName": "InstrumentComponents.OpenTap.PsuConfigureOutputStep",
+    "displayName": "PSU Configure Output",
+    "groups": [
+      "Instrument Components",
+      "PSU"
+    ],
+    "description": "Set voltage, current limit, and output enable.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.DcPowerSupplyInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Channel",
+        "type": "System.UInt32",
+        "displayName": "Channel",
+        "order": 2,
+        "group": [],
+        "defaultValue": "1"
+      },
+      {
+        "name": "Voltage",
+        "type": "System.Double",
+        "displayName": "Voltage",
+        "order": 3,
+        "group": [],
+        "defaultValue": "0"
+      },
+      {
+        "name": "CurrentLimit",
+        "type": "System.Double",
+        "displayName": "Current limit",
+        "order": 4,
+        "group": [],
+        "defaultValue": "0"
+      },
+      {
+        "name": "OutputEnabled",
+        "type": "System.Boolean",
+        "displayName": "Output enabled",
+        "order": 5,
+        "group": [],
+        "defaultValue": true
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "PSU Configure Output"
+      }
+    ]
+  },
+  "PsuReadbackStep": {
+    "fullName": "InstrumentComponents.OpenTap.PsuReadbackStep",
+    "displayName": "PSU Readback",
+    "groups": [
+      "Instrument Components",
+      "PSU"
+    ],
+    "description": "Read voltage and current.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.DcPowerSupplyInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Channel",
+        "type": "System.UInt32",
+        "displayName": "Channel",
+        "order": 2,
+        "group": [],
+        "defaultValue": "1"
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "PSU Readback"
+      }
+    ]
+  },
+  "SafeShutdownStep": {
+    "fullName": "InstrumentComponents.OpenTap.SafeShutdownStep",
+    "displayName": "Safe Shutdown",
+    "groups": [
+      "Instrument Components",
+      "Safety"
+    ],
+    "description": "Output off, then *RST.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.ScpiInstrument",
+        "displayName": "Instrument",
+        "order": -10000,
+        "group": [],
+        "defaultValue": "Bench DMM"
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Safe Shutdown"
+      }
+    ]
+  },
+  "ScopeCaptureTraceStep": {
+    "fullName": "InstrumentComponents.OpenTap.ScopeCaptureTraceStep",
+    "displayName": "Scope Capture Trace",
+    "groups": [
+      "Instrument Components",
+      "Scope"
+    ],
+    "description": "ASCII voltage trace as Sample rows.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.OscilloscopeInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Channel",
+        "type": "System.UInt32",
+        "displayName": "Channel",
+        "order": 2,
+        "group": [],
+        "defaultValue": "1"
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Scope Capture Trace"
+      }
+    ]
+  },
+  "ScopeMeasureFrequencyStep": {
+    "fullName": "InstrumentComponents.OpenTap.ScopeMeasureFrequencyStep",
+    "displayName": "Scope Measure Frequency",
+    "groups": [
+      "Instrument Components",
+      "Scope"
+    ],
+    "description": "Frequency measurement.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.OscilloscopeInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Channel",
+        "type": "System.UInt32",
+        "displayName": "Channel",
+        "order": 2,
+        "group": [],
+        "defaultValue": "1"
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Scope Measure Frequency"
+      }
+    ]
+  },
+  "ScopeMeasureVppStep": {
+    "fullName": "InstrumentComponents.OpenTap.ScopeMeasureVppStep",
+    "displayName": "Scope Measure Vpp",
+    "groups": [
+      "Instrument Components",
+      "Scope"
+    ],
+    "description": "Peak-to-peak voltage.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.OscilloscopeInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Channel",
+        "type": "System.UInt32",
+        "displayName": "Channel",
+        "order": 2,
+        "group": [],
+        "defaultValue": "1"
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Scope Measure Vpp"
+      }
+    ]
+  },
+  "SpectrumAnalyzerMarkerPeakStep": {
+    "fullName": "InstrumentComponents.OpenTap.SpectrumAnalyzerMarkerPeakStep",
+    "displayName": "Spectrum Analyzer Marker Peak",
+    "groups": [
+      "Instrument Components",
+      "SpecAn"
+    ],
+    "description": "Peak marker X/Y.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.SpectrumAnalyzerInstrument",
+        "displayName": "Instrument",
+        "order": -10000,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Spectrum Analyzer Marker Peak"
+      }
+    ]
+  },
+  "SwitchCloseRouteStep": {
+    "fullName": "InstrumentComponents.OpenTap.SwitchCloseRouteStep",
+    "displayName": "Switch Close Route",
+    "groups": [
+      "Instrument Components",
+      "Switch"
+    ],
+    "description": "Close a matrix route.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.SwitchInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Channel1",
+        "type": "System.UInt32",
+        "displayName": "Channel 1",
+        "order": 2,
+        "group": [],
+        "defaultValue": "1"
+      },
+      {
+        "name": "Channel2",
+        "type": "System.UInt32",
+        "displayName": "Channel 2",
+        "order": 3,
+        "group": [],
+        "defaultValue": "2"
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Switch Close Route"
+      }
+    ]
+  },
+  "SwitchOpenAllStep": {
+    "fullName": "InstrumentComponents.OpenTap.SwitchOpenAllStep",
+    "displayName": "Switch Open All",
+    "groups": [
+      "Instrument Components",
+      "Switch"
+    ],
+    "description": "Open all routes.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.SwitchInstrument",
+        "displayName": "Instrument",
+        "order": -10000,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Switch Open All"
+      }
+    ]
+  },
+  "SwitchOpenRouteStep": {
+    "fullName": "InstrumentComponents.OpenTap.SwitchOpenRouteStep",
+    "displayName": "Switch Open Route",
+    "groups": [
+      "Instrument Components",
+      "Switch"
+    ],
+    "description": "Open a matrix route.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.SwitchInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Channel1",
+        "type": "System.UInt32",
+        "displayName": "Channel 1",
+        "order": 2,
+        "group": [],
+        "defaultValue": "1"
+      },
+      {
+        "name": "Channel2",
+        "type": "System.UInt32",
+        "displayName": "Channel 2",
+        "order": 3,
+        "group": [],
+        "defaultValue": "2"
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Switch Open Route"
+      }
+    ]
+  }
+}
