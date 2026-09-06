@@ -14,6 +14,8 @@ public class ArchitectureTests
             "IviFoundation.Visa",
             "HardwareTest.Core",
             "InstrumentComponents.Visa",
+            "InstrumentComponents.OpenTap.Visa",
+            "OpenTapVisa",
         ];
         foreach (var file in Directory.EnumerateFiles(packDir, "*.*", SearchOption.AllDirectories))
         {
@@ -41,6 +43,7 @@ public class ArchitectureTests
         Assert.Contains("InstrumentComponents.OpenTap.dll", xml, StringComparison.Ordinal);
         Assert.Contains("InstrumentComponents.dll", xml, StringComparison.Ordinal);
         Assert.DoesNotContain("InstrumentComponents.Visa", xml, StringComparison.Ordinal);
+        Assert.DoesNotContain("InstrumentComponents.OpenTap.Visa", xml, StringComparison.Ordinal);
         Assert.DoesNotContain("Ivi.Visa", xml, StringComparison.Ordinal);
     }
 }

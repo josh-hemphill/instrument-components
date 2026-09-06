@@ -64,3 +64,5 @@ jobs:
           dotnet-version: '8.0.x'
       - name: Measure DC voltage
         run: dotnet test dotnet/tests/InstrumentComponents.Visa.Tests/InstrumentComponents.Visa.Tests.csproj -c Release --filter "FullyQualifiedName~DmmMeasureVoltageDcSmoke" --logger "console;verbosity=normal"
+      - name: OpenTAP VISA companion measure
+        run: dotnet test dotnet/tests/InstrumentComponents.OpenTap.Visa.Tests/InstrumentComponents.OpenTap.Visa.Tests.csproj -c Release --filter "FullyQualifiedName~OpenTapVisaDmmMeasureVoltageDcSmoke" --logger "console;verbosity=normal"

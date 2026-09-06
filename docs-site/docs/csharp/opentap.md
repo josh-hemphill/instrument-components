@@ -10,7 +10,7 @@ NuGet publishing is deferred. From this repo:
 dotnet add reference path/to/InstrumentComponents.OpenTap.csproj
 ```
 
-The pack references `OpenTAP` 9.32 and `InstrumentComponents` only — not `InstrumentComponents.Visa`.
+The pack references `OpenTAP` 9.32 and `InstrumentComponents` only — not `InstrumentComponents.Visa`. Hosts that need TUI-without-host can reference the optional companion `InstrumentComponents.OpenTap.Visa`.
 
 ## Session injection
 
@@ -37,6 +37,21 @@ dmm.Open(); // provider.Open(VisaAddress, timeout) then IDN
 ```
 
 `AttachSession` / the `IScpiIo` constructor still win over the provider. Close disposes provider-created I/O and leaves host-injected I/O alone.
+
+## Optional VISA companion
+
+`InstrumentComponents.OpenTap.Visa` is **not** part of the `.TapPackage`. Reference it from a host that already has a vendor VISA runtime:
+
+```csharp
+using InstrumentComponents.OpenTap;
+using InstrumentComponents.OpenTap.Visa;
+
+OpenTapVisa.Register(); // no-op when a host already set OpenTapScpiIo.Provider
+var dmm = new DmmInstrument { VisaAddress = "TCPIP0::192.0.2.10::inst0::INSTR" };
+dmm.Open();
+```
+
+HardwareTest should keep injecting `IScpiIo`. The companion exists for TUI-without-host. Self-hosted smoke uses `INSTRUMENT_RESOURCE` and `Category=Hardware` (same gate as `InstrumentComponents.Visa`).
 
 ## Plan-author steps
 

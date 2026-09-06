@@ -42,6 +42,7 @@ jobs:
       - run: dotnet test dotnet/tests/InstrumentComponents.Tests/InstrumentComponents.Tests.csproj --no-build -c Release
       - run: dotnet test dotnet/tests/InstrumentComponents.Visa.Tests/InstrumentComponents.Visa.Tests.csproj --no-build -c Release --filter "Category!=Hardware"
       - run: dotnet test dotnet/tests/InstrumentComponents.OpenTap.Tests/InstrumentComponents.OpenTap.Tests.csproj --no-build -c Release
+      - run: dotnet test dotnet/tests/InstrumentComponents.OpenTap.Visa.Tests/InstrumentComponents.OpenTap.Visa.Tests.csproj --no-build -c Release --filter "Category!=Hardware"
       - run: dotnet run --project dotnet/examples/OpenTapMockPlan/OpenTapMockPlan.csproj -c Release
 
   tappackage:
@@ -78,6 +79,7 @@ jobs:
           dotnet-version: '8.0.x'
       - run: dotnet build dotnet/InstrumentComponents.sln -c Release
       - run: dotnet test dotnet/tests/InstrumentComponents.Visa.Tests/InstrumentComponents.Visa.Tests.csproj -c Release --filter "Category!=Hardware" --no-build
+      - run: dotnet test dotnet/tests/InstrumentComponents.OpenTap.Visa.Tests/InstrumentComponents.OpenTap.Visa.Tests.csproj -c Release --filter "Category!=Hardware" --no-build
 
   build-visa-linux:
     name: Build VISA package (Linux)

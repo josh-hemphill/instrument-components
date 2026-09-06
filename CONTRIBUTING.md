@@ -30,6 +30,8 @@ cargo test --workspace --no-default-features
 | `cargo test -p instrument-components --features visa -- --ignored` | Local hardware tests (discover + IDN + DMM smoke) |
 | `INSTRUMENT_RESOURCE=... cargo test -p instrument-components --features visa --test hardware dmm_measure_voltage_dc_smoke -- --ignored --nocapture --exact` | Self-hosted DMM smoke (Rust) |
 | `INSTRUMENT_RESOURCE=... dotnet test dotnet/tests/InstrumentComponents.Visa.Tests --filter "FullyQualifiedName~DmmMeasureVoltageDcSmoke"` | Self-hosted DMM smoke (C#) |
+| `INSTRUMENT_RESOURCE=... dotnet test dotnet/tests/InstrumentComponents.OpenTap.Visa.Tests --filter "FullyQualifiedName~OpenTapVisaDmmMeasureVoltageDcSmoke"` | Self-hosted OpenTAP VISA companion smoke |
+| `dotnet test dotnet/tests/InstrumentComponents.OpenTap.Visa.Tests --filter "Category!=Hardware"` | OpenTAP VISA companion (no instruments) |
 | `cargo check -p instrument-components --features visa,tokio` | Async + VISA compiles |
 | `cargo clippy -p instrument-core --features async -- -D warnings` | Async clippy |
 | `cargo check -p instrument-visa --features cross-compile --target x86_64-pc-windows-gnu` | Cross-compile repr check |
