@@ -33,4 +33,14 @@ public class ArchitectureTests
         }
     }
 
+    [Fact]
+    public void PackageXmlBundlesPluginAndCoreWithoutVisa()
+    {
+        var path = Path.Combine(RepoPaths.Root(), "dotnet", "src", "InstrumentComponents.OpenTap", "package.xml");
+        var xml = File.ReadAllText(path);
+        Assert.Contains("InstrumentComponents.OpenTap.dll", xml, StringComparison.Ordinal);
+        Assert.Contains("InstrumentComponents.dll", xml, StringComparison.Ordinal);
+        Assert.DoesNotContain("InstrumentComponents.Visa", xml, StringComparison.Ordinal);
+        Assert.DoesNotContain("Ivi.Visa", xml, StringComparison.Ordinal);
+    }
 }

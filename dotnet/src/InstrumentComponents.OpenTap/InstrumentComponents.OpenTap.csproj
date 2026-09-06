@@ -8,8 +8,8 @@
     <RootNamespace>InstrumentComponents.OpenTap</RootNamespace>
     <AssemblyName>InstrumentComponents.OpenTap</AssemblyName>
     <OpenTapPackageDefinitionPath>package.xml</OpenTapPackageDefinitionPath>
-    <!-- tap package create from this SDK needs net9; CI stays on net8 and ships the plugin DLL. -->
-    <CreateOpenTapPackage>false</CreateOpenTapPackage>
+    <!-- tap package create needs a net9 runtime; pass -p:CreateOpenTapPackage=true on a net9 host. -->
+    <CreateOpenTapPackage Condition="'$(CreateOpenTapPackage)' == ''">false</CreateOpenTapPackage>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>

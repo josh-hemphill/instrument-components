@@ -58,6 +58,16 @@ Scalar measure steps inherit optional inclusive `LimitLow` / `LimitHigh` (unset 
 dotnet run --project dotnet/examples/OpenTapMockPlan
 ```
 
+## TapPackage
+
+The plugin library stays `net8.0`. Creating a `.TapPackage` needs a **net9** runtime for the OpenTAP `tap` CLI:
+
+```bash
+dotnet build dotnet/src/InstrumentComponents.OpenTap/InstrumentComponents.OpenTap.csproj -c Release -p:CreateOpenTapPackage=true
+```
+
+That emits `InstrumentComponents.OpenTap.0.1.0.TapPackage` (plugin DLL + `InstrumentComponents.dll`, no VISA). Install with `tap package install`.
+
 ## HardwareTest
 
 The bench shell owns broker, gate, and operator UI. This pack is the plugin that shell consumes. Contributor layering notes: [`docs/opentap-consumer.md`](https://github.com/josh-hemphill/instrument-components/blob/latest/docs/opentap-consumer.md) in the repo.
