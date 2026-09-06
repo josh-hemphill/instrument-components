@@ -8,8 +8,8 @@
     <RootNamespace>InstrumentComponents.OpenTap</RootNamespace>
     <AssemblyName>InstrumentComponents.OpenTap</AssemblyName>
     <OpenTapPackageDefinitionPath>package.xml</OpenTapPackageDefinitionPath>
-    <!-- tap package create needs a net9 runtime; pass -p:CreateOpenTapPackage=true on a net9 host. -->
-    <CreateOpenTapPackage Condition="'$(CreateOpenTapPackage)' == ''">false</CreateOpenTapPackage>
+    <!-- OpenTAP's props enable this for Release. Keep it opt-in: tap CLI needs net9. -->
+    <CreateOpenTapPackage>false</CreateOpenTapPackage>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
