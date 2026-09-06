@@ -37,6 +37,7 @@ const KIND_TO_GENERIC: Record<string, string> = {
 const IMPLEMENTATIONS = new Set(["handwritten", "generated"]);
 const OPERATION_KINDS = new Set(["invoke", "composite", "utility"]);
 const PARAM_TYPES = new Set(["string", "int", "uint", "double", "bool", "nullableDouble", "enum"]);
+const RESERVED_PARAMETER_NAMES = new Set(["Enabled", "Name", "Id", "Verdict", "Instrument"]);
 const RETURN_TYPES = new Set(["void", "double", "bool", "trace"]);
 const PUBLISH_MODES = new Set(["none", "identity", "sample", "scalar", "sampleAndScalar", "multiScalar"]);
 const CAPABILITIES = new Set(["base", "extension"]);
@@ -182,6 +183,9 @@ function validateOperation(
         `${label}.parameters[${parameterIndex}]`,
       );
       requireString(entry.name, `${label}.parameters[${parameterIndex}].name`);
+      if (RESERVED_PARAMETER_NAMES.has(entry.name as string)) {
+        throw new Error(`${label}.parameters[${parameterIndex}].name ${JSON.stringify(entry.name)} collides with TestStep`);
+      }
       requireString(entry.displayName, `${label}.parameters[${parameterIndex}].displayName`);
       const type = requireString(entry.type, `${label}.parameters[${parameterIndex}].type`);
       if (!PARAM_TYPES.has(type)) throw new Error(`${label}.parameters[${parameterIndex}].type is invalid`);
