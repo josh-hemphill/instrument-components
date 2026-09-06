@@ -19,6 +19,7 @@ public abstract class ScpiInstrument : Instrument, IInstrumentIdentity, IInstrum
     public const int MaxIoTimeoutMilliseconds = 120_000;
 
     private IScpiIo? _attached;
+    private bool _ownsAttached;
     private InstrumentSession? _session;
     private readonly DeviceIdentity _identity = new();
     private IReadOnlyList<InstrumentKind> _supportedKinds = [];
@@ -46,7 +47,9 @@ public abstract class ScpiInstrument : Instrument, IInstrumentIdentity, IInstrum
     /// <summary>Host injects an already-open message session after TestPlan.Load.</summary>
     public void AttachSession(IScpiIo io)
     {
+        DisposeOwnedAttached();
         _attached = io ?? throw new ArgumentNullException(nameof(io));
+        _ownsAttached = false;
         var reconnect = IsConnected;
         DropSession();
         if (reconnect)
@@ -55,23 +58,33 @@ public abstract class ScpiInstrument : Instrument, IInstrumentIdentity, IInstrum
 
     public override void Open()
     {
+        EnsureAttached();
         if (_attached is null)
         {
             throw new InvalidOperationException(
-                "No SCPI session attached. The host must call AttachSession (or the IScpiIo constructor) before Open. This pack does not open a vendor VISA resource manager.");
+                "No SCPI session attached. The host must call AttachSession, pass the IScpiIo constructor, or register OpenTapScpiIo.Provider before Open. This pack does not open a vendor VISA resource manager.");
         }
 
         if (IsConnected && _session is not null)
             return;
 
-        ConnectAttached();
-        if (!IsConnected)
-            base.Open();
+        try
+        {
+            ConnectAttached();
+            if (!IsConnected)
+                base.Open();
+        }
+        catch
+        {
+            AbandonFailedOpen();
+            throw;
+        }
     }
 
     public override void Close()
     {
         DropSession();
+        DisposeOwnedAttached();
         if (IsConnected)
             base.Close();
     }
@@ -106,12 +119,31 @@ public abstract class ScpiInstrument : Instrument, IInstrumentIdentity, IInstrum
     public SpectrumAnalyzer AsSpectrumAnalyzer() =>
         View(InstrumentKind.SpectrumAnalyzer, session => new SpectrumAnalyzer(session));
 
+    private void EnsureAttached()
+    {
+        if (_attached is not null)
+            return;
+
+        var provider = OpenTapScpiIo.Provider;
+        if (provider is null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(VisaAddress))
+        {
+            throw new InvalidOperationException(
+                $"Set {nameof(VisaAddress)} before Open when using {nameof(OpenTapScpiIo)}.{nameof(OpenTapScpiIo.Provider)}.");
+        }
+
+        _attached = provider.Open(VisaAddress, TimeSpan.FromMilliseconds(ClampTimeout()));
+        _ownsAttached = true;
+    }
+
     private void ConnectAttached()
     {
         if (_attached is null)
         {
             throw new InvalidOperationException(
-                "No SCPI session attached. The host must call AttachSession (or the IScpiIo constructor) before Open. This pack does not open a vendor VISA resource manager.");
+                "No SCPI session attached. The host must call AttachSession, pass the IScpiIo constructor, or register OpenTapScpiIo.Provider before Open. This pack does not open a vendor VISA resource manager.");
         }
 
         DropSession();
@@ -133,12 +165,18 @@ public abstract class ScpiInstrument : Instrument, IInstrumentIdentity, IInstrum
         }
         catch
         {
-            DropSession();
-            ClearIdentity();
-            if (IsConnected)
-                base.Close();
+            AbandonFailedOpen();
             throw;
         }
+    }
+
+    private void AbandonFailedOpen()
+    {
+        DropSession();
+        DisposeOwnedAttached();
+        ClearIdentity();
+        if (IsConnected)
+            base.Close();
     }
 
     private void DropSession()
@@ -147,6 +185,17 @@ public abstract class ScpiInstrument : Instrument, IInstrumentIdentity, IInstrum
         _session = null;
         _supportedKinds = [];
         session?.Dispose();
+    }
+
+    private void DisposeOwnedAttached()
+    {
+        if (!_ownsAttached)
+            return;
+
+        _ownsAttached = false;
+        var attached = _attached;
+        _attached = null;
+        attached?.Dispose();
     }
 
     private T View<T>(InstrumentKind kind, Func<InstrumentSession, T> factory)

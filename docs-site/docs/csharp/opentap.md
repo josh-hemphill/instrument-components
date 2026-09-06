@@ -1,6 +1,6 @@
 # OpenTAP pack (C#)
 
-`InstrumentComponents.OpenTap` is an OpenTAP plugin with **all eight** SCPI instrument types and explicit typed `TestStep` classes. The host injects an already-open message session. The pack never opens a vendor VISA resource manager.
+`InstrumentComponents.OpenTap` is an OpenTAP plugin with **all eight** SCPI instrument types and explicit typed `TestStep` classes. The host injects an already-open message session, or registers an `IOpenTapScpiIoProvider`. The pack never opens a vendor VISA resource manager.
 
 ## Install
 
@@ -26,7 +26,17 @@ dmm.AttachSession(io);
 dmm.Open();
 ```
 
-`VisaAddress` is pack-safe discovery metadata. Without an attached session, `Open()` throws and does not call IVI.
+`VisaAddress` is pack-safe discovery metadata. Without an attached session **and** without a provider, `Open()` throws and does not call IVI.
+
+Optional process-wide provider (for TUI-without-host; HardwareTest should keep injecting):
+
+```csharp
+OpenTapScpiIo.Provider = new MyHostScpiIoProvider(); // IOpenTapScpiIoProvider
+var dmm = new DmmInstrument { VisaAddress = "TCPIP0::192.0.2.10::inst0::INSTR" };
+dmm.Open(); // provider.Open(VisaAddress, timeout) then IDN
+```
+
+`AttachSession` / the `IScpiIo` constructor still win over the provider. Close disposes provider-created I/O and leaves host-injected I/O alone.
 
 ## Plan-author steps
 
