@@ -10,6 +10,8 @@ These files are the executable contract between the Rust and C# implementations.
 | `transcript.schema.json` | Schema for `fixtures/*.json` I/O transcripts |
 | `vendors.schema.json` | Schema for `vendors/*.json` hardware dialect profiles |
 | `vendors/*.json` | Real vendor SCPI dialects (merged before `generic_*` by `gen-dialects.ts`) |
+| `opentap-operations.json` | Curated OpenTAP step catalog (stable `stepTypeName` values are TapPlan contract) |
+| `opentap-operations.schema.json` | Schema for `opentap-operations.json` |
 
 ## Rules
 
@@ -23,4 +25,5 @@ These files are the executable contract between the Rust and C# implementations.
 deno run --allow-read --allow-write --allow-run=rustfmt tools/gen-shared-tables.ts
 deno run --allow-read --allow-write --allow-run=rustfmt tools/gen-dialects.ts
 deno run --allow-read --allow-write dotnet/tools/gen-registry.ts
+deno run --allow-read tools/validate-opentap-operations.ts
 ```
