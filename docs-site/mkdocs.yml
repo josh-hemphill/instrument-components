@@ -84,4 +84,5 @@ nav:
   - C#:
       - Async: csharp/async.md
       - Errors: csharp/errors.md
+      - OpenTAP: csharp/opentap.md
       - VISA: csharp/visa.md

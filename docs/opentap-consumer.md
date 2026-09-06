@@ -7,11 +7,12 @@ session, dialects, and mocks. Stream F is already merged
 ([#11](https://github.com/josh-hemphill/instrument-components/pull/11)). G and H
 are independent of this track.
 
-This file is contributor planning in `docs/`. It is **not** on the MkDocs site /
-GitHub Pages until we fold a user-facing pack guide into `docs-site/`.
+This file is contributor planning in `docs/`. The user-facing pack guide is
+[`docs-site/docs/csharp/opentap.md`](../docs-site/docs/csharp/opentap.md).
 
-**Status:** contract + pack shape locked; no pack or `IScpiIo` code in this repo
-yet.
+**Status:** pack ships in `dotnet/src/InstrumentComponents.OpenTap` with injected
+`IScpiIo`, eight instrument types, handwritten composites, and generated invoke
+steps from `spec/opentap-operations.json`.
 
 ## One-line role
 
@@ -73,7 +74,7 @@ as `ITransport` would double-frame (their FormattedIO already appends `\n`;
 `ScpiSession` normalizes terminators again) and cannot implement `Read` because
 `IVisaSession` has no read-only API.
 
-Preferred C# seam (not implemented yet):
+Shipped C# seam:
 
 ```csharp
 public interface IScpiIo : IDisposable
