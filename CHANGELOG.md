@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Crate metadata (`homepage`, `documentation`) and rustdoc links use GitHub Pages at `josh-hemphill.github.io/instrument-components` so the next crates.io publish no longer lists `instrument-components-rs`
 - Roadmap and OpenTAP consumer docs: Stream F is merged (#11); G/H are independent. The OpenTAP contract stays contributor planning in `docs/` (not in MkDocs yet).
 
 ### Fixed

@@ -42,9 +42,9 @@
 //! }
 //! ```
 //!
-//! See [README](https://github.com/josh-hemphill/instrument-components/blob/latest/README.md),
-//! [getting started](https://github.com/josh-hemphill/instrument-components/blob/latest/docs/getting-started.md),
-//! and [async guide](https://github.com/josh-hemphill/instrument-components/blob/latest/docs/async.md).
+//! See the [user guide](https://josh-hemphill.github.io/instrument-components/),
+//! [getting started](https://josh-hemphill.github.io/instrument-components/getting-started/),
+//! and [async guide](https://josh-hemphill.github.io/instrument-components/rust/async/).
 
 pub mod catalog;
 pub mod device;
