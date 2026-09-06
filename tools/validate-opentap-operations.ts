@@ -193,7 +193,7 @@ function validateOperation(
   }
 
   const publish = requireObject(raw.publish, `${label}.publish`);
-  assertNoExtraKeys(publish, new Set(["mode", "unit", "supportsLimits"]), `${label}.publish`);
+  assertNoExtraKeys(publish, new Set(["mode", "name", "unit", "supportsLimits"]), `${label}.publish`);
   const mode = requireString(publish.mode, `${label}.publish.mode`);
   if (!PUBLISH_MODES.has(mode)) throw new Error(`${label}.publish.mode is invalid`);
 }
