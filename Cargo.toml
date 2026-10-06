@@ -7,7 +7,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/josh-hemphill/instrument-components"
@@ -18,8 +18,8 @@ categories = ["science", "hardware-support", "api-bindings"]
 rust-version = "1.70"
 
 [workspace.dependencies]
-instrument-core = { path = "crates/instrument-core", version = "0.1.0" }
-instrument-visa = { path = "crates/instrument-visa", version = "0.1.0" }
+instrument-core = { path = "crates/instrument-core", version = "0.1.1" }
+instrument-visa = { path = "crates/instrument-visa", version = "0.1.1" }
 thiserror = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

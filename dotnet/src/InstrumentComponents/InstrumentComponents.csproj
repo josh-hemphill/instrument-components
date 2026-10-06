@@ -8,7 +8,7 @@
     <RootNamespace>InstrumentComponents</RootNamespace>
     <AssemblyName>InstrumentComponents</AssemblyName>
     <PackageId>InstrumentComponents</PackageId>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Authors>josh-hemphill</Authors>
     <Description>High-level instrument discovery and typed IVI-inspired classes — VISA-agnostic core with mock fixtures for CI.</Description>
     <PackageLicenseExpression>MIT OR Apache-2.0</PackageLicenseExpression>

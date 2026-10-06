@@ -72,6 +72,19 @@ Verify that discovery releases exclusive locks and every physical PSU output is
 disabled. Windows vendor runtime behavior still needs a supported Windows runner;
 the Linux net9 TapPackage lifecycle is now verified locally. Vendor
 LF-terminated SOCKET I/O remains unverified, so the supported hardware smoke path
-uses INSTR resources. NuGet/crates account ownership and publishing credentials
-were not checked and no publication was attempted. N6705 INT/EXT remote sense
+uses INSTR resources. N6705 INT/EXT remote sense
 remains an explicitly unsupported feature pending vendor coverage.
+
+## 0.1.1 release preparation
+
+The Rust crates and core/VISA NuGet packages share version `0.1.1`. Release
+authentication uses GitHub OIDC trusted publishing for both registries, without
+stored registry API keys. NuGet publishes under the `josh-hemphill` profile.
+Trusted publisher policies must match `josh-hemphill/instrument-components`,
+workflow filename `release.yml`, and no GitHub environment. Configure each of the
+three existing crates; the NuGet scope must cover `InstrumentComponents` and
+`InstrumentComponents.Visa` and permit new packages and versions.
+
+This point release makes the reviewed fixes available for package-based hardware
+testing. Physical instrument checks have not been performed; `0.2.0` remains
+deferred pending the hardware evidence above. OpenTAP packages remain separate.
