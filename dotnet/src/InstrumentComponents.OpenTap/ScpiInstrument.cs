@@ -47,8 +47,9 @@ public abstract class ScpiInstrument : Instrument, IInstrumentIdentity, IInstrum
     /// <summary>Host injects an already-open message session after TestPlan.Load.</summary>
     public void AttachSession(IScpiIo io)
     {
+        ArgumentNullException.ThrowIfNull(io);
         DisposeOwnedAttached();
-        _attached = io ?? throw new ArgumentNullException(nameof(io));
+        _attached = io;
         _ownsAttached = false;
         var reconnect = IsConnected;
         DropSession();
@@ -147,14 +148,14 @@ public abstract class ScpiInstrument : Instrument, IInstrumentIdentity, IInstrum
         }
 
         DropSession();
-        _attached.IoTimeout = TimeSpan.FromMilliseconds(ClampTimeout());
-        _session = InstrumentSession.FromIo(
-            ParseOrFallback(VisaAddress),
-            _attached,
-            _identity,
-            ownsIo: false);
         try
         {
+            _attached.IoTimeout = TimeSpan.FromMilliseconds(ClampTimeout());
+            _session = InstrumentSession.FromIo(
+                ParseOrFallback(VisaAddress),
+                _attached,
+                _identity,
+                ownsIo: false);
             var idn = _session.Idn();
             _identity.Manufacturer = idn.Manufacturer;
             _identity.Model = idn.Model;

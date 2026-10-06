@@ -30,6 +30,8 @@ pub struct AsyncScpiSession {
     read_buffer: Vec<u8>,
     diagnostics: Option<Diagnostics>,
     pending_command: Option<String>,
+    pending_error_reply: Option<String>,
+    skip_block_terminator: bool,
 }
 
 impl AsyncScpiSession {
@@ -42,6 +44,8 @@ impl AsyncScpiSession {
             read_buffer: Vec::with_capacity(4096),
             diagnostics: None,
             pending_command: None,
+            pending_error_reply: None,
+            skip_block_terminator: false,
         };
         if session.opts.reset_on_connect {
             let _ = AsyncIeee4882::new(&mut session).clear_status().await;
@@ -185,9 +189,11 @@ impl AsyncScpiSession {
         read_framed_response(
             &mut *guard.transport,
             &mut self.read_buffer,
+            &mut self.skip_block_terminator,
             &self.opts,
             self.pending_command.as_deref(),
             &self.diagnostics,
+            timeout,
         )
         .await
     }
@@ -214,46 +220,95 @@ impl AsyncScpiSession {
         if let Some(v) = self.capabilities.syst_err {
             return v;
         }
-        let supported = self
+        match self
             .query_with_timeout("SYST:ERR?", Duration::from_millis(500))
             .await
-            .ok()
-            .is_some_and(|resp| is_syst_err_supported_reply(&resp));
-        self.capabilities.syst_err = Some(supported);
-        supported
+        {
+            Ok(resp) => {
+                let supported = is_syst_err_supported_reply(&resp);
+                self.capabilities.syst_err = Some(supported);
+                if supported {
+                    self.pending_error_reply = Some(resp);
+                }
+                supported
+            }
+            Err(_) => false,
+        }
     }
 
-    /// Probes and caches whether *OPC? is supported.
+    /// Timeout is inconclusive and must not be cached as unsupported.
     pub async fn probe_opc(&mut self) -> bool {
         if let Some(v) = self.capabilities.opc {
             return v;
         }
-        let supported = self
+        match self
             .query_with_timeout("*OPC?", Duration::from_millis(500))
             .await
-            .ok()
-            .is_some_and(|resp| is_opc_supported_reply(&resp));
-        self.capabilities.opc = Some(supported);
-        supported
+        {
+            Ok(resp) => {
+                let supported = is_opc_supported_reply(&resp);
+                self.capabilities.opc = Some(supported);
+                supported
+            }
+            Err(_) => false,
+        }
     }
 
-    /// Drains the instrument error queue when supported.
+    /// Drains the error queue, including any entry consumed by an earlier probe.
     pub async fn check_errors(&mut self) -> Result<Vec<String>> {
-        if !self.probe_syst_err().await {
+        if self.capabilities.syst_err == Some(false) {
             return Ok(Vec::new());
         }
         let mut errors = Vec::new();
         loop {
-            let resp = self.query("SYST:ERR?").await?;
-            if resp.starts_with("0,") || resp.starts_with("+0,") {
+            let resp = match self.pending_error_reply.take() {
+                Some(reply) => reply,
+                None => self.query("SYST:ERR?").await?,
+            };
+            if !is_syst_err_supported_reply(&resp) {
+                if self.capabilities.syst_err.is_none() {
+                    self.capabilities.syst_err = Some(false);
+                    return Ok(errors);
+                }
+                return Err(Error::Parse(format!("invalid error queue reply '{resp}'")));
+            }
+            self.capabilities.syst_err = Some(true);
+            if resp
+                .split(',')
+                .next()
+                .and_then(|s| s.trim().parse::<i32>().ok())
+                == Some(0)
+            {
                 break;
             }
             errors.push(resp);
-            if errors.len() > 50 {
+            if errors.len() >= 50 {
                 break;
             }
         }
         Ok(errors)
+    }
+
+    pub(crate) async fn query_completion(&mut self, timeout: Duration) -> Result<String> {
+        self.ensure_opc_available()?;
+        self.write_with_retry("*OPC?", false).await?;
+        match self.read_response(timeout).await {
+            Ok(bytes) => Ok(String::from_utf8_lossy(&bytes).trim().into()),
+            Err(Error::Timeout) => {
+                let _ = self.flush().await;
+                Err(Error::Timeout)
+            }
+            Err(err) => Err(err),
+        }
+    }
+
+    pub(crate) fn ensure_opc_available(&self) -> Result<()> {
+        if self.capabilities.opc == Some(false) {
+            return Err(Error::Unsupported(
+                "operation completion requires *OPC? support",
+            ));
+        }
+        Ok(())
     }
 
     /// Parses a numeric SCPI response.
@@ -282,19 +337,29 @@ async fn drain_read_buffer(
 async fn read_framed_response(
     transport: &mut DynAsyncTransport,
     read_buffer: &mut Vec<u8>,
+    skip_block_terminator: &mut bool,
     opts: &ConnectOptions,
     command: Option<&str>,
     diagnostics: &Option<Diagnostics>,
+    timeout: Duration,
 ) -> Result<Vec<u8>> {
+    let deadline = Instant::now() + timeout;
     read_buffer.clear();
     let mut chunk = [0u8; 1024];
     loop {
         let started = Instant::now();
+        let remaining = deadline.saturating_duration_since(Instant::now());
+        if remaining.is_zero() {
+            return Err(Error::Timeout);
+        }
+        transport.set_read_timeout(remaining).await?;
         match transport.read(&mut chunk).await {
             Ok(0) => {
                 if !read_buffer.is_empty() {
                     if let Ok((payload, _)) = extract_response(read_buffer, &opts.terminator) {
                         record_success(diagnostics, CommsEventKind::ReadOk, command, 1, started);
+                        *skip_block_terminator =
+                            read_buffer.starts_with(b"#") && read_buffer.get(1) != Some(&b'0');
                         return Ok(payload);
                     }
                 }
@@ -309,9 +374,17 @@ async fn read_framed_response(
                 return Err(Error::Timeout);
             }
             Ok(n) => {
-                read_buffer.extend_from_slice(&chunk[..n]);
+                for &byte in &chunk[..n] {
+                    if *skip_block_terminator && matches!(byte, b'\r' | b'\n') {
+                        continue;
+                    }
+                    *skip_block_terminator = false;
+                    read_buffer.push(byte);
+                }
                 if let Ok((payload, _)) = extract_response(read_buffer, &opts.terminator) {
                     record_success(diagnostics, CommsEventKind::ReadOk, command, 1, started);
+                    *skip_block_terminator =
+                        read_buffer.starts_with(b"#") && read_buffer.get(1) != Some(&b'0');
                     return Ok(payload);
                 }
             }
@@ -319,6 +392,8 @@ async fn read_framed_response(
                 if !read_buffer.is_empty() {
                     if let Ok((payload, _)) = extract_response(read_buffer, &opts.terminator) {
                         record_success(diagnostics, CommsEventKind::ReadOk, command, 1, started);
+                        *skip_block_terminator =
+                            read_buffer.starts_with(b"#") && read_buffer.get(1) != Some(&b'0');
                         return Ok(payload);
                     }
                 }

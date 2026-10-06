@@ -197,7 +197,10 @@ fn probe_opc_undefined_header_is_unsupported() {
     ]);
     let mut session = ScpiSession::new(Box::new(transport), retry_opts()).unwrap();
     assert!(!session.probe_opc());
-    Ieee4882::new(&mut session).wait_complete().unwrap();
+    assert!(matches!(
+        Ieee4882::new(&mut session).wait_complete(),
+        Err(Error::Unsupported(_))
+    ));
 }
 
 #[test]

@@ -137,7 +137,7 @@ public sealed class DeviceCatalog
     private DeviceRef DeviceAt(int idx)
     {
         var dev = _devices[idx];
-        return new DeviceRef(dev, _opener, _connectOptions, _healthRegistry[dev.Address.Raw], _observer, _asyncOpener);
+        return new DeviceRef(dev, _opener, _connectOptions, _healthRegistry[dev.Address.Raw], _healthLocks[dev.Address.Raw], _observer, _asyncOpener);
     }
 
     public Dmm OpenDmm(string address) => Device(address).OpenDmm();

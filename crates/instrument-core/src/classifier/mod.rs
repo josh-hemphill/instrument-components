@@ -9,6 +9,7 @@ use crate::probe_policy::ProbePolicy;
 use crate::registry::ModelRegistry;
 use crate::scpi::ScpiSession;
 use crate::transport::TransportIdentity;
+pub use probes::valid_probe_reply;
 use probes::{
     probe_any, COUNTER_READONLY_COMMANDS, DMM_ACQUISITION_COMMANDS, DMM_READONLY_COMMANDS,
     FGEN_READONLY_COMMANDS, PROBE_TIMEOUT, PSU_READONLY_COMMANDS, PWRMETER_READONLY_COMMANDS,

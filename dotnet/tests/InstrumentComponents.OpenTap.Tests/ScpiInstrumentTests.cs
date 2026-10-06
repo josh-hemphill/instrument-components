@@ -69,7 +69,7 @@ public class ScpiInstrumentTests
     {
         var io = new ScriptedIo(("*IDN?", "Acme,DMM1,SN-1,2.0"));
         var dmm = new DmmInstrument(io) { VisaAddress = "mock://shared" };
-        var psu = new DcPowerSupplyInstrument(io) { VisaAddress = "mock://shared" };
+        var psu = new DcPowerSupplyInstrument(io) { OutputChannelCount = 3, VisaAddress = "mock://shared" };
         dmm.Open();
         psu.Open();
 
@@ -209,7 +209,7 @@ public class ScpiInstrumentTests
     public void ConstructorInjectionOpens()
     {
         var io = new ScriptedIo(("*IDN?", "Keysight,E36312A,SN,1.0"));
-        var psu = new DcPowerSupplyInstrument(io) { VisaAddress = "TCPIP0::1.2.3.4::INSTR" };
+        var psu = new DcPowerSupplyInstrument(io) { OutputChannelCount = 3, VisaAddress = "TCPIP0::1.2.3.4::INSTR" };
         psu.Open();
         try
         {
@@ -303,7 +303,7 @@ public class ScpiInstrumentTests
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
             Queries.Add(command);
-            return _queries.TryGetValue(command.Trim(), out var response) ? response : "";
+            return command.Trim() == "*OPC?" ? "1" : _queries.TryGetValue(command.Trim(), out var response) ? response : "";
         }
 
         public void Dispose()

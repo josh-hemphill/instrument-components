@@ -6,10 +6,11 @@ JSON contracts, SCPI fixtures, and CI gates. They do **not** share a runtime.
 This is the working plan for remaining work after Streams A–G. Update this file
 when a decision changes.
 
-## Current state (after A–G)
+## Current state (implemented A–H)
 
-Merged into `latest` as PRs #5–#8, #10, and #11. Stream G (DMM/PSU transcripts)
-is the parent of this branch. Stream H is this branch.
+Merged into `latest` as PRs #5–#8, #10, and #11. Stream G's DMM/PSU transcripts and Stream H's self-hosted hardware workflow are
+implemented in this checkout. See [the review resolution](roadmap.md#october-2026-code-review-resolution)
+for the current release fixes and outstanding hardware evidence.
 
 | Stream | PR | What landed |
 |--------|----|-------------|
@@ -19,7 +20,7 @@ is the parent of this branch. Stream H is this branch.
 | D | #8 | C# examples, multi-session test, dual-native docs, Counter timeout + scope binary waveform **deferred** |
 | E | #10 | Query retry+flush, honest OPC/ERR probes, Ok(0) fail-closed, framed reads do not reconnect before flush, Rust async Drop restore |
 | F | #11 | Dialect emission for DMM/PSU/FGen/scope/switch/counter with fallback; leftover-placeholder + extra-optional-var hardening; CI `TestDialect*` fixtures |
-| G | parent | Golden DMM/PSU transcripts, Keithley DMM6500 + Keysight N6705C vendor JSON dialects |
+| G | implemented | Golden DMM/PSU transcripts, Keithley DMM6500 + Keysight N6705C vendor JSON dialects |
 
 Dialect emission: PowerMeter and SpectrumAnalyzer **require** dialect keys.
 DMM, PSU, function generator, oscilloscope, switch, and counter use

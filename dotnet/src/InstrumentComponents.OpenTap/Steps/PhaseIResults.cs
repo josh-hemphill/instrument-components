@@ -36,6 +36,9 @@ public static class PhaseIResults
 
     public static bool IsOutOfBand(double value, double? limitLow, double? limitHigh)
     {
+        if (!double.IsFinite(value) || (limitLow is { } low && !double.IsFinite(low)) ||
+            (limitHigh is { } high && !double.IsFinite(high)) || limitLow > limitHigh)
+            return true;
         if (limitLow is { } lo && value < lo)
             return true;
         if (limitHigh is { } hi && value > hi)

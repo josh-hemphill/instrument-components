@@ -13,6 +13,10 @@ public sealed class AsyncScpiSession : IDisposable
     private readonly IAsyncTransport _transport;
     private readonly ConnectOptions _opts;
     private readonly List<byte> _readBuffer = new(4096);
+    private readonly SemaphoreSlim _operationGate = new(1, 1);
+    private bool _disposed;
+    private string? _pendingErrorReply;
+    private bool _skipBlockTerminator;
     private bool? _systErrSupported;
     private bool? _opcSupported;
     private CommsDiagnostics? _diagnostics;
@@ -23,12 +27,22 @@ public sealed class AsyncScpiSession : IDisposable
         ConnectOptions opts,
         CancellationToken cancellationToken = default)
     {
-        await transport.ConfigureAsync(opts, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await transport.ConfigureAsync(opts, cancellationToken).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+        }
+        catch
+        {
+            try { (transport as IDisposable)?.Dispose(); } catch { }
+            throw;
+        }
         var session = new AsyncScpiSession(transport, opts);
         if (opts.ResetOnConnect)
         {
-            try { await new global::InstrumentComponents.Ieee4882.AsyncIeee4882(session).ClearStatusAsync(cancellationToken).ConfigureAwait(false); } catch { }
-            try { await new global::InstrumentComponents.Ieee4882.AsyncIeee4882(session).ResetAsync(cancellationToken).ConfigureAwait(false); } catch { }
+            try { await new global::InstrumentComponents.Ieee4882.AsyncIeee4882(session).ClearStatusAsync(cancellationToken).ConfigureAwait(false); } catch (OperationCanceledException) { try { session.Dispose(); } catch { } throw; } catch { }
+            try { await new global::InstrumentComponents.Ieee4882.AsyncIeee4882(session).ResetAsync(cancellationToken).ConfigureAwait(false); } catch (OperationCanceledException) { try { session.Dispose(); } catch { } throw; } catch { }
             await session.RestoreIoTimeoutAsync().ConfigureAwait(false);
         }
         return session;
@@ -50,6 +64,17 @@ public sealed class AsyncScpiSession : IDisposable
     public ConnectOptions Options => _opts;
 
     public async Task FlushAsync(CancellationToken cancellationToken = default)
+    {
+        await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            await FlushAsyncCore(cancellationToken).ConfigureAwait(false);
+        }
+        finally { _operationGate.Release(); }
+    }
+
+    private async Task FlushAsyncCore(CancellationToken cancellationToken = default)
     {
         await _transport.SetReadTimeoutAsync(TimeSpan.FromMilliseconds(50), cancellationToken).ConfigureAwait(false);
         var chunk = ArrayPool<byte>.Shared.Rent(256);
@@ -76,13 +101,28 @@ public sealed class AsyncScpiSession : IDisposable
         _readBuffer.Clear();
     }
 
-    public Task WriteAsync(string command, CancellationToken cancellationToken = default) =>
-        WriteWithRetryAsync(command, idempotent: false, cancellationToken);
+    public async Task WriteAsync(string command, CancellationToken cancellationToken = default)
+    {
+        await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try { ObjectDisposedException.ThrowIf(_disposed, this); await WriteWithRetryAsync(command, false, cancellationToken).ConfigureAwait(false); }
+        finally { _operationGate.Release(); }
+    }
 
     public Task<string> QueryAsync(string command, CancellationToken cancellationToken = default) =>
         QueryWithTimeoutAsync(command, EffectiveReadTimeout(), cancellationToken);
 
     public async Task<string> QueryWithTimeoutAsync(string command, TimeSpan timeout, CancellationToken cancellationToken = default)
+    {
+        await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return await QueryWithTimeoutAsyncCore(command, timeout, cancellationToken).ConfigureAwait(false);
+        }
+        finally { _operationGate.Release(); }
+    }
+
+    private async Task<string> QueryWithTimeoutAsyncCore(string command, TimeSpan timeout, CancellationToken cancellationToken = default)
     {
         var maxAttempts = ScpiProtocol.MaxWriteAttempts(true, _opts.Retries);
         uint attempts = 0;
@@ -97,14 +137,14 @@ public sealed class AsyncScpiSession : IDisposable
             }
             catch (InstrumentTimeoutException) when (attempts < maxAttempts)
             {
-                try { await FlushAsync(CancellationToken.None).ConfigureAwait(false); } catch { }
+                try { await FlushAsyncCore(CancellationToken.None).ConfigureAwait(false); } catch { }
                 if (_opts.ReconnectOnFailure)
                     await TryReconnectAsync(cancellationToken).ConfigureAwait(false);
                 await Task.Delay(_opts.RetryBackoff * (int)attempts, cancellationToken).ConfigureAwait(false);
             }
             catch (InstrumentTimeoutException)
             {
-                try { await FlushAsync(CancellationToken.None).ConfigureAwait(false); } catch { }
+                try { await FlushAsyncCore(CancellationToken.None).ConfigureAwait(false); } catch { }
                 throw;
             }
         }
@@ -150,7 +190,7 @@ public sealed class AsyncScpiSession : IDisposable
 
     private async Task<byte[]> ReadResponseAsync(TimeSpan timeout, CancellationToken cancellationToken)
     {
-        await _transport.SetReadTimeoutAsync(timeout, cancellationToken).ConfigureAwait(false);
+        var readStarted = System.Diagnostics.Stopwatch.GetTimestamp();
         _readBuffer.Clear();
         var command = _pendingCommand;
         var chunk = ArrayPool<byte>.Shared.Rent(1024);
@@ -162,6 +202,9 @@ public sealed class AsyncScpiSession : IDisposable
                 int n;
                 try
                 {
+                    var remaining = timeout - System.Diagnostics.Stopwatch.GetElapsedTime(readStarted);
+                    if (remaining <= TimeSpan.Zero) throw new InstrumentTimeoutException();
+                    await _transport.SetReadTimeoutAsync(remaining, cancellationToken).ConfigureAwait(false);
                     n = await _transport.ReadAsync(chunk, cancellationToken).ConfigureAwait(false);
                 }
                 catch (InstrumentTimeoutException)
@@ -186,7 +229,11 @@ public sealed class AsyncScpiSession : IDisposable
                 }
 
                 for (var i = 0; i < n; i++)
+                {
+                    if (_skipBlockTerminator && (chunk[i] == '\r' || chunk[i] == '\n')) continue;
+                    _skipBlockTerminator = false;
                     _readBuffer.Add(chunk[i]);
+                }
                 if (TryCompleteBufferedFrame(command, started, out var payload))
                     return payload;
             }
@@ -206,6 +253,7 @@ public sealed class AsyncScpiSession : IDisposable
         try
         {
             (payload, _) = ScpiFraming.ExtractResponse(_readBuffer.ToArray(), _opts.Terminator);
+            _skipBlockTerminator = _readBuffer[0] == (byte)'#' && _readBuffer.Count > 1 && _readBuffer[1] != (byte)'0';
             RecordSuccess(CommsEventKind.ReadOk, command, 1, started);
             return true;
         }
@@ -254,54 +302,113 @@ public sealed class AsyncScpiSession : IDisposable
 
     public async Task<bool> ProbeSystErrAsync(CancellationToken cancellationToken = default)
     {
+        await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return await ProbeSystErrAsyncCore(cancellationToken).ConfigureAwait(false);
+        }
+        finally { _operationGate.Release(); }
+    }
+
+    private async Task<bool> ProbeSystErrAsyncCore(CancellationToken cancellationToken = default)
+    {
         if (_systErrSupported is { } v) return v;
         try
         {
-            var resp = await QueryWithTimeoutAsync("SYST:ERR?", TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
+            var resp = await QueryWithTimeoutAsyncCore("SYST:ERR?", TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
             _systErrSupported = ScpiProtocol.IsSystErrSupportedReply(resp);
+            if (_systErrSupported.Value) _pendingErrorReply = resp;
         }
-        catch
-        {
-            _systErrSupported = false;
-        }
+        catch (InstrumentException) { return false; }
         return _systErrSupported.Value;
     }
 
     public async Task<bool> ProbeOpcAsync(CancellationToken cancellationToken = default)
     {
+        await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return await ProbeOpcAsyncCore(cancellationToken).ConfigureAwait(false);
+        }
+        finally { _operationGate.Release(); }
+    }
+
+    private async Task<bool> ProbeOpcAsyncCore(CancellationToken cancellationToken = default)
+    {
         if (_opcSupported is { } v) return v;
         try
         {
-            var resp = await QueryWithTimeoutAsync("*OPC?", TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
+            var resp = await QueryWithTimeoutAsyncCore("*OPC?", TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
             _opcSupported = ScpiProtocol.IsOpcSupportedReply(resp);
         }
-        catch
-        {
-            _opcSupported = false;
-        }
+        catch (InstrumentException) { return false; }
         return _opcSupported.Value;
     }
 
     public async Task<IReadOnlyList<string>> CheckErrorsAsync(CancellationToken cancellationToken = default)
     {
-        if (!await ProbeSystErrAsync(cancellationToken).ConfigureAwait(false))
-            return Array.Empty<string>();
+        await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return await CheckErrorsAsyncCore(cancellationToken).ConfigureAwait(false);
+        }
+        finally { _operationGate.Release(); }
+    }
+
+    private async Task<IReadOnlyList<string>> CheckErrorsAsyncCore(CancellationToken cancellationToken = default)
+    {
+        if (_systErrSupported == false) return Array.Empty<string>();
         var errors = new List<string>();
         while (true)
         {
-            var resp = await QueryAsync("SYST:ERR?", cancellationToken).ConfigureAwait(false);
-            if (resp.StartsWith("0,", StringComparison.Ordinal) || resp.StartsWith("+0,", StringComparison.Ordinal))
+            var resp = _pendingErrorReply ?? await QueryWithTimeoutAsyncCore("SYST:ERR?", EffectiveReadTimeout(), cancellationToken).ConfigureAwait(false);
+            _pendingErrorReply = null;
+            if (!ScpiProtocol.IsSystErrSupportedReply(resp))
+            {
+                if (_systErrSupported is null) { _systErrSupported = false; return errors; }
+                throw new ParseException($"invalid error queue reply '{resp}'");
+            }
+            _systErrSupported = true;
+            if (ScpiProtocol.IsNoErrorReply(resp))
                 break;
             errors.Add(resp);
-            if (errors.Count > 50) break;
+            if (errors.Count >= 50) break;
         }
         return errors;
     }
 
+    internal async Task<string> QueryCompletionAsync(TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            EnsureOpcAvailable();
+            await WriteWithRetryAsync("*OPC?", false, cancellationToken).ConfigureAwait(false);
+            try { return Encoding.UTF8.GetString(await ReadResponseAsync(timeout, cancellationToken).ConfigureAwait(false)).Trim(); }
+            catch (InstrumentTimeoutException) { try { await FlushAsyncCore(CancellationToken.None).ConfigureAwait(false); } catch { } throw; }
+        }
+        finally { _operationGate.Release(); }
+    }
+
+    internal void EnsureOpcAvailable()
+    {
+        if (_opcSupported == false) throw new InstrumentUnsupportedException("operation completion requires *OPC? support");
+    }
+
     public void Dispose()
     {
-        if (_transport is IDisposable disposable)
-            disposable.Dispose();
-        GC.SuppressFinalize(this);
+        _operationGate.Wait();
+        try
+        {
+            if (_disposed) return;
+            _disposed = true;
+            if (_transport is IDisposable disposable) disposable.Dispose();
+            GC.SuppressFinalize(this);
+        }
+        finally { _operationGate.Release(); }
     }
 }

@@ -12,7 +12,7 @@ public class PlanCoverageTests
         InstrumentSettingsScope.Run(() =>
         {
             var dmm = new DmmInstrument { Name = "Dmm", VisaAddress = "TCPIP0::dmm::INSTR" };
-            var psu = new DcPowerSupplyInstrument { Name = "Psu", VisaAddress = "TCPIP0::psu::INSTR" };
+            var psu = new DcPowerSupplyInstrument { OutputChannelCount = 3, Name = "Psu", VisaAddress = "TCPIP0::psu::INSTR" };
             var meter = new PowerMeterInstrument { Name = "Meter", VisaAddress = "TCPIP0::pm::INSTR" };
             InstrumentSettings.Current.Add(dmm);
             InstrumentSettings.Current.Add(psu);
@@ -56,6 +56,7 @@ public class PlanCoverageTests
                 var voltage = Assert.IsType<PsuSetVoltageStep>(loaded.ChildTestSteps[1]);
                 Assert.Equal(2u, voltage.Channel);
                 Assert.Equal(5.5, voltage.Voltage);
+                Assert.Equal(3u, voltage.Instrument.OutputChannelCount);
 
                 var power = Assert.IsType<PowerMeterConfigureMeasurementStep>(loaded.ChildTestSteps[2]);
                 Assert.Equal(PowerUnit.Watt, power.Unit);
@@ -74,7 +75,7 @@ public class PlanCoverageTests
     {
         var io = new CoverageIo();
         var dmm = new DmmInstrument(io) { VisaAddress = "mock://dmm" };
-        var psu = new DcPowerSupplyInstrument(io) { VisaAddress = "mock://psu" };
+        var psu = new DcPowerSupplyInstrument(io) { OutputChannelCount = 3, VisaAddress = "mock://psu" };
         var fgen = new FunctionGeneratorInstrument(io) { VisaAddress = "mock://fgen" };
         var scope = new OscilloscopeInstrument(io) { VisaAddress = "mock://scope" };
         var matrix = new SwitchInstrument(io) { VisaAddress = "mock://sw" };

@@ -122,6 +122,11 @@ impl AsyncDcPowerSupply {
 
     /// Enables or disables remote sense on the given channel.
     pub async fn sense_enable(&mut self, channel: u32, enabled: bool) -> Result<()> {
+        if self.dialect().id == "keysight_n6705c" {
+            return Err(instrument_core::error::Error::Unsupported(
+                "N6705 remote sense requires INT/EXT; ON/OFF is not supported",
+            ));
+        }
         let state = if enabled { "ON" } else { "OFF" };
         let cmd = self.cmd(
             "sense_enable",

@@ -51,7 +51,8 @@ jobs:
 
   csharp-dmm:
     name: C# DMM measure
-    if: ${{ inputs.suite == 'both' || inputs.suite == 'csharp' }}
+    needs: rust-dmm
+    if: ${{ !cancelled() && (inputs.suite == 'both' || inputs.suite == 'csharp') }}
     runs-on: [self-hosted, visa]
     timeout-minutes: 15
     env:

@@ -91,6 +91,16 @@
         "defaultValue": "5000"
       },
       {
+        "name": "OutputChannelCount",
+        "type": "System.UInt32?",
+        "displayName": "Output Channels",
+        "order": 3,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": null
+      },
+      {
         "name": "IdentityFields",
         "type": "InstrumentComponents.OpenTap.ScpiIdentityFields",
         "displayName": "Identity",

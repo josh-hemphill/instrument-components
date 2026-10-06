@@ -96,3 +96,23 @@ That emits `InstrumentComponents.OpenTap.0.1.0.TapPackage` (plugin DLL + `Instru
 ## HardwareTest
 
 The bench shell owns broker, gate, and operator UI. This pack is the plugin that shell consumes. Contributor layering notes: [`docs/opentap-consumer.md`](https://github.com/josh-hemphill/instrument-components/blob/latest/docs/opentap-consumer.md) in the repo.
+
+## Acquisition units and PSU shutdown
+
+DMM READ/FETCH publish the unit of the last function configured through the typed
+DMM view: volts, amperes, or ohms. Before configuration, and after reset, the unit
+is empty because the library has no confirmed function. Configure the function
+before acquisition if result units are required.
+
+For a PSU using the generic dialect, set **Output Channels** to the physical
+channel count before Safe Shutdown. Known vendor dialects provide their count.
+Shutdown attempts every configured channel and every output enabled through any
+view of the session, even when an individual OFF command fails. If the physical
+count is unknown, known outputs are disabled and shutdown reports an unsupported
+operation instead of claiming that every output is off. Bench verification of
+every output is still required before relying on this with a real supply.
+
+Nonfinite scalar readings and sample/trace values fail the plan. Numeric settings
+and configured limits must be finite; absent limits remain optional. N6705
+remote-sense ON/OFF is explicitly unsupported until its INT/EXT command has vendor
+coverage.

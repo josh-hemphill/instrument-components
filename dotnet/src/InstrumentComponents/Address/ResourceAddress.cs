@@ -83,7 +83,7 @@ public sealed class ResourceAddress
     private static (InterfaceKind, AddressParts) ParseTcpip(string raw)
     {
         var parts = raw.Split("::");
-        ushort? port = parts.Length > 3 && ushort.TryParse(parts[3], out var p) ? p : null;
+        ushort? port = parts.Length == 4 && parts[3].Equals("SOCKET", StringComparison.OrdinalIgnoreCase) && ushort.TryParse(parts[2], out var p) ? p : null;
         return (InterfaceKind.Tcpip, new AddressParts
         {
             Host = parts.Length > 1 ? parts[1] : null,

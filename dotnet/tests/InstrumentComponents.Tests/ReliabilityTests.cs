@@ -62,7 +62,7 @@ public class ReliabilityTests
         ]);
         var session = new ScpiSession(transport, new ConnectOptions { Retries = 0, ReconnectOnFailure = false });
         Assert.False(session.ProbeOpc());
-        new global::InstrumentComponents.Ieee4882.Ieee4882(session).WaitComplete();
+        Assert.Throws<InstrumentUnsupportedException>(() => new global::InstrumentComponents.Ieee4882.Ieee4882(session).WaitComplete());
     }
 
     [Fact]

@@ -127,7 +127,11 @@ fn parse_gpib(raw: &str) -> Result<(InterfaceKind, AddressParts)> {
 fn parse_tcpip(raw: &str) -> Result<(InterfaceKind, AddressParts)> {
     let parts: Vec<&str> = raw.split("::").collect();
     let host = parts.get(1).map(|s| s.to_string());
-    let port = parts.get(3).and_then(|s| s.parse().ok());
+    let port = if parts.len() == 4 && parts[3].eq_ignore_ascii_case("SOCKET") {
+        parts[2].parse().ok()
+    } else {
+        None
+    };
     Ok((
         InterfaceKind::Tcpip,
         AddressParts {

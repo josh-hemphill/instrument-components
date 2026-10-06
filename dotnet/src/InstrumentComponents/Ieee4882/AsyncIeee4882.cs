@@ -27,14 +27,15 @@ public readonly struct AsyncIeee4882
 
     public async Task<bool> OpcQueryAsync(CancellationToken cancellationToken = default)
     {
-        if (!await _session.ProbeOpcAsync(cancellationToken).ConfigureAwait(false)) return true;
-        return (await _session.QueryAsync("*OPC?", cancellationToken).ConfigureAwait(false)).Trim() == "1";
+        return ScpiProtocol.IsOpcSupportedReply(await _session.QueryAsync("*OPC?", cancellationToken).ConfigureAwait(false));
     }
 
     public async Task WaitCompleteAsync(CancellationToken cancellationToken = default)
     {
-        if (await _session.ProbeOpcAsync(cancellationToken).ConfigureAwait(false))
-            _ = await _session.QueryWithTimeoutAsync("*OPC?", TimeSpan.FromSeconds(30), cancellationToken).ConfigureAwait(false);
+        _session.EnsureOpcAvailable();
+        var reply = await _session.QueryCompletionAsync(TimeSpan.FromSeconds(30), cancellationToken).ConfigureAwait(false);
+        if (!ScpiProtocol.IsOpcSupportedReply(reply))
+            throw new global::InstrumentComponents.Errors.InstrumentUnsupportedException($"operation completion reply '{reply}'");
     }
 
     public Task<string> OptionsAsync(CancellationToken cancellationToken = default) =>

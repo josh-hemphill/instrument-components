@@ -114,7 +114,7 @@ public class StepPublishTests
         }
 
         public string Query(string command) =>
-            _queries.TryGetValue(command.Trim(), out var response) ? response : "";
+            command.Trim() == "*OPC?" ? "1" : _queries.TryGetValue(command.Trim(), out var response) ? response : "";
 
         public void Dispose()
         {

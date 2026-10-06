@@ -17,6 +17,22 @@ public sealed class AsyncInstrumentSession : IDisposable
     public ResourceAddress Address { get; }
     public AsyncScpiSession Scpi { get; }
     private readonly DeviceIdentity _identity;
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<uint, byte> _powerSupplyChannels = new();
+    private uint? _powerSupplyChannelCount;
+    /// <summary>Explicit physical channel count for devices whose dialect has no channel metadata.</summary>
+    public uint? PowerSupplyChannelCount
+    {
+        get => _powerSupplyChannelCount;
+        set { if (value == 0) throw new ArgumentOutOfRangeException(nameof(value)); _powerSupplyChannelCount = value; }
+    }
+    internal void TrackPowerSupplyChannel(uint channel)
+    {
+        if (channel == 0) throw new ArgumentOutOfRangeException(nameof(channel));
+        _powerSupplyChannels.TryAdd(channel, 0);
+    }
+    internal IReadOnlyList<uint> PowerSupplyChannels(uint dialectCount) =>
+        Enumerable.Range(1, checked((int)Math.Max(1, PowerSupplyChannelCount ?? dialectCount)))
+            .Select(x => (uint)x).Concat(_powerSupplyChannels.Keys).Distinct().Order().ToArray();
 
     public static async Task<AsyncInstrumentSession> CreateAsync(
         ResourceAddress address,

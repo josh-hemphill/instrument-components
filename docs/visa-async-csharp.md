@@ -5,7 +5,7 @@
 [`VisaAsyncTransport`](../dotnet/src/InstrumentComponents.Visa/VisaAsyncTransport.cs) wraps sync `VisaTransport` in `SyncAsAsyncTransport`. That means:
 
 - `WriteAsync` / `ReadAsync` run blocking VISA I/O on the thread pool.
-- `CancellationToken` cancels waiting on the bridge where implemented; it does **not** cancel an in-flight native VISA call the way true APM would.
+- `CancellationToken` cancels queued bridge work before it starts; it does **not** cancel an in-flight native VISA call the way true APM would.
 - This is intentional until vendor APM proves reliable across Keysight and NI on Windows **and** Linux.
 
 Document this limitation in consumer-facing docs; do not advertise “true async VISA I/O” for the C# package yet.
@@ -45,3 +45,14 @@ If revisiting: add an internal `VisaApmTransport` behind an experimental flag, i
 
 - Rust already has true async via `visa-rs` `InstrumentTokioAdapter`.
 - Cross-platform C# VISA **build** is unblocked on `net8.0`; **runtime** still needs a vendor VISA install on the target OS.
+
+
+Calls are serialized and offloaded to the thread pool. Cancellation stops queued
+calls before they start. A running native call finishes under its VISA timeout
+before its task completes, so read/write memory remains valid; cancellation does
+not interrupt the native driver. Session queries serialize the write/read pair.
+Dispose waits for any active call before releasing the native session.
+
+Hardware validation uses the self-hosted INSTR smoke workflow. No passing hardware run is recorded by this review.
+SOCKET address parsing is supported, but short LF-terminated SOCKET I/O remains
+unverified on vendor stacks; use INSTR resources for the supported hardware path.

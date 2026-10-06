@@ -5,6 +5,7 @@ use crate::kind::InstrumentKind;
 use crate::transport::{Transport, TransportIdentity};
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
+use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -26,6 +27,7 @@ pub struct MockTransport {
     identity: TransportIdentity,
     fail_writes_remaining: Arc<Mutex<u32>>,
     fail_reads_remaining: Arc<Mutex<u32>>,
+    pending_read: Arc<Mutex<VecDeque<u8>>>,
 }
 
 impl MockTransport {
@@ -37,6 +39,7 @@ impl MockTransport {
             identity: TransportIdentity::default(),
             fail_writes_remaining: Arc::new(Mutex::new(0)),
             fail_reads_remaining: Arc::new(Mutex::new(0)),
+            pending_read: Arc::new(Mutex::new(VecDeque::new())),
         }
     }
 
@@ -123,23 +126,23 @@ impl Transport for MockTransport {
         }
         drop(fails);
 
-        match self.peek_step()? {
-            ScriptStep::Read { .. } => {}
-            _ => return Err(Error::Timeout),
+        if buf.is_empty() {
+            return Ok(0);
         }
-
-        match self.next_step()? {
-            ScriptStep::Read { data } => {
-                let bytes = data.as_bytes();
-                let n = bytes.len().min(buf.len());
-                buf[..n].copy_from_slice(&bytes[..n]);
-                Ok(n)
+        let mut pending = self.pending_read.lock().unwrap();
+        if pending.is_empty() {
+            if !matches!(self.peek_step()?, ScriptStep::Read { .. }) {
+                return Err(Error::Timeout);
             }
-            other => Err(Error::MockMismatch {
-                expected: "read".into(),
-                actual: format!("{other:?}"),
-            }),
+            if let ScriptStep::Read { data } = self.next_step()? {
+                pending.extend(data.into_bytes());
+            }
         }
+        let n = pending.len().min(buf.len());
+        for byte in &mut buf[..n] {
+            *byte = pending.pop_front().unwrap();
+        }
+        Ok(n)
     }
 
     fn clear(&mut self) -> Result<()> {

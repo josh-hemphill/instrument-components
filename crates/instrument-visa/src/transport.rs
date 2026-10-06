@@ -42,9 +42,13 @@ impl VisaTransport {
 
 impl Transport for VisaTransport {
     fn write(&mut self, data: &[u8]) -> Result<()> {
-        (&self.instrument)
-            .write_all(data)
-            .map_err(|e| Error::Transport(TransportError::Io(e.to_string())))
+        (&self.instrument).write_all(data).map_err(|e| {
+            if e.kind() == std::io::ErrorKind::TimedOut {
+                Error::Timeout
+            } else {
+                Error::Transport(TransportError::Io(e.to_string()))
+            }
+        })
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {

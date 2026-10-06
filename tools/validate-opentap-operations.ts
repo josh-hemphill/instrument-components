@@ -197,7 +197,8 @@ function validateOperation(
   }
 
   const publish = requireObject(raw.publish, `${label}.publish`);
-  assertNoExtraKeys(publish, new Set(["mode", "name", "unit", "supportsLimits"]), `${label}.publish`);
+  assertNoExtraKeys(publish, new Set(["mode", "name", "unit", "unitFrom", "supportsLimits"]), `${label}.publish`);
+  if (publish.unitFrom !== undefined && (raw.instrumentKind !== "Dmm" || publish.unitFrom !== "MeasurementUnit" || publish.unit !== undefined)) throw new Error(`${label}.publish.unitFrom is invalid`);
   const mode = requireString(publish.mode, `${label}.publish.mode`);
   if (!PUBLISH_MODES.has(mode)) throw new Error(`${label}.publish.mode is invalid`);
 }

@@ -24,6 +24,12 @@ public sealed class PowerMeterConfigureMeasurementStep : InstrumentBoundStep<Pow
     [Unit("dB")]
     public double? OffsetDb { get; set; }
 
+    public PowerMeterConfigureMeasurementStep()
+    {
+        Rules.Add(() => CorrectionFreqHz is null || double.IsFinite(CorrectionFreqHz.Value), "Correction frequency must be finite when set.", nameof(CorrectionFreqHz));
+        Rules.Add(() => OffsetDb is null || double.IsFinite(OffsetDb.Value), "Offset must be finite when set.", nameof(OffsetDb));
+    }
+
     public override void Run()
     {
         if (!TryGetInstrument(out var instrument))

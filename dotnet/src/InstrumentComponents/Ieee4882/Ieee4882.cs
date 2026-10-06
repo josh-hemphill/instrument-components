@@ -26,14 +26,15 @@ public sealed class Ieee4882
 
     public bool OpcQuery()
     {
-        if (!_session.ProbeOpc()) return true;
-        return _session.Query("*OPC?").Trim() == "1";
+        return ScpiProtocol.IsOpcSupportedReply(_session.Query("*OPC?"));
     }
 
     public void WaitComplete()
     {
-        if (_session.ProbeOpc())
-            _ = _session.QueryWithTimeout("*OPC?", TimeSpan.FromSeconds(30));
+        _session.EnsureOpcAvailable();
+        var reply = _session.QueryCompletion(TimeSpan.FromSeconds(30));
+        if (!ScpiProtocol.IsOpcSupportedReply(reply))
+            throw new global::InstrumentComponents.Errors.InstrumentUnsupportedException($"operation completion reply '{reply}'");
     }
 
     public string Options() => _session.Query("*OPT?");

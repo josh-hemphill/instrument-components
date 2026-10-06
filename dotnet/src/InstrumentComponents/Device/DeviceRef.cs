@@ -18,7 +18,7 @@ public sealed class DeviceRef
     private readonly IAsyncSessionOpener? _asyncOpener;
     private ConnectOptions _connectOptions;
     private readonly DeviceHealth _health;
-    private readonly object _healthLock = new();
+    private readonly object _healthLock;
     private readonly ICommsObserver? _observer;
 
     internal DeviceRef(
@@ -26,6 +26,7 @@ public sealed class DeviceRef
         ISessionOpener opener,
         ConnectOptions connectOptions,
         DeviceHealth health,
+        object healthLock,
         ICommsObserver? observer,
         IAsyncSessionOpener? asyncOpener = null)
     {
@@ -34,6 +35,7 @@ public sealed class DeviceRef
         _asyncOpener = asyncOpener;
         _connectOptions = connectOptions;
         _health = health;
+        _healthLock = healthLock;
         _observer = observer;
     }
 
@@ -129,13 +131,16 @@ public sealed class DeviceRef
     public async Task<AsyncInstrumentSession> OpenSessionAsync(CancellationToken cancellationToken = default)
     {
         if (_asyncOpener is null)
-            return await AsyncInstrumentSession.CreateAsync(
-                _device.Address,
-                new SyncAsAsyncTransport<ITransport>(_opener.Open(_device.Address, _connectOptions)),
-                _connectOptions,
-                _device.Identity,
-                CreateDiagnostics(),
-                cancellationToken).ConfigureAwait(false);
+        {
+            var opened = await Task.Run(() => _opener.Open(_device.Address, _connectOptions), cancellationToken).ConfigureAwait(false);
+            if (cancellationToken.IsCancellationRequested)
+            {
+                (opened as IDisposable)?.Dispose();
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+            return await AsyncInstrumentSession.CreateAsync(_device.Address, new SyncAsAsyncTransport<ITransport>(opened),
+                _connectOptions, _device.Identity, CreateDiagnostics(), cancellationToken).ConfigureAwait(false);
+        }
 
         var transport = await _asyncOpener.OpenAsync(_device.Address, _connectOptions, cancellationToken).ConfigureAwait(false);
         return await AsyncInstrumentSession.CreateAsync(

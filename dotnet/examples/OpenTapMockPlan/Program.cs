@@ -10,6 +10,8 @@ var io = new DelegateScpiIo(
         var trimmed = command.Trim();
         if (trimmed.Equals("*IDN?", StringComparison.OrdinalIgnoreCase))
             return "Acme,DMM1,SN,1.0";
+        if (trimmed.Equals("*OPC?", StringComparison.OrdinalIgnoreCase))
+            return "1";
         if (trimmed.StartsWith(":MEAS:VOLT:DC", StringComparison.OrdinalIgnoreCase) ||
             trimmed.StartsWith(":MEAS:VOLT:AC", StringComparison.OrdinalIgnoreCase))
             return "1.25";

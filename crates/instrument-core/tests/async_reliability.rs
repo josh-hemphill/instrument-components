@@ -232,10 +232,10 @@ async fn probe_opc_undefined_header_is_unsupported() {
         .await
         .unwrap();
     assert!(!session.probe_opc().await);
-    AsyncIeee4882::new(&mut session)
-        .wait_complete()
-        .await
-        .unwrap();
+    assert!(matches!(
+        AsyncIeee4882::new(&mut session).wait_complete().await,
+        Err(Error::Unsupported(_))
+    ));
 }
 
 #[tokio::test]

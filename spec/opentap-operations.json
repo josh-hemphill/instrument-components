@@ -490,7 +490,7 @@
         { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
       ],
       "invoke": { "method": "Fetch", "returns": "double", "dialectKey": "fetch" },
-      "publish": { "mode": "scalar", "name": "Fetch", "unit": "V", "supportsLimits": true }
+      "publish": { "mode": "scalar", "name": "Fetch", "unitFrom": "MeasurementUnit", "supportsLimits": true }
     },
     {
       "id": "dmm_read",
@@ -510,7 +510,7 @@
         { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
       ],
       "invoke": { "method": "Read", "returns": "double", "dialectKey": "read" },
-      "publish": { "mode": "scalar", "name": "Read", "unit": "V", "supportsLimits": true }
+      "publish": { "mode": "scalar", "name": "Read", "unitFrom": "MeasurementUnit", "supportsLimits": true }
     },
     {
       "id": "dmm_software_trigger",

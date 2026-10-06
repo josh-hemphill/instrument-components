@@ -14,6 +14,12 @@ public sealed class DmmConfigureCurrentAcStep : InstrumentBoundStep<DmmInstrumen
     [Unit("A")]
     public double? Resolution { get; set; }
 
+    public DmmConfigureCurrentAcStep()
+    {
+        Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
+        Rules.Add(() => Resolution is null || double.IsFinite(Resolution.Value), "Resolution must be finite when set.", nameof(Resolution));
+    }
+
     public override void Run()
     {
         if (!TryGetInstrument(out var instrument))
@@ -34,6 +40,12 @@ public sealed class DmmConfigureCurrentDcStep : InstrumentBoundStep<DmmInstrumen
     [Display("Resolution", Order: 3)]
     [Unit("A")]
     public double? Resolution { get; set; }
+
+    public DmmConfigureCurrentDcStep()
+    {
+        Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
+        Rules.Add(() => Resolution is null || double.IsFinite(Resolution.Value), "Resolution must be finite when set.", nameof(Resolution));
+    }
 
     public override void Run()
     {
@@ -56,6 +68,12 @@ public sealed class DmmConfigureResistance4WireStep : InstrumentBoundStep<DmmIns
     [Unit("Ohm")]
     public double? Resolution { get; set; }
 
+    public DmmConfigureResistance4WireStep()
+    {
+        Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
+        Rules.Add(() => Resolution is null || double.IsFinite(Resolution.Value), "Resolution must be finite when set.", nameof(Resolution));
+    }
+
     public override void Run()
     {
         if (!TryGetInstrument(out var instrument))
@@ -76,6 +94,12 @@ public sealed class DmmConfigureResistanceStep : InstrumentBoundStep<DmmInstrume
     [Display("Resolution", Order: 3)]
     [Unit("Ohm")]
     public double? Resolution { get; set; }
+
+    public DmmConfigureResistanceStep()
+    {
+        Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
+        Rules.Add(() => Resolution is null || double.IsFinite(Resolution.Value), "Resolution must be finite when set.", nameof(Resolution));
+    }
 
     public override void Run()
     {
@@ -98,6 +122,12 @@ public sealed class DmmConfigureVoltageAcStep : InstrumentBoundStep<DmmInstrumen
     [Unit("V")]
     public double? Resolution { get; set; }
 
+    public DmmConfigureVoltageAcStep()
+    {
+        Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
+        Rules.Add(() => Resolution is null || double.IsFinite(Resolution.Value), "Resolution must be finite when set.", nameof(Resolution));
+    }
+
     public override void Run()
     {
         if (!TryGetInstrument(out var instrument))
@@ -119,6 +149,12 @@ public sealed class DmmConfigureVoltageDcStep : InstrumentBoundStep<DmmInstrumen
     [Unit("V")]
     public double? Resolution { get; set; }
 
+    public DmmConfigureVoltageDcStep()
+    {
+        Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
+        Rules.Add(() => Resolution is null || double.IsFinite(Resolution.Value), "Resolution must be finite when set.", nameof(Resolution));
+    }
+
     public override void Run()
     {
         if (!TryGetInstrument(out var instrument))
@@ -137,7 +173,7 @@ public sealed class DmmFetchStep : OptionalLimitStep<DmmInstrument>
         if (!TryGetInstrument(out var instrument))
             return;
 
-        PublishScalar("Fetch", instrument.Dmm.Fetch(), "V");
+        PublishScalar("Fetch", instrument.Dmm.Fetch(), instrument.Dmm.MeasurementUnit);
     }
 }
 
@@ -161,6 +197,11 @@ public sealed class DmmMeasureCurrentAcStep : OptionalLimitStep<DmmInstrument>
     [Unit("A")]
     public double? Range { get; set; }
 
+    public DmmMeasureCurrentAcStep()
+    {
+        Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
+    }
+
     public override void Run()
     {
         if (!TryGetInstrument(out var instrument))
@@ -176,6 +217,11 @@ public sealed class DmmMeasureCurrentDcStep : OptionalLimitStep<DmmInstrument>
     [Display("Range", Order: 2)]
     [Unit("A")]
     public double? Range { get; set; }
+
+    public DmmMeasureCurrentDcStep()
+    {
+        Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
+    }
 
     public override void Run()
     {
@@ -193,6 +239,11 @@ public sealed class DmmMeasureResistance2WireStep : OptionalLimitStep<DmmInstrum
     [Unit("Ohm")]
     public double? Range { get; set; }
 
+    public DmmMeasureResistance2WireStep()
+    {
+        Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
+    }
+
     public override void Run()
     {
         if (!TryGetInstrument(out var instrument))
@@ -209,6 +260,11 @@ public sealed class DmmMeasureResistance4WireStep : OptionalLimitStep<DmmInstrum
     [Unit("Ohm")]
     public double? Range { get; set; }
 
+    public DmmMeasureResistance4WireStep()
+    {
+        Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
+    }
+
     public override void Run()
     {
         if (!TryGetInstrument(out var instrument))
@@ -223,6 +279,11 @@ public sealed class DmmMeasureTemperatureStep : OptionalLimitStep<DmmInstrument>
 {
     [Display("Range", Order: 2)]
     public double? Range { get; set; }
+
+    public DmmMeasureTemperatureStep()
+    {
+        Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
+    }
 
     public override void Run()
     {
@@ -239,6 +300,11 @@ public sealed class DmmMeasureVoltageAcStep : OptionalLimitStep<DmmInstrument>
     [Display("Range", Order: 2)]
     [Unit("V")]
     public double? Range { get; set; }
+
+    public DmmMeasureVoltageAcStep()
+    {
+        Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
+    }
 
     public override void Run()
     {
@@ -257,7 +323,7 @@ public sealed class DmmReadStep : OptionalLimitStep<DmmInstrument>
         if (!TryGetInstrument(out var instrument))
             return;
 
-        PublishScalar("Read", instrument.Dmm.Read(), "V");
+        PublishScalar("Read", instrument.Dmm.Read(), instrument.Dmm.MeasurementUnit);
     }
 }
 

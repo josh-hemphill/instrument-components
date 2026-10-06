@@ -9,6 +9,21 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  validate:
+    name: Validate release versions
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+      - id: version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          version=$(deno run --allow-read tools/validate-release.ts "$RELEASE_TAG")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
   ci:
     name: CI gate
     uses: ./.github/workflows/ci.yml
@@ -19,7 +34,7 @@ jobs:
 
   publish:
     name: Publish to crates.io
-    needs: [ci, dotnet]
+    needs: [validate, ci, dotnet]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,7 +52,7 @@ jobs:
 
   nuget:
     name: Publish to NuGet
-    needs: [ci, dotnet]
+    needs: [validate, ci, dotnet]
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -46,9 +61,9 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
-      - run: dotnet pack dotnet/src/InstrumentComponents/InstrumentComponents.csproj -c Release -o nupkg
-      - run: dotnet pack dotnet/src/InstrumentComponents.Visa/InstrumentComponents.Visa.csproj -c Release -o nupkg
-      - run: dotnet nuget push nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+      - run: dotnet pack dotnet/src/InstrumentComponents/InstrumentComponents.csproj -c Release -o nupkg -p:Version=${{ needs.validate.outputs.version }}
+      - run: dotnet pack dotnet/src/InstrumentComponents.Visa/InstrumentComponents.Visa.csproj -c Release -o nupkg -p:Version=${{ needs.validate.outputs.version }}
+      - run: dotnet nuget push nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
 
   github-release:
     name: GitHub Release
