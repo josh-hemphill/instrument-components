@@ -88,3 +88,10 @@ three existing crates; the NuGet scope must cover `InstrumentComponents` and
 This point release makes the reviewed fixes available for package-based hardware
 testing. Physical instrument checks have not been performed; `0.2.0` remains
 deferred pending the hardware evidence above. OpenTAP packages remain separate.
+
+The first `v0.1.1` run published all three Rust crates and authenticated to NuGet,
+but its Windows push step failed to expand a wildcard package path. The workflow
+now enumerates packages explicitly. To retry NuGet for an existing release, run
+`Release` manually with its existing tag; this checks tag/package versions and
+runs CI again, skips crates.io, and completes the GitHub Release after NuGet
+succeeds. Duplicate NuGet versions are skipped on retries.

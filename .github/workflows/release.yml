@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to retry NuGet publishing (crates.io is skipped)
+        required: true
+        type: string
 
 env:
   CARGO_TERM_COLOR: always
@@ -16,10 +22,12 @@ jobs:
       version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
       - uses: denoland/setup-deno@v2
       - id: version
         env:
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
         run: |
           version=$(deno run --allow-read tools/validate-release.ts "$RELEASE_TAG")
           echo "version=$version" >> "$GITHUB_OUTPUT"
@@ -33,6 +41,7 @@ jobs:
     uses: ./.github/workflows/dotnet.yml
 
   publish:
+    if: github.event_name == 'push'
     name: Publish to crates.io
     needs: [validate, ci, dotnet]
     runs-on: ubuntu-latest
@@ -41,6 +50,8 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Authenticate to crates.io
@@ -65,6 +76,8 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
       - uses: denoland/setup-deno@v2
       - run: deno run --allow-read --allow-write dotnet/tools/gen-registry.ts
       - uses: actions/setup-dotnet@v4
@@ -77,9 +90,23 @@ jobs:
         id: nuget-auth
         with:
           user: josh-hemphill
-      - run: dotnet nuget push "nupkg/*.nupkg" --api-key "${{ steps.nuget-auth.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+      - name: Push NuGet packages
+        shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ steps.nuget-auth.outputs.NUGET_API_KEY }}
+        run: |
+          $packages = @(Get-ChildItem -Path nupkg -Filter *.nupkg | Sort-Object Name)
+          if ($packages.Count -ne 2) { throw "Expected two NuGet packages, found $($packages.Count)" }
+          foreach ($package in $packages) {
+            dotnet nuget push $package.FullName --api-key $env:NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
+            if ($LASTEXITCODE -ne 0) { throw "NuGet push failed for $($package.Name)" }
+          }
 
   github-release:
+    if: >-
+      always() && needs.nuget.result == 'success' &&
+      (needs.publish.result == 'success' ||
+       (github.event_name == 'workflow_dispatch' && needs.publish.result == 'skipped'))
     name: GitHub Release
     needs: [publish, nuget]
     runs-on: ubuntu-latest
@@ -87,6 +114,9 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
       - uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ inputs.tag || github.ref_name }}
           generate_release_notes: true
