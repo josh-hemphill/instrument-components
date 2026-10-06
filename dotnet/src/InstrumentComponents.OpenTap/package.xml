@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Package Name="InstrumentComponents.OpenTap"
          xmlns="http://opentap.io/schemas/package"
-         Version="0.1.0"
+         Version="0.1.1"
          OS="Windows,Linux,MacOS">
   <Description>SCPI instruments for OpenTAP: DMM, DC power supply, function generator, oscilloscope, switch, counter, power meter, and spectrum analyzer. Session I/O is injected by the host; this pack does not open a vendor VISA resource manager.</Description>
   <Owner>josh-hemphill</Owner>

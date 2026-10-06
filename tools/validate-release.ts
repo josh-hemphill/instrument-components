@@ -12,11 +12,14 @@ export function validateRelease(tag: string): string {
     const dependency = cargo.match(new RegExp(`${name} = \{[^\n]*version = "([^"]+)"`))?.[1];
     if (dependency !== version) throw new Error(`${name} dependency ${dependency} disagrees with ${version}`);
   }
-  for (const name of ["InstrumentComponents", "InstrumentComponents.Visa"]) {
+  for (const name of ["InstrumentComponents", "InstrumentComponents.Visa", "InstrumentComponents.OpenTap", "InstrumentComponents.OpenTap.Visa"]) {
     const project = Deno.readTextFileSync(new URL(`dotnet/src/${name}/${name}.csproj`, root));
     const packageVersion = project.match(/<Version>([^<]+)<\/Version>/)?.[1];
     if (packageVersion !== version) throw new Error(`${name} version ${packageVersion} disagrees with ${version}`);
   }
+  const tap = Deno.readTextFileSync(new URL("dotnet/src/InstrumentComponents.OpenTap/package.xml", root));
+  const tapVersion = tap.match(/<Package\b[^>]*\bVersion="([^"]+)"/)?.[1];
+  if (tapVersion !== version) throw new Error(`OpenTAP version ${tapVersion} disagrees with ${version}`);
   return version;
 }
 if (import.meta.main) console.log(validateRelease(Deno.args[0] ?? ""));

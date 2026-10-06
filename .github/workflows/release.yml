@@ -7,8 +7,12 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing release tag to retry NuGet publishing (crates.io is skipped)
+        description: Existing release tag to retry NuGet and OpenTAP artifacts (crates.io is skipped)
         required: true
+        type: string
+      source_ref:
+        description: Optional commit for a packaging-only backfill; defaults to the release tag
+        required: false
         type: string
 
 env:
@@ -23,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.tag || github.ref }}
+          ref: ${{ inputs.source_ref || inputs.tag || github.ref }}
       - uses: denoland/setup-deno@v2
       - id: version
         env:
@@ -35,10 +39,14 @@ jobs:
   ci:
     name: CI gate
     uses: ./.github/workflows/ci.yml
+    with:
+      source_ref: ${{ inputs.source_ref || inputs.tag || github.ref }}
 
   dotnet:
     name: .NET gate
     uses: ./.github/workflows/dotnet.yml
+    with:
+      source_ref: ${{ inputs.source_ref || inputs.tag || github.ref }}
 
   publish:
     if: github.event_name == 'push'
@@ -51,7 +59,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.tag || github.ref }}
+          ref: ${{ inputs.source_ref || inputs.tag || github.ref }}
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Authenticate to crates.io
@@ -77,7 +85,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.tag || github.ref }}
+          ref: ${{ inputs.source_ref || inputs.tag || github.ref }}
       - uses: denoland/setup-deno@v2
       - run: deno run --allow-read --allow-write dotnet/tools/gen-registry.ts
       - uses: actions/setup-dotnet@v4
@@ -85,6 +93,8 @@ jobs:
           dotnet-version: '8.0.x'
       - run: dotnet pack dotnet/src/InstrumentComponents/InstrumentComponents.csproj -c Release -o nupkg -p:Version=${{ needs.validate.outputs.version }}
       - run: dotnet pack dotnet/src/InstrumentComponents.Visa/InstrumentComponents.Visa.csproj -c Release -o nupkg -p:Version=${{ needs.validate.outputs.version }}
+      - run: dotnet pack dotnet/src/InstrumentComponents.OpenTap/InstrumentComponents.OpenTap.csproj -c Release -o nupkg -p:Version=${{ needs.validate.outputs.version }}
+      - run: dotnet pack dotnet/src/InstrumentComponents.OpenTap.Visa/InstrumentComponents.OpenTap.Visa.csproj -c Release -o nupkg -p:Version=${{ needs.validate.outputs.version }}
       - name: Authenticate to NuGet
         uses: NuGet/login@v1
         id: nuget-auth
@@ -96,27 +106,58 @@ jobs:
           NUGET_API_KEY: ${{ steps.nuget-auth.outputs.NUGET_API_KEY }}
         run: |
           $packages = @(Get-ChildItem -Path nupkg -Filter *.nupkg | Sort-Object Name)
-          if ($packages.Count -ne 2) { throw "Expected two NuGet packages, found $($packages.Count)" }
+          if ($packages.Count -ne 4) { throw "Expected four NuGet packages, found $($packages.Count)" }
           foreach ($package in $packages) {
             dotnet nuget push $package.FullName --api-key $env:NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
             if ($LASTEXITCODE -ne 0) { throw "NuGet push failed for $($package.Name)" }
           }
 
+  tap-package:
+    name: Build OpenTAP release artifact
+    needs: [validate, ci, dotnet]
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_ROLL_FORWARD: LatestMajor
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref || inputs.tag || github.ref }}
+      - uses: denoland/setup-deno@v2
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+      - run: deno run --allow-read --allow-write dotnet/tools/gen-registry.ts
+      - run: dotnet build dotnet/src/InstrumentComponents.OpenTap/InstrumentComponents.OpenTap.csproj -c Release -p:CreateOpenTapPackage=true
+      - run: deno run --allow-read --allow-run=unzip tools/verify-opentap-package.ts "${{ needs.validate.outputs.version }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: opentap-package
+          path: dotnet/src/InstrumentComponents.OpenTap/bin/Release/net8.0/*.TapPackage
+          if-no-files-found: error
+
   github-release:
     if: >-
-      always() && needs.nuget.result == 'success' &&
+      always() && needs.nuget.result == 'success' && needs.tap-package.result == 'success' &&
       (needs.publish.result == 'success' ||
        (github.event_name == 'workflow_dispatch' && needs.publish.result == 'skipped'))
     name: GitHub Release
-    needs: [publish, nuget]
+    needs: [publish, nuget, tap-package]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.tag || github.ref }}
+          ref: ${{ inputs.source_ref || inputs.tag || github.ref }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: opentap-package
+          path: release-artifacts
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag || github.ref_name }}
           generate_release_notes: true
+          files: release-artifacts/*.TapPackage
+          fail_on_unmatched_files: true

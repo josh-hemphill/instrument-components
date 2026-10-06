@@ -5,6 +5,12 @@ on:
     branches: [latest, main, master]
   pull_request:
   workflow_call:
+    inputs:
+      source_ref:
+        description: Commit or tag to validate for a release
+        required: false
+        type: string
+        default: ''
 
 env:
   DOTNET_NOLOGO: true
@@ -15,6 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref }}
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
@@ -34,6 +42,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref }}
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
@@ -57,6 +67,8 @@ jobs:
       DOTNET_ROLL_FORWARD: LatestMajor
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref }}
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
@@ -82,6 +94,8 @@ jobs:
       DOTNET_ROLL_FORWARD: LatestMajor
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref }}
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
@@ -95,7 +109,9 @@ jobs:
         run: |
           ./tap package list -i | grep InstrumentComponents.OpenTap
           ./tap package uninstall InstrumentComponents.OpenTap -f
-          ./tap package install ./InstrumentComponents.OpenTap.0.1.0.TapPackage
+          packages=(InstrumentComponents.OpenTap.*.TapPackage)
+          test "${#packages[@]}" -eq 1
+          ./tap package install "${packages[0]}"
           ./tap package verify InstrumentComponents.OpenTap
           ./tap package show InstrumentComponents.OpenTap
           ./tap package list -i | grep InstrumentComponents.OpenTap
@@ -106,6 +122,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref }}
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
@@ -119,6 +137,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref }}
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'

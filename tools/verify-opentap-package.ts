@@ -63,6 +63,14 @@ async function main() {
   if (!xml.includes('Name="InstrumentComponents.OpenTap"')) {
     throw new Error("package.xml is missing Name=InstrumentComponents.OpenTap");
   }
+  const expectedVersion = Deno.args[0] ?? Deno.readTextFileSync(new URL("dotnet/src/InstrumentComponents.OpenTap/package.xml", root)).match(/<Package\b[^>]*\bVersion="([^"]+)"/)?.[1];
+  const actualVersion = xml.match(/<Package\b[^>]*\bVersion="([^"]+)"/)?.[1];
+  if (!expectedVersion || actualVersion !== expectedVersion) {
+    throw new Error(`TapPackage version ${actualVersion} disagrees with ${expectedVersion}`);
+  }
+  if (!archive.pathname.endsWith(`.${expectedVersion}.TapPackage`)) {
+    throw new Error(`TapPackage filename disagrees with ${expectedVersion}`);
+  }
   if (!xml.includes("OpenTAP")) {
     throw new Error("package.xml is missing the OpenTAP dependency");
   }

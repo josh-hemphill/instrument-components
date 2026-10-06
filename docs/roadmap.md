@@ -87,7 +87,7 @@ three existing crates; the NuGet scope must cover `InstrumentComponents` and
 
 This point release makes the reviewed fixes available for package-based hardware
 testing. Physical instrument checks have not been performed; `0.2.0` remains
-deferred pending the hardware evidence above. OpenTAP packages remain separate.
+deferred pending the hardware evidence above. OpenTAP NuGet libraries and the TapPackage now share this release version.
 
 The first `v0.1.1` run published all three Rust crates and authenticated to NuGet,
 but its Windows push step failed to expand a wildcard package path. The workflow
@@ -95,3 +95,16 @@ now enumerates packages explicitly. To retry NuGet for an existing release, run
 `Release` manually with its existing tag; this checks tag/package versions and
 runs CI again, skips crates.io, and completes the GitHub Release after NuGet
 succeeds. Duplicate NuGet versions are skipped on retries.
+
+## OpenTAP release distribution
+
+All four .NET libraries publish to NuGet in each tagged release. The workflow
+builds and verifies `InstrumentComponents.OpenTap.<version>.TapPackage`, then
+attaches it to the GitHub Release automatically. The main TapPackage bundles the
+core library and remains independent of VISA; the optional OpenTap.Visa NuGet
+companion provides standalone VISA access.
+
+The 0.1.1 OpenTAP backfill uses a packaging-only source commit without moving the
+existing release tag or replacing the already-published core/VISA packages.
+Manual retries accept an optional `source_ref`; CI, version validation, package
+builds, and release artifact builds all use that revision.

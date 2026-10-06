@@ -44,6 +44,17 @@ var volts = dmm.MeasureVoltageDc();
 Console.WriteLine($"{volts} V");
 ```
 
+## Install OpenTAP integration
+
+For a C# host, install `InstrumentComponents.OpenTap` from NuGet. Standalone
+VISA hosts can also install `InstrumentComponents.OpenTap.Visa`.
+
+For the OpenTAP Editor/TUI, download the versioned `.TapPackage` from the
+[GitHub release](https://github.com/josh-hemphill/instrument-components/releases)
+and install it with `tap package install <file>.TapPackage`. Each release
+attaches this artifact automatically. It bundles the core library; the optional
+VISA companion is distributed separately through NuGet.
+
 ## OpenTAP mock plan (no VISA)
 
 ```bash
