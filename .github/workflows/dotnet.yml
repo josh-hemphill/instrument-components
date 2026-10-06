@@ -55,7 +55,6 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     env:
       DOTNET_ROLL_FORWARD: LatestMajor
-      INSTRUMENT_COMPONENTS_PACKAGE_FEED: ${{ runner.temp }}/net10-packages
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -67,6 +66,8 @@ jobs:
       - run: dotnet pack dotnet/src/InstrumentComponents/InstrumentComponents.csproj -c Release --no-build -o "${{ runner.temp }}/net10-packages"
       - run: dotnet pack dotnet/src/InstrumentComponents.Visa/InstrumentComponents.Visa.csproj -c Release --no-build -o "${{ runner.temp }}/net10-packages"
       - run: dotnet restore dotnet/examples/PackageConsumerSmoke/PackageConsumerSmoke.csproj --configfile dotnet/tools/package-consumer.NuGet.Config --packages "${{ runner.temp }}/net10-consumer-cache"
+        env:
+          INSTRUMENT_COMPONENTS_PACKAGE_FEED: ${{ runner.temp }}/net10-packages
       - run: dotnet run --project dotnet/examples/PackageConsumerSmoke/PackageConsumerSmoke.csproj -c Release --no-restore
 
   tappackage:
