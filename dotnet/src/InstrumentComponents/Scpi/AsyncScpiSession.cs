@@ -318,7 +318,8 @@ public sealed class AsyncScpiSession : IDisposable
         {
             var resp = await QueryWithTimeoutAsyncCore("SYST:ERR?", TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
             _systErrSupported = ScpiProtocol.IsSystErrSupportedReply(resp);
-            if (_systErrSupported.Value) _pendingErrorReply = resp;
+            // A zero reply describes the queue at probe time, not at the next check.
+            if (_systErrSupported.Value && !ScpiProtocol.IsNoErrorReply(resp)) _pendingErrorReply = resp;
         }
         catch (InstrumentException) { return false; }
         return _systErrSupported.Value;

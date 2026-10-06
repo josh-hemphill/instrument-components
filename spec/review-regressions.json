@@ -3,6 +3,7 @@
     {
       "id": "empty",
       "replies": [
+        "0,\"No error\"",
         "0,\"No error\""
       ],
       "expected": []
@@ -32,6 +33,7 @@
     {
       "id": "spaced-zero",
       "replies": [
+        "  +0 , \"No error\"  ",
         "  +0 , \"No error\"  "
       ],
       "expected": []
@@ -45,6 +47,12 @@
     }
   ],
   "probeReplies": [
+    { "command": ":MEAS:VOLT:DC?", "reply": "-3.3", "valid": true },
+    { "command": "meas:volt:dc?", "reply": "-3.3E-3", "valid": true },
+    { "command": ":VOLT? (@1)", "reply": "-3.3", "valid": true },
+    { "command": ":MEAS:VOLT:DC?", "reply": "-Infinity", "valid": false },
+    { "command": ":MEAS:VOLT:DC?", "reply": "NaN", "valid": false },
+    { "command": ":FREQ:CENT?", "reply": "-3.3", "valid": false },
     {
       "command": ":SENS:FUNC?",
       "reply": "-113,\"Undefined header\"",

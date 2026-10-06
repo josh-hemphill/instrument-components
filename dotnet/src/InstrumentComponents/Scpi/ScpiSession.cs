@@ -422,7 +422,8 @@ public sealed class ScpiSession : IScpiIo
         {
             var resp = QueryWithTimeout("SYST:ERR?", TimeSpan.FromMilliseconds(500));
             _systErrSupported = ScpiProtocol.IsSystErrSupportedReply(resp);
-            if (_systErrSupported.Value) _pendingErrorReply = resp;
+            // A zero reply describes the queue at probe time, not at the next check.
+            if (_systErrSupported.Value && !ScpiProtocol.IsNoErrorReply(resp)) _pendingErrorReply = resp;
         }
         catch (InstrumentException) { return false; }
         return _systErrSupported.Value;

@@ -1,7 +1,7 @@
 use super::framing::extract_response;
 use super::protocol::{
-    is_opc_supported_reply, is_syst_err_supported_reply, max_write_attempts, normalize_command,
-    parse_f64, SessionCapabilities,
+    is_no_error_reply, is_opc_supported_reply, is_syst_err_supported_reply, max_write_attempts,
+    normalize_command, parse_f64, SessionCapabilities,
 };
 use crate::connect::ConnectOptions;
 use crate::diagnostics::{CommsEventKind, Diagnostics};
@@ -326,7 +326,8 @@ impl ScpiSession {
             Ok(resp) => {
                 let supported = is_syst_err_supported_reply(&resp);
                 self.capabilities.syst_err = Some(supported);
-                if supported {
+                // A zero reply describes the queue at probe time, not at the next check.
+                if supported && !is_no_error_reply(&resp) {
                     self.pending_error_reply = Some(resp);
                 }
                 supported
@@ -369,12 +370,7 @@ impl ScpiSession {
                 return Err(Error::Parse(format!("invalid error queue reply '{resp}'")));
             }
             self.capabilities.syst_err = Some(true);
-            if resp
-                .split(',')
-                .next()
-                .and_then(|s| s.trim().parse::<i32>().ok())
-                == Some(0)
-            {
+            if is_no_error_reply(&resp) {
                 break;
             }
             errors.push(resp);

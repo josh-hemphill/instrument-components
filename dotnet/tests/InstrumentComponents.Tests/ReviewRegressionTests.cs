@@ -50,6 +50,59 @@ public class ReviewRegressionTests
         }
     }
 
+    private static MockTransport ErrorsAfterEmptyProbe(string zero) => new([
+        new WriteStep { Data = "SYST:ERR?" }, new ReadStep { Data = zero + "\n" },
+        new WriteStep { Data = "BAD" },
+        new WriteStep { Data = "SYST:ERR?" }, new ReadStep { Data = "-113,\"Undefined header\"\n" },
+        new WriteStep { Data = "SYST:ERR?" }, new ReadStep { Data = "0,\"No error\"\n" }
+    ]);
+
+    [Theory]
+    [InlineData("0,\"No error\"")]
+    [InlineData("+0,\"No error\"")]
+    [InlineData("  +0 , \"No error\"  ")]
+    public void EmptyProbeDoesNotHideErrorsFromLaterCommands(string zero)
+    {
+        using var session = new ScpiSession(ErrorsAfterEmptyProbe(zero), Options);
+        Assert.True(session.ProbeSystErr());
+        session.Write("BAD");
+        Assert.Equal(new[] { "-113,\"Undefined header\"" }, session.CheckErrors());
+    }
+
+    [Theory]
+    [InlineData("0,\"No error\"")]
+    [InlineData("+0,\"No error\"")]
+    [InlineData("  +0 , \"No error\"  ")]
+    public async Task AsyncEmptyProbeDoesNotHideErrorsFromLaterCommands(string zero)
+    {
+        using var session = await AsyncScpiSession.CreateAsync(ErrorsAfterEmptyProbe(zero), Options);
+        Assert.True(await session.ProbeSystErrAsync());
+        await session.WriteAsync("BAD");
+        Assert.Equal(new[] { "-113,\"Undefined header\"" }, await session.CheckErrorsAsync());
+    }
+
+    [Fact]
+    public async Task SignedVoltageAcquisitionIdentifiesDmmWithoutOtherCapabilities()
+    {
+        using var session = new ScpiSession(new SignedVoltageTransport(), Options);
+        Assert.Contains(Classifier.Classifier.ClassifyWithPolicy(session, ProbePolicy.Full), kind => kind.Kind == Kind.InstrumentKind.Dmm);
+        using var asyncSession = await AsyncScpiSession.CreateAsync(new SyncAsAsyncTransport<SignedVoltageTransport>(new()), Options);
+        Assert.Contains(await Classifier.Classifier.ClassifyWithPolicyAsync(asyncSession, ProbePolicy.Full), kind => kind.Kind == Kind.InstrumentKind.Dmm);
+    }
+
+    private sealed class SignedVoltageTransport : TransportBase
+    {
+        private string _command = "";
+        public override void Write(ReadOnlySpan<byte> data) => _command = Encoding.UTF8.GetString(data).Trim();
+        public override int Read(Span<byte> buffer)
+        {
+            var reply = _command.TrimStart(':') == "MEAS:VOLT:DC?" ? "-3.3\n" : "-113,\"Undefined header\"\n";
+            var bytes = Encoding.UTF8.GetBytes(reply); bytes.CopyTo(buffer); return bytes.Length;
+        }
+        public override void Clear() { }
+        public override void SetReadTimeout(TimeSpan timeout) { }
+    }
+
     [Fact]
     public void SharedProbeAndAddressShapes()
     {

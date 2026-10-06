@@ -50,6 +50,14 @@ pub fn is_syst_err_supported_reply(response: &str) -> bool {
     i < s.len() && s[i] == b','
 }
 
+pub(crate) fn is_no_error_reply(response: &str) -> bool {
+    response
+        .split(',')
+        .next()
+        .and_then(|s| s.trim().parse::<i32>().ok())
+        == Some(0)
+}
+
 /// Parses a numeric SCPI response.
 pub fn parse_f64(response: &str) -> Result<f64> {
     response
