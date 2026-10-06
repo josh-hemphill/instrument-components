@@ -13,6 +13,8 @@ See [docs/dotnet-getting-started.md](https://josh-hemphill.github.io/instrument-
 | `InstrumentComponents.OpenTap.Visa` | Optional companion: registers a VISA `IOpenTapScpiIoProvider` for TUI-without-host. Not in the TapPackage. |
 | `InstrumentComponents.Visa` | VISA transport via IviFoundation.Visa (`net8.0`; Windows **or** Linux with a vendor VISA install) |
 
+The `net8.0` libraries can be consumed by .NET 10 projects. Hardware-free validation covers the .NET 10 runtime, a fresh `net10.0` core/VISA NuGet consumer, and the OpenTAP package lifecycle. Native vendor VISA behavior still requires validation on the intended platform and runtime.
+
 ## Install the core
 
 ```bash
