@@ -45,17 +45,46 @@ jobs:
       - run: dotnet test dotnet/tests/InstrumentComponents.OpenTap.Visa.Tests/InstrumentComponents.OpenTap.Visa.Tests.csproj --no-build -c Release --filter "Category!=Hardware"
       - run: dotnet run --project dotnet/examples/OpenTapMockPlan/OpenTapMockPlan.csproj -c Release
 
+  net10-compatibility:
+    name: .NET 10 compatibility (${{ matrix.os }})
+    needs: registry-drift
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    env:
+      DOTNET_ROLL_FORWARD: LatestMajor
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet build dotnet/InstrumentComponents.sln -c Release
+      - run: dotnet test dotnet/InstrumentComponents.sln -c Release --no-build --filter "Category!=Hardware"
+      - run: dotnet run --project dotnet/examples/OpenTapMockPlan/OpenTapMockPlan.csproj -c Release
+      - run: dotnet pack dotnet/src/InstrumentComponents/InstrumentComponents.csproj -c Release --no-build -o "${{ runner.temp }}/net10-packages"
+      - run: dotnet pack dotnet/src/InstrumentComponents.Visa/InstrumentComponents.Visa.csproj -c Release --no-build -o "${{ runner.temp }}/net10-packages"
+      - run: dotnet restore dotnet/examples/PackageConsumerSmoke/PackageConsumerSmoke.csproj --source "${{ runner.temp }}/net10-packages" --source https://api.nuget.org/v3/index.json --packages "${{ runner.temp }}/net10-consumer-cache"
+      - run: dotnet run --project dotnet/examples/PackageConsumerSmoke/PackageConsumerSmoke.csproj -c Release --no-restore
+
   tappackage:
-    name: OpenTAP package (net9)
+    name: OpenTAP package (net${{ matrix.sdk }})
     needs: registry-drift
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: ['9.0', '10.0']
+    env:
+      DOTNET_ROLL_FORWARD: LatestMajor
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
             8.0.x
-            9.0.x
+            ${{ matrix.sdk }}.x
       - uses: denoland/setup-deno@v2
       - run: dotnet build dotnet/src/InstrumentComponents.OpenTap/InstrumentComponents.OpenTap.csproj -c Release -p:CreateOpenTapPackage=true
       - run: deno run --allow-read --allow-run=unzip tools/verify-opentap-package.ts
