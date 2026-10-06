@@ -48,7 +48,8 @@ internal static class CapabilityProbes
         if (cmd.StartsWith("UNIT")) return reply is "DBM" or "W" or "WATT";
         if (cmd.StartsWith("WAV")) return reply.StartsWith("CHAN") && uint.TryParse(reply[4..], out var channel) && channel > 0;
         if (cmd.StartsWith("ROUT")) return reply is "0" or "1" || reply.StartsWith("(@") && reply.EndsWith(")") && reply[2..^1].All(c => char.IsAsciiDigit(c) || c is ',' or ':' or ' ');
-        return double.TryParse(reply, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var number) && double.IsFinite(number) && number >= 0;
+        var signedVoltage = cmd is "MEAS:VOLT:DC?" or "VOLT? (@1)";
+        return double.TryParse(reply, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var number) && double.IsFinite(number) && (signedVoltage || number >= 0);
     }
 
     public static bool ProbeAny(ScpiSession session, string[] commands, TimeSpan timeout)

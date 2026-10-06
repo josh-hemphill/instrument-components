@@ -134,7 +134,8 @@ pub fn valid_probe_reply(command: &str, response: &str) -> bool {
     if cmd.starts_with("UNIT") { return ["DBM", "W", "WATT"].contains(&reply.as_str()); }
     if cmd.starts_with("WAV") { return reply.strip_prefix("CHAN").and_then(|s| s.parse::<u32>().ok()).is_some_and(|n| n > 0); }
     if cmd.starts_with("ROUT") { return ["0", "1"].contains(&reply.as_str()) || reply.strip_prefix("(@").and_then(|s| s.strip_suffix(')')).is_some_and(|s| s.chars().all(|c| c.is_ascii_digit() || [',', ':', ' '].contains(&c))); }
-    reply.parse::<f64>().is_ok_and(|n| n.is_finite() && n >= 0.0)
+    let signed_voltage = matches!(cmd.as_str(), "MEAS:VOLT:DC?" | "VOLT? (@1)");
+    reply.parse::<f64>().is_ok_and(|n| n.is_finite() && (signed_voltage || n >= 0.0))
 }
 
 /// Returns true when a probe produces valid capability evidence.
@@ -295,7 +296,8 @@ csProbes += `    internal static bool ValidProbeReply(string command, string res
         if (cmd.StartsWith("UNIT")) return reply is "DBM" or "W" or "WATT";
         if (cmd.StartsWith("WAV")) return reply.StartsWith("CHAN") && uint.TryParse(reply[4..], out var channel) && channel > 0;
         if (cmd.StartsWith("ROUT")) return reply is "0" or "1" || reply.StartsWith("(@") && reply.EndsWith(")") && reply[2..^1].All(c => char.IsAsciiDigit(c) || c is ',' or ':' or ' ');
-        return double.TryParse(reply, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var number) && double.IsFinite(number) && number >= 0;
+        var signedVoltage = cmd is "MEAS:VOLT:DC?" or "VOLT? (@1)";
+        return double.TryParse(reply, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var number) && double.IsFinite(number) && (signedVoltage || number >= 0);
     }
 
     public static bool ProbeAny(ScpiSession session, string[] commands, TimeSpan timeout)

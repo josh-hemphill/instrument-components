@@ -87,9 +87,10 @@ pub fn valid_probe_reply(command: &str, response: &str) -> bool {
                         .all(|c| c.is_ascii_digit() || [',', ':', ' '].contains(&c))
                 });
     }
+    let signed_voltage = matches!(cmd.as_str(), "MEAS:VOLT:DC?" | "VOLT? (@1)");
     reply
         .parse::<f64>()
-        .is_ok_and(|n| n.is_finite() && n >= 0.0)
+        .is_ok_and(|n| n.is_finite() && (signed_voltage || n >= 0.0))
 }
 
 /// Returns true when a probe produces valid capability evidence.
