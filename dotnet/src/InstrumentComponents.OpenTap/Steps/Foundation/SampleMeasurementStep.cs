@@ -28,7 +28,9 @@ public abstract class SampleMeasurementStep<TInstrument> : InstrumentBoundStep<T
         for (var i = 0; i < count; i++)
         {
             TapThread.ThrowIfAborted();
-            PhaseIResults.PublishSample(Results, Channel, i, measure());
+            var value = measure();
+            PhaseIResults.PublishSample(Results, Channel, i, value);
+            if (!double.IsFinite(value)) UpgradeVerdict(Verdict.Fail);
             if (IntervalMs > 0 && i < count - 1)
                 TapThread.Sleep(IntervalMs);
         }

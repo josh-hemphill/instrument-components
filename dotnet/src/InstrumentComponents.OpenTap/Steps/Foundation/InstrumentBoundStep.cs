@@ -24,6 +24,13 @@ public abstract class InstrumentBoundStep<TInstrument> : TestStep, IFormatName
 
     protected bool TryGetInstrument([NotNullWhen(true)] out TInstrument instrument)
     {
+        if (!string.IsNullOrEmpty(Error))
+        {
+            Log.Error(Error);
+            UpgradeVerdict(Verdict.Error);
+            instrument = null!;
+            return false;
+        }
         if (Instrument is not null)
         {
             instrument = Instrument;

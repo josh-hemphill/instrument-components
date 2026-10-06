@@ -32,7 +32,7 @@ public sealed class VisaTransport : TransportBase, IDisposable
         }
         catch (Exception ex)
         {
-            throw new TransportException(ex.Message);
+            throw new TransportException(ex.Message, ex);
         }
     }
 
@@ -56,7 +56,7 @@ public sealed class VisaTransport : TransportBase, IDisposable
         }
         catch (Exception ex)
         {
-            throw new TransportException(ex.Message);
+            throw new TransportException(ex.Message, ex);
         }
     }
 
@@ -68,7 +68,7 @@ public sealed class VisaTransport : TransportBase, IDisposable
         }
         catch (Exception ex)
         {
-            throw new TransportException(ex.Message);
+            throw new TransportException(ex.Message, ex);
         }
     }
 
@@ -80,7 +80,7 @@ public sealed class VisaTransport : TransportBase, IDisposable
         }
         catch (Exception ex)
         {
-            throw new TransportException(ex.Message);
+            throw new TransportException(ex.Message, ex);
         }
     }
 

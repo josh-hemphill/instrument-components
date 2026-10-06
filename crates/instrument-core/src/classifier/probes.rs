@@ -6,7 +6,7 @@ pub const PROBE_TIMEOUT: Duration = Duration::from_millis(800);
 
 pub const DMM_READONLY_COMMANDS: &[&str] = &[":SENS:FUNC?", "SENS:FUNC?", ":FUNC?", "FUNC?"];
 
-pub const PSU_READONLY_COMMANDS: &[&str] = &[":OUTP? 1", "OUTP? 1", ":OUTP?", "OUTP?"];
+pub const PSU_READONLY_COMMANDS: &[&str] = &[":OUTP? 1", "OUTP? 1"];
 
 pub const FGEN_READONLY_COMMANDS: &[&str] = &[":SOUR:FUNC?", "SOUR:FUNC?"];
 
@@ -47,9 +47,60 @@ pub const SPECAN_READONLY_COMMANDS: &[&str] = &[
 
 pub const DMM_ACQUISITION_COMMANDS: &[&str] = &[":MEAS:VOLT:DC?", "MEAS:VOLT:DC?"];
 
-/// Returns true when any probe command succeeds on the session.
+/// Validate instrument-specific reply shapes rather than accepting any transport success.
+pub fn valid_probe_reply(command: &str, response: &str) -> bool {
+    let cmd = command.trim_start_matches(':').to_ascii_uppercase();
+    let reply = response.trim().trim_matches('"').to_ascii_uppercase();
+    if reply.is_empty() || crate::scpi::is_syst_err_supported_reply(&reply) {
+        return false;
+    }
+    if cmd.contains("FUNC") {
+        return if cmd.starts_with("SOUR") {
+            ["SIN", "SQU", "RAMP", "PULS", "NOIS", "DC", "ARB", "USER"].contains(&reply.as_str())
+        } else {
+            [
+                "VOLT", "VOLT:DC", "VOLT:AC", "CURR", "CURR:DC", "CURR:AC", "RES", "FRES", "FREQ",
+                "PER", "CONT", "DIOD", "TEMP", "CAP",
+            ]
+            .contains(&reply.as_str())
+        };
+    }
+    if cmd.starts_with("OUTP") || cmd.contains("AUTO?") {
+        return ["0", "1", "OFF", "ON"].contains(&reply.as_str());
+    }
+    if cmd.starts_with("UNIT") {
+        return ["DBM", "W", "WATT"].contains(&reply.as_str());
+    }
+    if cmd.starts_with("WAV") {
+        return reply
+            .strip_prefix("CHAN")
+            .and_then(|s| s.parse::<u32>().ok())
+            .is_some_and(|n| n > 0);
+    }
+    if cmd.starts_with("ROUT") {
+        return ["0", "1"].contains(&reply.as_str())
+            || reply
+                .strip_prefix("(@")
+                .and_then(|s| s.strip_suffix(')'))
+                .is_some_and(|s| {
+                    s.chars()
+                        .all(|c| c.is_ascii_digit() || [',', ':', ' '].contains(&c))
+                });
+    }
+    let signed_voltage = matches!(cmd.as_str(), "MEAS:VOLT:DC?" | "VOLT? (@1)");
+    reply
+        .parse::<f64>()
+        .is_ok_and(|n| n.is_finite() && (signed_voltage || n >= 0.0))
+}
+
+/// Returns true when a probe produces valid capability evidence.
 pub fn probe_any(session: &mut ScpiSession, commands: &[&str], timeout: Duration) -> bool {
-    commands
-        .iter()
-        .any(|cmd| session.query_with_timeout(cmd, timeout).is_ok())
+    commands.iter().any(|cmd| {
+        session
+            .query_with_timeout(cmd, timeout)
+            .is_ok_and(|reply| valid_probe_reply(cmd, &reply))
+    }) && (commands != PSU_READONLY_COMMANDS
+        || session
+            .query_with_timeout(":VOLT? (@1)", timeout)
+            .is_ok_and(|reply| valid_probe_reply(":VOLT? (@1)", &reply)))
 }

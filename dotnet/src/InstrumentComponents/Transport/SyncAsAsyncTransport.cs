@@ -2,62 +2,54 @@ using InstrumentComponents.Connect;
 
 namespace InstrumentComponents.Transport;
 
-/// <summary>Wraps a sync transport as an async transport (for mocks/tests).</summary>
+/// <summary>Serializes and offloads synchronous transport calls to the thread pool.
+/// Cancellation prevents queued work; native calls already started finish before the task returns.
+/// </summary>
 public sealed class SyncAsAsyncTransport<T> : IAsyncTransport, IDisposable where T : ITransport
 {
     private readonly T _inner;
+    private readonly SemaphoreSlim _gate = new(1, 1);
+    private bool _disposed;
 
     public SyncAsAsyncTransport(T inner) => _inner = inner;
-
     public T Inner => _inner;
-
-    public ValueTask WriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        _inner.Write(data.Span);
-        return ValueTask.CompletedTask;
-    }
-
-    public ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        return ValueTask.FromResult(_inner.Read(buffer.Span));
-    }
-
-    public ValueTask ClearAsync(CancellationToken cancellationToken = default)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        _inner.Clear();
-        return ValueTask.CompletedTask;
-    }
-
-    public ValueTask SetReadTimeoutAsync(TimeSpan timeout, CancellationToken cancellationToken = default)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        _inner.SetReadTimeout(timeout);
-        return ValueTask.CompletedTask;
-    }
-
-    public ValueTask ReconnectAsync(CancellationToken cancellationToken = default)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        _inner.Reconnect();
-        return ValueTask.CompletedTask;
-    }
-
     public TransportIdentity Identity => _inner.Identity;
 
-    public ValueTask ConfigureAsync(ConnectOptions opts, CancellationToken cancellationToken = default)
+    private async Task<TResult> Run<TResult>(Func<TResult> operation, CancellationToken cancellationToken)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        _inner.Configure(opts);
-        return ValueTask.CompletedTask;
+        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            // Do not cancel the await of a running call: it still owns the supplied buffer.
+            return await Task.Run(() => { cancellationToken.ThrowIfCancellationRequested(); return operation(); }).ConfigureAwait(false);
+        }
+        finally { _gate.Release(); }
     }
+
+    private ValueTask Run(Action operation, CancellationToken ct) =>
+        new(Run(() => { operation(); return true; }, ct));
+
+    public ValueTask WriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default) =>
+        Run(() => _inner.Write(data.Span), cancellationToken);
+    public ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) =>
+        new(Run(() => _inner.Read(buffer.Span), cancellationToken));
+    public ValueTask ClearAsync(CancellationToken cancellationToken = default) => Run(_inner.Clear, cancellationToken);
+    public ValueTask SetReadTimeoutAsync(TimeSpan timeout, CancellationToken cancellationToken = default) =>
+        Run(() => _inner.SetReadTimeout(timeout), cancellationToken);
+    public ValueTask ReconnectAsync(CancellationToken cancellationToken = default) => Run(_inner.Reconnect, cancellationToken);
+    public ValueTask ConfigureAsync(ConnectOptions opts, CancellationToken cancellationToken = default) =>
+        Run(() => _inner.Configure(opts), cancellationToken);
 
     public void Dispose()
     {
-        if (_inner is IDisposable disposable)
-            disposable.Dispose();
-        GC.SuppressFinalize(this);
+        _gate.Wait();
+        try
+        {
+            if (_disposed) return;
+            _disposed = true;
+            if (_inner is IDisposable disposable) disposable.Dispose();
+        }
+        finally { _gate.Release(); }
     }
 }

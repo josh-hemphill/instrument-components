@@ -15,6 +15,10 @@ public sealed class ScpiSession : IScpiIo
     private readonly bool _ownsInjected;
     private readonly ConnectOptions _opts;
     private readonly List<byte> _readBuffer = new(4096);
+    private readonly object _operationLock = new();
+    private bool _disposed;
+    private string? _pendingErrorReply;
+    private bool _skipBlockTerminator;
     private bool? _systErrSupported;
     private bool? _opcSupported;
     private CommsDiagnostics? _diagnostics;
@@ -24,7 +28,12 @@ public sealed class ScpiSession : IScpiIo
     {
         _transport = transport;
         _opts = opts;
-        transport.Configure(opts);
+        try { transport.Configure(opts); }
+        catch
+        {
+            try { (transport as IDisposable)?.Dispose(); } catch { }
+            throw;
+        }
         if (opts.ResetOnConnect)
         {
             try { new global::InstrumentComponents.Ieee4882.Ieee4882(this).ClearStatus(); } catch { /* best-effort */ }
@@ -42,7 +51,17 @@ public sealed class ScpiSession : IScpiIo
         _injected = injected ?? throw new ArgumentNullException(nameof(injected));
         _ownsInjected = ownsIo;
         _opts = new ConnectOptions();
-        _opts.PerOpTimeout = injected.IoTimeout;
+        try { _opts.PerOpTimeout = injected.IoTimeout; }
+        catch
+        {
+            if (ownsIo) { try { injected.Dispose(); } catch { } }
+            throw;
+        }
+    }
+
+    internal T WithTransaction<T>(Func<T> operation)
+    {
+        lock (_operationLock) return operation();
     }
 
     public ScpiSession WithDiagnostics(CommsDiagnostics diagnostics)
@@ -81,6 +100,15 @@ public sealed class ScpiSession : IScpiIo
     /// <summary>Drains pending bytes from the transport read buffer.</summary>
     public void Flush()
     {
+        lock (_operationLock)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            FlushCore();
+        }
+    }
+
+    private void FlushCore()
+    {
         if (_injected is not null)
             return;
 
@@ -112,6 +140,15 @@ public sealed class ScpiSession : IScpiIo
 
     public void Write(string command)
     {
+        lock (_operationLock)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            WriteCore(command);
+        }
+    }
+
+    private void WriteCore(string command)
+    {
         if (_injected is not null)
         {
             WriteInjected(command);
@@ -124,6 +161,15 @@ public sealed class ScpiSession : IScpiIo
     public string Query(string command) => QueryWithTimeout(command, EffectiveReadTimeout());
 
     public string QueryWithTimeout(string command, TimeSpan timeout)
+    {
+        lock (_operationLock)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return QueryWithTimeoutCore(command, timeout);
+        }
+    }
+
+    private string QueryWithTimeoutCore(string command, TimeSpan timeout)
     {
         if (_injected is not null)
             return QueryInjected(command, timeout);
@@ -194,7 +240,7 @@ public sealed class ScpiSession : IScpiIo
 
     private byte[] ReadResponse(TimeSpan timeout)
     {
-        ByteTransport.SetReadTimeout(timeout);
+        var readStarted = System.Diagnostics.Stopwatch.GetTimestamp();
         _readBuffer.Clear();
         var command = _pendingCommand;
         var chunk = ArrayPool<byte>.Shared.Rent(1024);
@@ -206,6 +252,9 @@ public sealed class ScpiSession : IScpiIo
                 int n;
                 try
                 {
+                    var remaining = timeout - System.Diagnostics.Stopwatch.GetElapsedTime(readStarted);
+                    if (remaining <= TimeSpan.Zero) throw new InstrumentTimeoutException();
+                    ByteTransport.SetReadTimeout(remaining);
                     n = ByteTransport.Read(chunk);
                 }
                 catch (InstrumentTimeoutException)
@@ -230,7 +279,11 @@ public sealed class ScpiSession : IScpiIo
                 }
 
                 for (var i = 0; i < n; i++)
+                {
+                    if (_skipBlockTerminator && (chunk[i] == '\r' || chunk[i] == '\n')) continue;
+                    _skipBlockTerminator = false;
                     _readBuffer.Add(chunk[i]);
+                }
                 if (TryCompleteBufferedFrame(command, started, out var payload))
                     return payload;
             }
@@ -250,6 +303,7 @@ public sealed class ScpiSession : IScpiIo
         try
         {
             (payload, _) = ScpiFraming.ExtractResponse(_readBuffer.ToArray(), _opts.Terminator);
+            _skipBlockTerminator = _readBuffer[0] == (byte)'#' && _readBuffer.Count > 1 && _readBuffer[1] != (byte)'0';
             RecordSuccess(CommsEventKind.ReadOk, command, 1, started);
             return true;
         }
@@ -354,20 +408,37 @@ public sealed class ScpiSession : IScpiIo
 
     public bool ProbeSystErr()
     {
+        lock (_operationLock)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return ProbeSystErrCore();
+        }
+    }
+
+    private bool ProbeSystErrCore()
+    {
         if (_systErrSupported is { } v) return v;
         try
         {
             var resp = QueryWithTimeout("SYST:ERR?", TimeSpan.FromMilliseconds(500));
             _systErrSupported = ScpiProtocol.IsSystErrSupportedReply(resp);
+            // A zero reply describes the queue at probe time, not at the next check.
+            if (_systErrSupported.Value && !ScpiProtocol.IsNoErrorReply(resp)) _pendingErrorReply = resp;
         }
-        catch
-        {
-            _systErrSupported = false;
-        }
+        catch (InstrumentException) { return false; }
         return _systErrSupported.Value;
     }
 
     public bool ProbeOpc()
+    {
+        lock (_operationLock)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return ProbeOpcCore();
+        }
+    }
+
+    private bool ProbeOpcCore()
     {
         if (_opcSupported is { } v) return v;
         try
@@ -375,24 +446,37 @@ public sealed class ScpiSession : IScpiIo
             var resp = QueryWithTimeout("*OPC?", TimeSpan.FromMilliseconds(500));
             _opcSupported = ScpiProtocol.IsOpcSupportedReply(resp);
         }
-        catch
-        {
-            _opcSupported = false;
-        }
+        catch (InstrumentException) { return false; }
         return _opcSupported.Value;
     }
 
     public IReadOnlyList<string> CheckErrors()
     {
-        if (!ProbeSystErr()) return Array.Empty<string>();
+        lock (_operationLock)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return CheckErrorsCore();
+        }
+    }
+
+    private IReadOnlyList<string> CheckErrorsCore()
+    {
+        if (_systErrSupported == false) return Array.Empty<string>();
         var errors = new List<string>();
         while (true)
         {
-            var resp = Query("SYST:ERR?");
-            if (resp.StartsWith("0,", StringComparison.Ordinal) || resp.StartsWith("+0,", StringComparison.Ordinal))
+            var resp = _pendingErrorReply ?? Query("SYST:ERR?");
+            _pendingErrorReply = null;
+            if (!ScpiProtocol.IsSystErrSupportedReply(resp))
+            {
+                if (_systErrSupported is null) { _systErrSupported = false; return errors; }
+                throw new ParseException($"invalid error queue reply '{resp}'");
+            }
+            _systErrSupported = true;
+            if (ScpiProtocol.IsNoErrorReply(resp))
                 break;
             errors.Add(resp);
-            if (errors.Count > 50) break;
+            if (errors.Count >= 50) break;
         }
         return errors;
     }
@@ -401,7 +485,30 @@ public sealed class ScpiSession : IScpiIo
 
     public static IReadOnlyList<double> ParseF64Csv(string response) => ScpiProtocol.ParseF64Csv(response);
 
+    internal string QueryCompletion(TimeSpan timeout)
+    {
+        lock (_operationLock)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            EnsureOpcAvailable();
+            if (_injected is not null) return QueryInjected("*OPC?", timeout);
+            WriteWithRetry("*OPC?", false);
+            try { return Encoding.UTF8.GetString(ReadResponse(timeout)).Trim(); }
+            catch (InstrumentTimeoutException) { try { FlushCore(); } catch { } throw; }
+        }
+    }
+
+    internal void EnsureOpcAvailable()
+    {
+        if (_opcSupported == false) throw new InstrumentUnsupportedException("operation completion requires *OPC? support");
+    }
+
     public void Dispose()
+    {
+        lock (_operationLock) { if (_disposed) return; _disposed = true; DisposeCore(); }
+    }
+
+    private void DisposeCore()
     {
         if (_injected is not null)
         {

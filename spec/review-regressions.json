@@ -1,0 +1,132 @@
+{
+  "errorQueues": [
+    {
+      "id": "empty",
+      "replies": [
+        "0,\"No error\"",
+        "0,\"No error\""
+      ],
+      "expected": []
+    },
+    {
+      "id": "single",
+      "replies": [
+        "-100,\"Command error\"",
+        "0,\"No error\""
+      ],
+      "expected": [
+        "-100,\"Command error\""
+      ]
+    },
+    {
+      "id": "multiple",
+      "replies": [
+        "-100,\"Command error\"",
+        "-200,\"Execution error\"",
+        "+0,\"No error\""
+      ],
+      "expected": [
+        "-100,\"Command error\"",
+        "-200,\"Execution error\""
+      ]
+    },
+    {
+      "id": "spaced-zero",
+      "replies": [
+        "  +0 , \"No error\"  ",
+        "  +0 , \"No error\"  "
+      ],
+      "expected": []
+    },
+    {
+      "id": "unsupported",
+      "replies": [
+        "OK"
+      ],
+      "expected": []
+    }
+  ],
+  "probeReplies": [
+    { "command": ":MEAS:VOLT:DC?", "reply": "-3.3", "valid": true },
+    { "command": "meas:volt:dc?", "reply": "-3.3E-3", "valid": true },
+    { "command": ":VOLT? (@1)", "reply": "-3.3", "valid": true },
+    { "command": ":MEAS:VOLT:DC?", "reply": "-Infinity", "valid": false },
+    { "command": ":MEAS:VOLT:DC?", "reply": "NaN", "valid": false },
+    { "command": ":FREQ:CENT?", "reply": "-3.3", "valid": false },
+    {
+      "command": ":SENS:FUNC?",
+      "reply": "-113,\"Undefined header\"",
+      "valid": false
+    },
+    {
+      "command": ":TIM:SCAL?",
+      "reply": "NaN",
+      "valid": false
+    },
+    {
+      "command": ":OUTP? 1",
+      "reply": "ERROR",
+      "valid": false
+    },
+    {
+      "command": ":SENS:FUNC?",
+      "reply": "\"CURR:DC\"",
+      "valid": true
+    },
+    {
+      "command": ":SOUR:FUNC?",
+      "reply": "SIN",
+      "valid": true
+    },
+    {
+      "command": ":SOUR:FUNC?",
+      "reply": "VOLT:DC",
+      "valid": false
+    },
+    {
+      "command": ":UNIT:POW?",
+      "reply": "DBM",
+      "valid": true
+    },
+    {
+      "command": ":FREQ:CENT?",
+      "reply": "1e9",
+      "valid": true
+    },
+    {
+      "command": ":OUTP? 1",
+      "reply": "1",
+      "valid": true
+    },
+    {
+      "command": ":ROUT:CLOS?",
+      "reply": "(@1,2)",
+      "valid": true
+    }
+  ],
+  "socketAddresses": [
+    {
+      "address": "TCPIP0::localhost::5025::SOCKET",
+      "port": 5025
+    },
+    {
+      "address": "TCPIP::localhost::5025::socket",
+      "port": 5025
+    },
+    {
+      "address": "TCPIP0::localhost::inst0::INSTR",
+      "port": null
+    },
+    {
+      "address": "TCPIP0::localhost::0::INSTR",
+      "port": null
+    }
+  ],
+  "blockChunks": [
+    "#15a",
+    "bcde",
+    "\r",
+    "\n",
+    "3.3\n"
+  ]
+}

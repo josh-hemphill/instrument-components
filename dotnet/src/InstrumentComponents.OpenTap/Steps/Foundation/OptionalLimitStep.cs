@@ -14,6 +14,8 @@ public abstract class OptionalLimitStep<TInstrument> : InstrumentBoundStep<TInst
 
     protected OptionalLimitStep()
     {
+        Rules.Add(() => LimitLow is null || double.IsFinite(LimitLow.Value), "Limit low must be finite.", nameof(LimitLow));
+        Rules.Add(() => LimitHigh is null || double.IsFinite(LimitHigh.Value), "Limit high must be finite.", nameof(LimitHigh));
         Rules.Add(
             () => LimitLow is null || LimitHigh is null || LimitLow <= LimitHigh,
             "Limit low must not exceed limit high.",

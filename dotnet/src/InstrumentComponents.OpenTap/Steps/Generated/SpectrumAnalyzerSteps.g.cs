@@ -14,7 +14,7 @@ public sealed class SpectrumAnalyzerFetchTraceStep : InstrumentBoundStep<Spectru
         var samples = instrument.Analyzer.FetchTraceAscii();
         for (var i = 0; i < samples.Count; i++)
             PhaseIResults.PublishSample(Results, "Trace", i, samples[i]);
-        UpgradeVerdict(Verdict.Pass);
+        UpgradeVerdict(samples.All(double.IsFinite) ? Verdict.Pass : Verdict.Fail);
     }
 }
 

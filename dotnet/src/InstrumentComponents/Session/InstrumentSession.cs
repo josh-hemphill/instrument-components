@@ -17,6 +17,23 @@ public sealed class InstrumentSession : IDisposable
     public ResourceAddress Address { get; }
     public ScpiSession Scpi { get; }
     private readonly DeviceIdentity _identity;
+    internal string DmmMeasurementUnit { get; set; } = "";
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<uint, byte> _powerSupplyChannels = new();
+    private uint? _powerSupplyChannelCount;
+    /// <summary>Explicit physical channel count for devices whose dialect has no channel metadata.</summary>
+    public uint? PowerSupplyChannelCount
+    {
+        get => _powerSupplyChannelCount;
+        set { if (value == 0) throw new ArgumentOutOfRangeException(nameof(value)); _powerSupplyChannelCount = value; }
+    }
+    internal void TrackPowerSupplyChannel(uint channel)
+    {
+        if (channel == 0) throw new ArgumentOutOfRangeException(nameof(channel));
+        _powerSupplyChannels.TryAdd(channel, 0);
+    }
+    internal IReadOnlyList<uint> PowerSupplyChannels(uint dialectCount) =>
+        Enumerable.Range(1, checked((int)Math.Max(1, PowerSupplyChannelCount ?? dialectCount)))
+            .Select(x => (uint)x).Concat(_powerSupplyChannels.Keys).Distinct().Order().ToArray();
 
     public InstrumentSession(
         ResourceAddress address,
@@ -67,7 +84,7 @@ public sealed class InstrumentSession : IDisposable
 
     public Idn Idn() => ScpiComm("idn", scpi => new global::InstrumentComponents.Ieee4882.Ieee4882(scpi).Idn());
 
-    public void Reset() => ScpiComm("*RST", scpi => { new global::InstrumentComponents.Ieee4882.Ieee4882(scpi).Reset(); return true; });
+    public void Reset() => ScpiComm("*RST", scpi => scpi.WithTransaction(() => { DmmMeasurementUnit = ""; new global::InstrumentComponents.Ieee4882.Ieee4882(scpi).Reset(); return true; }));
 
     public void ClearStatus() => ScpiComm("*CLS", scpi => { new global::InstrumentComponents.Ieee4882.Ieee4882(scpi).ClearStatus(); return true; });
 
@@ -91,14 +108,22 @@ public sealed class InstrumentSession : IDisposable
 }
 
 /// <summary>Reuses a single underlying session across typed views.</summary>
-public sealed class SessionPool
+public sealed class SessionPool : IDisposable
 {
     private readonly InstrumentSession _session;
     private readonly object _lock = new();
 
     public SessionPool(InstrumentSession session) => _session = session;
 
-    public InstrumentSession Lock() { lock (_lock) return _session; }
+    [Obsolete("Use WithSession for a multi-command transaction. Individual SCPI queries are serialized by the session.")]
+    public InstrumentSession Lock() => _session;
+
+    public void Dispose() { lock (_lock) _session.Dispose(); }
+
+    public T WithSession<T>(Func<InstrumentSession, T> operation)
+    {
+        lock (_lock) return _session.Scpi.WithTransaction(() => operation(_session));
+    }
 }
 
 public static class SessionHelpers

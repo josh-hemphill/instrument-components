@@ -1,4 +1,4 @@
-use crate::error::Result;
+use crate::error::{Error, Result};
 use crate::identity::Idn;
 use crate::scpi::ScpiSession;
 use std::time::Duration;
@@ -28,18 +28,18 @@ impl<'a> Ieee4882<'a> {
     }
 
     pub fn opc_query(&mut self) -> Result<bool> {
-        if !self.session.probe_opc() {
-            return Ok(true);
-        }
-        let resp = self.session.query("*OPC?")?;
-        Ok(resp.trim() == "1")
+        Ok(crate::scpi::is_opc_supported_reply(
+            &self.session.query("*OPC?")?,
+        ))
     }
 
     pub fn wait_complete(&mut self) -> Result<()> {
-        if self.session.probe_opc() {
-            let _ = self
-                .session
-                .query_with_timeout("*OPC?", Duration::from_secs(30))?;
+        self.session.ensure_opc_available()?;
+        let reply = self.session.query_completion(Duration::from_secs(30))?;
+        if !crate::scpi::is_opc_supported_reply(&reply) {
+            return Err(Error::Unsupported(
+                "operation completion requires a valid *OPC? reply",
+            ));
         }
         Ok(())
     }
@@ -79,19 +79,21 @@ impl<'a> AsyncIeee4882<'a> {
     }
 
     pub async fn opc_query(&mut self) -> Result<bool> {
-        if !self.session.probe_opc().await {
-            return Ok(true);
-        }
-        let resp = self.session.query("*OPC?").await?;
-        Ok(resp.trim() == "1")
+        Ok(crate::scpi::is_opc_supported_reply(
+            &self.session.query("*OPC?").await?,
+        ))
     }
 
     pub async fn wait_complete(&mut self) -> Result<()> {
-        if self.session.probe_opc().await {
-            let _ = self
-                .session
-                .query_with_timeout("*OPC?", Duration::from_secs(30))
-                .await?;
+        self.session.ensure_opc_available()?;
+        let reply = self
+            .session
+            .query_completion(Duration::from_secs(30))
+            .await?;
+        if !crate::scpi::is_opc_supported_reply(&reply) {
+            return Err(Error::Unsupported(
+                "operation completion requires a valid *OPC? reply",
+            ));
         }
         Ok(())
     }

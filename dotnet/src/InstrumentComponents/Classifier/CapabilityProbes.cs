@@ -11,7 +11,7 @@ internal static class CapabilityProbes
         [":SENS:FUNC?", "SENS:FUNC?", ":FUNC?", "FUNC?"];
 
     internal static readonly string[] PsuReadonlyCommands =
-        [":OUTP? 1", "OUTP? 1", ":OUTP?", "OUTP?"];
+        [":OUTP? 1", "OUTP? 1"];
 
     internal static readonly string[] FgenReadonlyCommands =
         [":SOUR:FUNC?", "SOUR:FUNC?"];
@@ -34,13 +34,33 @@ internal static class CapabilityProbes
     internal static readonly string[] DmmAcquisitionCommands =
         [":MEAS:VOLT:DC?", "MEAS:VOLT:DC?"];
 
+    internal static bool ValidProbeReply(string command, string response)
+    {
+        var cmd = command.TrimStart(':').ToUpperInvariant();
+        var reply = response.Trim().Trim('"').ToUpperInvariant();
+        if (reply.Length == 0 || ScpiProtocol.IsSystErrSupportedReply(reply)) return false;
+        if (cmd.Contains("FUNC"))
+        {
+            if (cmd.StartsWith("SOUR")) return new[] { "SIN", "SQU", "RAMP", "PULS", "NOIS", "DC", "ARB", "USER" }.Contains(reply);
+            return new[] { "VOLT", "VOLT:DC", "VOLT:AC", "CURR", "CURR:DC", "CURR:AC", "RES", "FRES", "FREQ", "PER", "CONT", "DIOD", "TEMP", "CAP" }.Contains(reply);
+        }
+        if (cmd.StartsWith("OUTP") || cmd.Contains("AUTO?")) return reply is "0" or "1" or "OFF" or "ON";
+        if (cmd.StartsWith("UNIT")) return reply is "DBM" or "W" or "WATT";
+        if (cmd.StartsWith("WAV")) return reply.StartsWith("CHAN") && uint.TryParse(reply[4..], out var channel) && channel > 0;
+        if (cmd.StartsWith("ROUT")) return reply is "0" or "1" || reply.StartsWith("(@") && reply.EndsWith(")") && reply[2..^1].All(c => char.IsAsciiDigit(c) || c is ',' or ':' or ' ');
+        var signedVoltage = cmd is "MEAS:VOLT:DC?" or "VOLT? (@1)";
+        return double.TryParse(reply, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var number) && double.IsFinite(number) && (signedVoltage || number >= 0);
+    }
+
     public static bool ProbeAny(ScpiSession session, string[] commands, TimeSpan timeout)
     {
         foreach (var cmd in commands)
         {
             try
             {
-                session.QueryWithTimeout(cmd, timeout);
+                var reply = session.QueryWithTimeout(cmd, timeout);
+                if (!ValidProbeReply(cmd, reply)) continue;
+                if (ReferenceEquals(commands, PsuReadonlyCommands) && !ValidProbeReply(":VOLT? (@1)", session.QueryWithTimeout(":VOLT? (@1)", timeout))) continue;
                 return true;
             }
             catch
@@ -57,9 +77,12 @@ internal static class CapabilityProbes
         {
             try
             {
-                await session.QueryWithTimeoutAsync(cmd, timeout, cancellationToken).ConfigureAwait(false);
+                var reply = await session.QueryWithTimeoutAsync(cmd, timeout, cancellationToken).ConfigureAwait(false);
+                if (!ValidProbeReply(cmd, reply)) continue;
+                if (ReferenceEquals(commands, PsuReadonlyCommands) && !ValidProbeReply(":VOLT? (@1)", await session.QueryWithTimeoutAsync(":VOLT? (@1)", timeout, cancellationToken).ConfigureAwait(false))) continue;
                 return true;
             }
+            catch (OperationCanceledException) { throw; }
             catch
             {
                 // try next spelling

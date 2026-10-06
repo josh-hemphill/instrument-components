@@ -65,6 +65,7 @@ jobs:
           ./tap package list -i | grep InstrumentComponents.OpenTap
           ./tap package uninstall InstrumentComponents.OpenTap -f
           ./tap package install ./InstrumentComponents.OpenTap.0.1.0.TapPackage
+          ./tap package verify InstrumentComponents.OpenTap
           ./tap package show InstrumentComponents.OpenTap
           ./tap package list -i | grep InstrumentComponents.OpenTap
 

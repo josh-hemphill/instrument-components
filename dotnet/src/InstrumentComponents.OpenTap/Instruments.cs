@@ -28,9 +28,20 @@ public sealed class DcPowerSupplyInstrument : ScpiInstrument
 
     protected override InstrumentKind PrimaryKind => InstrumentKind.DcPowerSupply;
 
-    public DcPowerSupply Supply => AsDcPowerSupply();
+    [Display("Output Channels", Group: "Communication", Order: 3, Description: "Physical PSU channel count. Required for generic devices before safe shutdown; vendor dialects supply their known count.")]
+    public uint? OutputChannelCount { get; set; }
 
-    public override void OutputOff() => AsDcPowerSupply().OutputOff();
+    public DcPowerSupply Supply
+    {
+        get
+        {
+            var supply = AsDcPowerSupply();
+            supply.Session.PowerSupplyChannelCount = OutputChannelCount;
+            return supply;
+        }
+    }
+
+    public override void OutputOff() => Supply.OutputOff();
 }
 
 [Display("Function Generator", Groups: ["Instrument Components"], Description: "SCPI function generator.")]

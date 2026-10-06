@@ -61,6 +61,6 @@ public sealed class ScopeCaptureTraceStep : InstrumentBoundStep<OscilloscopeInst
         var trace = instrument.Scope.CaptureVoltageTrace(Channel);
         for (var i = 0; i < trace.Samples.Count; i++)
             PhaseIResults.PublishSample(Results, $"CH{Channel}", i, trace.Samples[i]);
-        UpgradeVerdict(Verdict.Pass);
+        UpgradeVerdict(trace.Samples.All(double.IsFinite) ? Verdict.Pass : Verdict.Fail);
     }
 }

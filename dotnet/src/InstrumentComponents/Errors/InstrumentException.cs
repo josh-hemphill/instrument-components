@@ -11,6 +11,7 @@ public class InstrumentException : Exception
 public class TransportException : InstrumentException
 {
     public TransportException(string message) : base(message) { }
+    public TransportException(string message, Exception inner) : base(message, inner) { }
 }
 
 public sealed class TransportClosedException : TransportException
@@ -58,6 +59,7 @@ public sealed class SessionLimitException : InstrumentException
 {
     public string Address { get; }
     public SessionLimitException(string address) : base($"session limit reached for {address}") => Address = address;
+    public SessionLimitException(string address, Exception inner) : base($"session limit reached for {address}", inner) => Address = address;
 }
 
 public sealed class InvalidAddressException : InstrumentException

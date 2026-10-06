@@ -42,8 +42,10 @@ public class IdentityShutdownTests
     public void PsuOutputOffDisablesEveryChannel()
     {
         var io = new RecordingIo();
-        new DcPowerSupply(SessionFrom(io)).OutputOff();
-        Assert.Contains(io.Writes, w => w.Contains("OFF", StringComparison.OrdinalIgnoreCase));
+        var session = SessionFrom(io);
+        session.PowerSupplyChannelCount = 3;
+        new DcPowerSupply(session).OutputOff();
+        Assert.Equal(new[] { ":OUTP1 OFF", ":OUTP2 OFF", ":OUTP3 OFF" }, io.Writes);
     }
 
     [Fact]
@@ -114,7 +116,7 @@ public class IdentityShutdownTests
         public void Write(string command) => Writes.Add(command);
 
         public string Query(string command) =>
-            _queries.TryGetValue(command.Trim(), out var response) ? response : "";
+            command.Trim() == "*OPC?" ? "1" : _queries.TryGetValue(command.Trim(), out var response) ? response : "";
 
         public void Dispose()
         {

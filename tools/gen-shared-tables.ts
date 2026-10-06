@@ -121,11 +121,29 @@ for (const key of readonlyKeys) {
 }
 const acq = probes["acquisition.dmm"] as { commands?: string[] };
 rustProbes += formatRustStrArray("DMM_ACQUISITION_COMMANDS", acq.commands ?? []) + "\n\n";
-rustProbes += `/// Returns true when any probe command succeeds on the session.
+rustProbes += `/// Validate instrument-specific reply shapes rather than accepting any transport success.
+pub fn valid_probe_reply(command: &str, response: &str) -> bool {
+    let cmd = command.trim_start_matches(':').to_ascii_uppercase();
+    let reply = response.trim().trim_matches('"').to_ascii_uppercase();
+    if reply.is_empty() || crate::scpi::is_syst_err_supported_reply(&reply) { return false; }
+    if cmd.contains("FUNC") {
+        return if cmd.starts_with("SOUR") { ["SIN", "SQU", "RAMP", "PULS", "NOIS", "DC", "ARB", "USER"].contains(&reply.as_str()) }
+        else { ["VOLT", "VOLT:DC", "VOLT:AC", "CURR", "CURR:DC", "CURR:AC", "RES", "FRES", "FREQ", "PER", "CONT", "DIOD", "TEMP", "CAP"].contains(&reply.as_str()) };
+    }
+    if cmd.starts_with("OUTP") || cmd.contains("AUTO?") { return ["0", "1", "OFF", "ON"].contains(&reply.as_str()); }
+    if cmd.starts_with("UNIT") { return ["DBM", "W", "WATT"].contains(&reply.as_str()); }
+    if cmd.starts_with("WAV") { return reply.strip_prefix("CHAN").and_then(|s| s.parse::<u32>().ok()).is_some_and(|n| n > 0); }
+    if cmd.starts_with("ROUT") { return ["0", "1"].contains(&reply.as_str()) || reply.strip_prefix("(@").and_then(|s| s.strip_suffix(')')).is_some_and(|s| s.chars().all(|c| c.is_ascii_digit() || [',', ':', ' '].contains(&c))); }
+    let signed_voltage = matches!(cmd.as_str(), "MEAS:VOLT:DC?" | "VOLT? (@1)");
+    reply.parse::<f64>().is_ok_and(|n| n.is_finite() && (signed_voltage || n >= 0.0))
+}
+
+/// Returns true when a probe produces valid capability evidence.
 pub fn probe_any(session: &mut ScpiSession, commands: &[&str], timeout: Duration) -> bool {
     commands
         .iter()
-        .any(|cmd| session.query_with_timeout(cmd, timeout).is_ok())
+                .any(|cmd| session.query_with_timeout(cmd, timeout).is_ok_and(|reply| valid_probe_reply(cmd, &reply)))
+        && (commands != PSU_READONLY_COMMANDS || session.query_with_timeout(":VOLT? (@1)", timeout).is_ok_and(|reply| valid_probe_reply(":VOLT? (@1)", &reply)))
 }
 `;
 
@@ -264,13 +282,33 @@ for (const key of readonlyKeys) {
   csProbes += formatCsStrArray(csConstName[key], section.commands ?? []) + "\n\n";
 }
 csProbes += formatCsStrArray("DmmAcquisitionCommands", acq.commands ?? []) + "\n\n";
-csProbes += `    public static bool ProbeAny(ScpiSession session, string[] commands, TimeSpan timeout)
+csProbes += `    internal static bool ValidProbeReply(string command, string response)
+    {
+        var cmd = command.TrimStart(':').ToUpperInvariant();
+        var reply = response.Trim().Trim('"').ToUpperInvariant();
+        if (reply.Length == 0 || ScpiProtocol.IsSystErrSupportedReply(reply)) return false;
+        if (cmd.Contains("FUNC"))
+        {
+            if (cmd.StartsWith("SOUR")) return new[] { "SIN", "SQU", "RAMP", "PULS", "NOIS", "DC", "ARB", "USER" }.Contains(reply);
+            return new[] { "VOLT", "VOLT:DC", "VOLT:AC", "CURR", "CURR:DC", "CURR:AC", "RES", "FRES", "FREQ", "PER", "CONT", "DIOD", "TEMP", "CAP" }.Contains(reply);
+        }
+        if (cmd.StartsWith("OUTP") || cmd.Contains("AUTO?")) return reply is "0" or "1" or "OFF" or "ON";
+        if (cmd.StartsWith("UNIT")) return reply is "DBM" or "W" or "WATT";
+        if (cmd.StartsWith("WAV")) return reply.StartsWith("CHAN") && uint.TryParse(reply[4..], out var channel) && channel > 0;
+        if (cmd.StartsWith("ROUT")) return reply is "0" or "1" || reply.StartsWith("(@") && reply.EndsWith(")") && reply[2..^1].All(c => char.IsAsciiDigit(c) || c is ',' or ':' or ' ');
+        var signedVoltage = cmd is "MEAS:VOLT:DC?" or "VOLT? (@1)";
+        return double.TryParse(reply, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var number) && double.IsFinite(number) && (signedVoltage || number >= 0);
+    }
+
+    public static bool ProbeAny(ScpiSession session, string[] commands, TimeSpan timeout)
     {
         foreach (var cmd in commands)
         {
             try
             {
-                session.QueryWithTimeout(cmd, timeout);
+                var reply = session.QueryWithTimeout(cmd, timeout);
+                if (!ValidProbeReply(cmd, reply)) continue;
+                if (ReferenceEquals(commands, PsuReadonlyCommands) && !ValidProbeReply(":VOLT? (@1)", session.QueryWithTimeout(":VOLT? (@1)", timeout))) continue;
                 return true;
             }
             catch
@@ -287,9 +325,12 @@ csProbes += `    public static bool ProbeAny(ScpiSession session, string[] comma
         {
             try
             {
-                await session.QueryWithTimeoutAsync(cmd, timeout, cancellationToken).ConfigureAwait(false);
+                var reply = await session.QueryWithTimeoutAsync(cmd, timeout, cancellationToken).ConfigureAwait(false);
+                if (!ValidProbeReply(cmd, reply)) continue;
+                if (ReferenceEquals(commands, PsuReadonlyCommands) && !ValidProbeReply(":VOLT? (@1)", await session.QueryWithTimeoutAsync(":VOLT? (@1)", timeout, cancellationToken).ConfigureAwait(false))) continue;
                 return true;
             }
+            catch (OperationCanceledException) { throw; }
             catch
             {
                 // try next spelling

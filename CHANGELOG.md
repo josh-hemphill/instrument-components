@@ -34,6 +34,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Dispose discovery sessions and failed owned constructions; clean up unsupported VISA session types and propagate cancellation.
+- Preserve the first SCPI error-queue entry and prevent unsupported/timed-out completion waits from reporting success in Rust and C#.
+- Offload and serialize C# async transport/opening calls; serialize complete queries and share health synchronization across catalog references.
+- Attempt all configured/tracked PSU outputs during shutdown and report unknown physical channel counts explicitly; add OpenTAP Output Channels.
+- Reject nonfinite OpenTAP scalar/sample/trace values and settings, publish DMM acquisition units from configured functions, and clean up failed reattachment.
+- Validate capability reply shapes and additional PSU evidence; preserve fragmented block terminators and large mock replies in both languages.
+- Correct SOCKET ports, recorder ownership, PSU parse errors, Rust VISA write timeout mapping, and typed VISA error classification.
+- Fail explicitly for unsupported N6705 remote-sense ON/OFF instead of emitting an invalid fallback.
+- Validate release tag/package/dependency agreement, make duplicate publication fail, serialize hardware suites, and correct package-facing links.
+- Update xUnit test dependencies to remove legacy HTTP and regex vulnerability advisories.
+
+
 - OpenTAP pack Release builds keep `CreateOpenTapPackage` off unless `-p:CreateOpenTapPackage=true` (OpenTAP's props otherwise run `tap` and need net9)
 - Failed OpenTAP `Open()` disposes provider-created SCPI I/O so a retry does not reuse a stale VISA session
 - Queries retry the write+read pair after a timed-out read, flushing stale data first

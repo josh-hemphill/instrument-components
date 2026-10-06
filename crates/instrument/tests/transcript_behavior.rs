@@ -77,6 +77,10 @@ fn psu_n6705c_set_and_read_voltage() {
     let session = session_from_fixture("psu_n6705c.json", "Agilent Technologies", "N6705C");
     let mut psu = DcPowerSupply::new(session);
     assert_eq!(psu.channel_count(), 4);
+    assert!(matches!(
+        psu.sense_enable(1, true),
+        Err(instrument_core::Error::Unsupported(_))
+    ));
     psu.set_voltage(1, 3.3).unwrap();
     psu.output_enable(1, true).unwrap();
     let volts = psu.read_voltage(1).unwrap();

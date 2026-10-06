@@ -1,7 +1,7 @@
 use super::framing::extract_response;
 use super::protocol::{
-    is_opc_supported_reply, is_syst_err_supported_reply, max_write_attempts, normalize_command,
-    parse_f64, SessionCapabilities,
+    is_no_error_reply, is_opc_supported_reply, is_syst_err_supported_reply, max_write_attempts,
+    normalize_command, parse_f64, SessionCapabilities,
 };
 use crate::connect::ConnectOptions;
 use crate::diagnostics::{CommsEventKind, Diagnostics};
@@ -19,6 +19,8 @@ pub struct ScpiSession {
     read_buffer: Vec<u8>,
     diagnostics: Option<Diagnostics>,
     pending_command: Option<String>,
+    pending_error_reply: Option<String>,
+    skip_block_terminator: bool,
 }
 
 impl ScpiSession {
@@ -31,6 +33,8 @@ impl ScpiSession {
             read_buffer: Vec::with_capacity(4096),
             diagnostics: None,
             pending_command: None,
+            pending_error_reply: None,
+            skip_block_terminator: false,
         };
         if session.opts.reset_on_connect {
             let _ = Ieee4882::new(&mut session).clear_status();
@@ -167,18 +171,24 @@ impl ScpiSession {
 
     fn read_response(&mut self, timeout: Duration) -> Result<Vec<u8>> {
         self.transport.set_read_timeout(timeout)?;
-        let result = self.read_framed_response();
+        let result = self.read_framed_response(timeout);
         let _ = self.restore_io_timeout();
         result
     }
 
-    fn read_framed_response(&mut self) -> Result<Vec<u8>> {
+    fn read_framed_response(&mut self, timeout: Duration) -> Result<Vec<u8>> {
+        let deadline = Instant::now() + timeout;
         self.read_buffer.clear();
         let command = self.pending_command.clone();
 
         let mut chunk = [0u8; 1024];
         loop {
             let started = Instant::now();
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            if remaining.is_zero() {
+                return Err(Error::Timeout);
+            }
+            self.transport.set_read_timeout(remaining)?;
             match self.transport.read(&mut chunk) {
                 Ok(0) => {
                     if !self.read_buffer.is_empty() {
@@ -191,6 +201,8 @@ impl ScpiSession {
                                 1,
                                 started,
                             );
+                            self.skip_block_terminator = self.read_buffer.starts_with(b"#")
+                                && self.read_buffer.get(1) != Some(&b'0');
                             return Ok(payload);
                         }
                     }
@@ -204,11 +216,19 @@ impl ScpiSession {
                     return Err(Error::Timeout);
                 }
                 Ok(n) => {
-                    self.read_buffer.extend_from_slice(&chunk[..n]);
+                    for &byte in &chunk[..n] {
+                        if self.skip_block_terminator && matches!(byte, b'\r' | b'\n') {
+                            continue;
+                        }
+                        self.skip_block_terminator = false;
+                        self.read_buffer.push(byte);
+                    }
                     if let Ok((payload, _)) =
                         extract_response(&self.read_buffer, &self.opts.terminator)
                     {
                         self.record_success(CommsEventKind::ReadOk, command.as_deref(), 1, started);
+                        self.skip_block_terminator = self.read_buffer.starts_with(b"#")
+                            && self.read_buffer.get(1) != Some(&b'0');
                         return Ok(payload);
                     }
                 }
@@ -223,6 +243,8 @@ impl ScpiSession {
                                 1,
                                 started,
                             );
+                            self.skip_block_terminator = self.read_buffer.starts_with(b"#")
+                                && self.read_buffer.get(1) != Some(&b'0');
                             return Ok(payload);
                         }
                     }
@@ -300,44 +322,85 @@ impl ScpiSession {
         if let Some(v) = self.capabilities.syst_err {
             return v;
         }
-        let supported = self
-            .query_with_timeout("SYST:ERR?", Duration::from_millis(500))
-            .ok()
-            .is_some_and(|resp| is_syst_err_supported_reply(&resp));
-        self.capabilities.syst_err = Some(supported);
-        supported
+        match self.query_with_timeout("SYST:ERR?", Duration::from_millis(500)) {
+            Ok(resp) => {
+                let supported = is_syst_err_supported_reply(&resp);
+                self.capabilities.syst_err = Some(supported);
+                // A zero reply describes the queue at probe time, not at the next check.
+                if supported && !is_no_error_reply(&resp) {
+                    self.pending_error_reply = Some(resp);
+                }
+                supported
+            }
+            Err(_) => false,
+        }
     }
 
-    /// Probes and caches whether *OPC? is supported.
+    /// Timeout is inconclusive and must not be cached as unsupported.
     pub fn probe_opc(&mut self) -> bool {
         if let Some(v) = self.capabilities.opc {
             return v;
         }
-        let supported = self
-            .query_with_timeout("*OPC?", Duration::from_millis(500))
-            .ok()
-            .is_some_and(|resp| is_opc_supported_reply(&resp));
-        self.capabilities.opc = Some(supported);
-        supported
+        match self.query_with_timeout("*OPC?", Duration::from_millis(500)) {
+            Ok(resp) => {
+                let supported = is_opc_supported_reply(&resp);
+                self.capabilities.opc = Some(supported);
+                supported
+            }
+            Err(_) => false,
+        }
     }
 
-    /// Drains the instrument error queue when supported.
+    /// Drains the error queue, including any entry consumed by an earlier probe.
     pub fn check_errors(&mut self) -> Result<Vec<String>> {
-        if !self.probe_syst_err() {
+        if self.capabilities.syst_err == Some(false) {
             return Ok(Vec::new());
         }
         let mut errors = Vec::new();
         loop {
-            let resp = self.query("SYST:ERR?")?;
-            if resp.starts_with("0,") || resp.starts_with("+0,") {
+            let resp = match self.pending_error_reply.take() {
+                Some(reply) => reply,
+                None => self.query("SYST:ERR?")?,
+            };
+            if !is_syst_err_supported_reply(&resp) {
+                if self.capabilities.syst_err.is_none() {
+                    self.capabilities.syst_err = Some(false);
+                    return Ok(errors);
+                }
+                return Err(Error::Parse(format!("invalid error queue reply '{resp}'")));
+            }
+            self.capabilities.syst_err = Some(true);
+            if is_no_error_reply(&resp) {
                 break;
             }
             errors.push(resp);
-            if errors.len() > 50 {
+            if errors.len() >= 50 {
                 break;
             }
         }
         Ok(errors)
+    }
+
+    pub(crate) fn query_completion(&mut self, timeout: Duration) -> Result<String> {
+        self.ensure_opc_available()?;
+        self.write_with_retry("*OPC?", false)?;
+        match self.read_response(timeout) {
+            Ok(bytes) => Ok(String::from_utf8_lossy(&bytes).trim().into()),
+            Err(Error::Timeout) => {
+                let _ = self.flush();
+                Err(Error::Timeout)
+            }
+            Err(err) => Err(err),
+        }
+    }
+
+    pub(crate) fn ensure_opc_available(&self) -> Result<()> {
+        if self.capabilities.opc == Some(false) {
+            return Err(Error::Unsupported(
+                "operation completion requires *OPC? support",
+            ));
+        }
+        Ok(())
     }
 
     /// Parses a numeric SCPI response.

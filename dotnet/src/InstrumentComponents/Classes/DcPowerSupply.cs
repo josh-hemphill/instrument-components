@@ -21,9 +21,12 @@ public sealed class DcPowerSupply : IInstrumentIdentity, IInstrumentShutdown
 
     public void OutputOff()
     {
-        var count = ChannelCount;
-        for (var channel = 1u; channel <= count; channel++)
-            OutputEnable(channel, false);
+        var failures = new List<Exception>();
+        foreach (var channel in _session.PowerSupplyChannels(Dialect.Channels))
+            try { OutputEnable(channel, false); } catch (Exception ex) { failures.Add(ex); }
+        if (failures.Count > 0) throw new AggregateException("Failed to disable all PSU outputs.", failures);
+        if (Dialect.Id == "generic_dcpwr" && _session.PowerSupplyChannelCount is null)
+            throw new global::InstrumentComponents.Errors.InstrumentUnsupportedException("PSU physical channel count is unknown. Set Session.PowerSupplyChannelCount before shutdown; known outputs were disabled.");
     }
 
     private DialectProfile Dialect => _session.DialectFor(InstrumentKind.DcPowerSupply);
@@ -31,7 +34,7 @@ public sealed class DcPowerSupply : IInstrumentIdentity, IInstrumentShutdown
     private string Cmd(string key, string fallback, params (string Name, string Value)[] vars) =>
         DialectCommand.Try(Dialect, key, fallback, vars);
 
-    public uint ChannelCount => Math.Max(1, Dialect.Channels);
+    public uint ChannelCount => _session.PowerSupplyChannels(Dialect.Channels).Max();
 
     public void SetVoltage(uint channel, double volts) =>
         _session.Scpi.Write(Cmd("set_voltage", ScpiCommands.PsuSetVoltage(channel, volts),
@@ -43,6 +46,7 @@ public sealed class DcPowerSupply : IInstrumentIdentity, IInstrumentShutdown
 
     public void OutputEnable(uint channel, bool enabled)
     {
+        _session.TrackPowerSupplyChannel(channel);
         var state = enabled ? "ON" : "OFF";
         _session.Scpi.Write(Cmd("output_enable", ScpiCommands.PsuOutputEnable(channel, enabled),
             ("channel", channel.ToString()), ("state", state)));
@@ -69,6 +73,8 @@ public sealed class DcPowerSupply : IInstrumentIdentity, IInstrumentShutdown
 
     public void SenseEnable(uint channel, bool enabled)
     {
+        if (Dialect.Id == "keysight_n6705c")
+            throw new global::InstrumentComponents.Errors.InstrumentUnsupportedException("N6705 remote sense requires INT/EXT; ON/OFF is not supported");
         var state = enabled ? "ON" : "OFF";
         _session.Scpi.Write(Cmd("sense_enable", ScpiCommands.PsuSenseEnable(channel, state),
             ("channel", channel.ToString()), ("state", state)));
@@ -89,7 +95,7 @@ public sealed class DcPowerSupply : IInstrumentIdentity, IInstrumentShutdown
         {
             "1" or "ON" => true,
             "0" or "OFF" => false,
-            _ => throw new FormatException($"expected ON/OFF state, got '{response}'"),
+            _ => throw new global::InstrumentComponents.Errors.ParseException($"expected ON/OFF state, got '{response}'"),
         };
     }
 }

@@ -1,8 +1,8 @@
 # InstrumentComponents (.NET)
 
-C# packages for [instrument-components](../README.md) over vendor-neutral [IviFoundation.Visa](https://www.nuget.org/packages/IviFoundation.Visa). Same discovery, SCPI, and typed-class contracts as the Rust crates.
+C# packages for [instrument-components](https://github.com/josh-hemphill/instrument-components/blob/latest/README.md) over vendor-neutral [IviFoundation.Visa](https://www.nuget.org/packages/IviFoundation.Visa). Same discovery, SCPI, and typed-class contracts as the Rust crates.
 
-See [docs/dotnet-getting-started.md](../docs/dotnet-getting-started.md) for the IVI-alternative pitch and full walkthrough.
+See [docs/dotnet-getting-started.md](https://josh-hemphill.github.io/instrument-components/csharp/getting-started/) for the IVI-alternative pitch and full walkthrough.
 
 ## Packages
 
@@ -13,10 +13,16 @@ See [docs/dotnet-getting-started.md](../docs/dotnet-getting-started.md) for the 
 | `InstrumentComponents.OpenTap.Visa` | Optional companion: registers a VISA `IOpenTapScpiIoProvider` for TUI-without-host. Not in the TapPackage. |
 | `InstrumentComponents.Visa` | VISA transport via IviFoundation.Visa (`net8.0`; Windows **or** Linux with a vendor VISA install) |
 
+## Install the core
+
+```bash
+dotnet add package InstrumentComponents
+```
+
 ## Mock quick start (CI, no VISA)
 
 ```bash
-dotnet run --project examples/MockFixtureCi
+dotnet run --project dotnet/examples/MockFixtureCi
 ```
 
 ```csharp
@@ -39,18 +45,25 @@ Console.WriteLine($"{volts} V");
 ## OpenTAP mock plan (no VISA)
 
 ```bash
-dotnet run --project examples/OpenTapMockPlan
+dotnet run --project dotnet/examples/OpenTapMockPlan
 ```
 
-See the [C# OpenTAP pack](../docs-site/docs/csharp/opentap.md) guide.
+See the [C# OpenTAP pack](https://josh-hemphill.github.io/instrument-components/csharp/opentap/) guide.
 
 ## Hardware quick start (Windows or Linux + VISA)
 
 1. Install [NI-VISA](https://www.ni.com/en-us/support/downloads/drivers/download.ni-visa.html), [Keysight IO Libraries](https://www.keysight.com/us/en/lib/software-detail/computer-software/io-libraries-suite-downloads-2175637.html), or another stack that provides VISA.NET compatible with `IviFoundation.Visa` 8.x.
-2. Reference both projects (NuGet publish deferred):
+2. Install the core and VISA packages from your chosen feed:
 
 ```bash
-dotnet run --project examples/Discover
+dotnet add package InstrumentComponents
+dotnet add package InstrumentComponents.Visa
+```
+
+Repository examples (from a source checkout):
+
+```bash
+dotnet run --project dotnet/examples/Discover
 ```
 
 ```csharp
@@ -71,7 +84,7 @@ var dmm = await catalog.Device("mock://dmm").OpenDmmAsync();
 var volts = await dmm.MeasureVoltageDcAsync();
 ```
 
-**Note:** `VisaAsyncTransport` is a sync bridge (thread-pool offload), not vendor APM. Details: [docs/visa-async-csharp.md](../docs/visa-async-csharp.md).
+**Note:** `VisaAsyncTransport` is a sync bridge (thread-pool offload), not vendor APM. Details: [docs/visa-async-csharp.md](https://github.com/josh-hemphill/instrument-components/blob/latest/docs/visa-async-csharp.md).
 
 ## Examples
 

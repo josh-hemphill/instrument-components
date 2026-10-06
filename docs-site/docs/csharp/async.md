@@ -30,7 +30,7 @@ dotnet run --project examples/MockFixtureCiAsync
 [`VisaAsyncTransport`](https://github.com/josh-hemphill/instrument-components/blob/latest/dotnet/src/InstrumentComponents.Visa/VisaAsyncTransport.cs) wraps sync `VisaTransport` in `SyncAsAsyncTransport`:
 
 - `WriteAsync` / `ReadAsync` run blocking VISA I/O on the thread pool.
-- `CancellationToken` cancels waiting on the bridge where implemented; it does **not** cancel an in-flight native VISA call the way true APM would.
+- `CancellationToken` cancels queued bridge work before it starts; it does **not** cancel an in-flight native VISA call the way true APM would.
 - This is intentional until vendor APM proves reliable across Keysight and NI on Windows **and** Linux.
 
 Do **not** advertise “true async VISA I/O” for the C# package yet. Rust already has true async via visa-rs `InstrumentTokioAdapter` — see [Rust async](../rust/async.md).
@@ -51,3 +51,8 @@ var volts = await dmm.MeasureVoltageDcAsync();
 
 - [C# VISA](visa.md) — packages and platform notes
 - Agent spike notes: repo `docs/visa-async-csharp.md`
+
+A running native call owns its read/write buffer until it finishes under the VISA
+timeout. Its task remains pending until then. Complete session queries serialize
+the write/read pair so concurrent callers cannot exchange replies. Dispose waits
+for an active call before closing the native session.

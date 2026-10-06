@@ -53,16 +53,7 @@ public sealed class OpenTapVisaScpiIoProvider : IOpenTapScpiIoProvider
             ResetOnConnect = false,
         };
 
-        ITransport? transport = null;
-        try
-        {
-            transport = _opener.Open(address, opts);
-            return new ScpiSession(transport, opts);
-        }
-        catch
-        {
-            (transport as IDisposable)?.Dispose();
-            throw;
-        }
+        var transport = _opener.Open(address, opts);
+        return new ScpiSession(transport, opts);
     }
 }

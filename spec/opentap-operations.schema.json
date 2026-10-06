@@ -131,6 +131,7 @@
         },
         "name": { "type": "string", "minLength": 1 },
         "unit": { "type": "string" },
+        "unitFrom": { "enum": ["MeasurementUnit"] },
         "supportsLimits": { "type": "boolean" }
       }
     }

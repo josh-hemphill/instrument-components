@@ -36,6 +36,9 @@ internal static class ScpiProtocol
         return i < s.Length && s[i] == ',';
     }
 
+    public static bool IsNoErrorReply(string response) =>
+        int.TryParse(response.Split(',')[0].Trim(), out var code) && code == 0;
+
     public static double ParseF64(string response)
     {
         if (!double.TryParse(response.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var value))

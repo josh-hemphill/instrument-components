@@ -34,7 +34,7 @@ interface Operation {
   description?: string;
   parameters?: Parameter[];
   invoke?: Invoke;
-  publish: { mode: string; name?: string; unit?: string; supportsLimits?: boolean };
+  publish: { mode: string; name?: string; unit?: string; unitFrom?: string; supportsLimits?: boolean };
 }
 
 interface Manifest {
@@ -98,6 +98,9 @@ function emitConstructor(operation: Operation, parameters: Parameter[]): string 
         `        Rules.Add(() => ${parameter.name} >= 1, ${JSON.stringify(`${parameter.displayName} must be at least 1.`)}, nameof(${parameter.name}));`,
       );
     }
+    if (parameter.type === "nullableDouble") {
+      rules.push(`        Rules.Add(() => ${parameter.name} is null || double.IsFinite(${parameter.name}.Value), ${JSON.stringify(`${parameter.displayName} must be finite when set.`)}, nameof(${parameter.name}));`);
+    }
     if (parameter.type === "double") {
       rules.push(
         `        Rules.Add(() => double.IsFinite(${parameter.name}), ${JSON.stringify(`${parameter.displayName} must be a finite number.`)}, nameof(${parameter.name}));`,
@@ -140,7 +143,7 @@ ${members}
 
 function emitScalarStep(operation: Operation): string {
   const resultName = operation.publish.name ?? operation.displayName;
-  const unit = operation.publish.unit ?? "";
+  const unit = operation.publish.unitFrom ? `instrument.${operation.accessor}.${operation.publish.unitFrom}` : JSON.stringify(operation.publish.unit ?? "");
   const args = callArgs(operation);
   const invoke = `instrument.${operation.accessor}.${operation.invoke!.method}(${args})`;
   const valueExpr = operation.invoke!.returns === "bool" ? `${invoke} ? 1.0 : 0.0` : invoke;
@@ -150,7 +153,7 @@ function emitScalarStep(operation: Operation): string {
     `        if (!TryGetInstrument(out var instrument))
             return;
 
-        PublishScalar(${JSON.stringify(resultName)}, ${valueExpr}, ${JSON.stringify(unit)});`,
+        PublishScalar(${JSON.stringify(resultName)}, ${valueExpr}, ${unit});`,
   );
 }
 
@@ -179,7 +182,7 @@ function emitSampleTraceStep(operation: Operation): string {
         var samples = instrument.${operation.accessor}.${operation.invoke!.method}(${args});
         for (var i = 0; i < samples.Count; i++)
             PhaseIResults.PublishSample(Results, ${JSON.stringify(channel)}, i, samples[i]);
-        UpgradeVerdict(Verdict.Pass);`,
+        UpgradeVerdict(samples.All(double.IsFinite) ? Verdict.Pass : Verdict.Fail);`,
   );
 }
 

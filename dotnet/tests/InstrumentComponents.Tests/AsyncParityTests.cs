@@ -63,7 +63,7 @@ public class AsyncReliabilityTests
         ]);
         var session = await AsyncScpiSession.CreateAsync(transport, new ConnectOptions { Retries = 0, ReconnectOnFailure = false });
         Assert.False(await session.ProbeOpcAsync());
-        await new InstrumentComponents.Ieee4882.AsyncIeee4882(session).WaitCompleteAsync();
+        await Assert.ThrowsAsync<InstrumentUnsupportedException>(() => new InstrumentComponents.Ieee4882.AsyncIeee4882(session).WaitCompleteAsync());
     }
 
     [Fact]

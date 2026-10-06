@@ -111,8 +111,11 @@ public sealed class Discovery
             await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                return await Task.Run(() => ProbeOne(raw), cancellationToken).ConfigureAwait(false);
+                var device = await Task.Run(() => ProbeOne(raw), cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+                return device;
             }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
             catch
             {
                 return PanicFallbackDevice(raw);
@@ -133,10 +136,11 @@ public sealed class Discovery
         identity.Merge(hintIdentity);
         var layers = new List<List<ClassifiedKind>> { layer1, layer2 };
 
+        InstrumentSession? session = null;
         try
         {
             var transport = _opener.Open(raw.Address, _connectOptions);
-            var session = new InstrumentSession(raw.Address, transport, _connectOptions, identity);
+            session = new InstrumentSession(raw.Address, transport, _connectOptions, identity);
             session.ClearStatus();
             try { session.Scpi.Flush(); } catch { /* ignore drain errors */ }
 
@@ -175,6 +179,10 @@ public sealed class Discovery
         catch (Exception ex)
         {
             return UnreachableDevice(raw, identity, layers, overrideKinds, ex.Message);
+        }
+        finally
+        {
+            try { session?.Dispose(); } catch { /* preserve probe outcome */ }
         }
     }
 

@@ -12,6 +12,8 @@ public sealed class MockTransport : TransportBase, IAsyncTransport
     private readonly List<ScriptStep> _script;
     private readonly List<ScriptStep> _steps;
     private int _stepIndex;
+    private byte[]? _pendingRead;
+    private int _readOffset;
     private TransportIdentity _identity = new();
     private uint _failWritesRemaining;
     private uint _failReadsRemaining;
@@ -95,18 +97,19 @@ public sealed class MockTransport : TransportBase, IAsyncTransport
             throw new InstrumentTimeoutException();
         }
 
-        if (PeekStep() is not ReadStep)
-            throw new InstrumentTimeoutException();
-
-        var step = NextStep();
-        if (step is ReadStep rs)
+        if (buffer.IsEmpty) return 0;
+        if (_pendingRead is null)
         {
-            var bytes = Encoding.UTF8.GetBytes(rs.Data);
-            var n = Math.Min(buffer.Length, bytes.Length);
-            bytes.AsSpan(0, n).CopyTo(buffer);
-            return n;
+            if (PeekStep() is not ReadStep)
+                throw new InstrumentTimeoutException();
+            _pendingRead = Encoding.UTF8.GetBytes(((ReadStep)NextStep()).Data);
+            _readOffset = 0;
         }
-        throw new MockMismatchException("read", step.GetType().Name);
+        var n = Math.Min(buffer.Length, _pendingRead.Length - _readOffset);
+        _pendingRead.AsSpan(_readOffset, n).CopyTo(buffer);
+        _readOffset += n;
+        if (_readOffset == _pendingRead.Length) _pendingRead = null;
+        return n;
     }
 
     public override void Clear()
