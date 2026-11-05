@@ -1,6 +1,6 @@
 # SCPI command templates — single source for Rust + C# codegen.
 # Placeholders use {name}. Optional args use kind-specific helpers in generators.
-# Regenerate: deno run --allow-read --allow-write tools/gen-shared-tables.ts
+# Regenerate: node tools/gen-shared-tables.ts
 
 [const]
 fgen_read_frequency = ":SOUR:FREQ?"

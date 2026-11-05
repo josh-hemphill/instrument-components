@@ -1,14 +1,17 @@
+import { readFile, writeFile } from "node:fs/promises";
 /**
  * Generate Rust + C# sources from capability_probes.toml and scpi_commands.toml.
  */
 import { rustfmtGenerated } from "./rustfmt-generated.ts";
 
 const root = new URL("..", import.meta.url);
-const probesToml = await Deno.readTextFile(
+const probesToml = await readFile(
   new URL("crates/instrument-core/data/capability_probes.toml", root),
+  "utf8",
 );
-const scpiToml = await Deno.readTextFile(
+const scpiToml = await readFile(
   new URL("crates/instrument-core/data/scpi_commands.toml", root),
+  "utf8",
 );
 
 function parseSimpleToml(text: string): Record<string, unknown> {
@@ -420,10 +423,10 @@ const csScpiPath = new URL(
   root,
 );
 
-await Deno.writeTextFile(rustProbesPath, rustProbes);
-await Deno.writeTextFile(rustScpiPath, rustScpi);
-await Deno.writeTextFile(csProbesPath, csProbes);
-await Deno.writeTextFile(csScpiPath, csScpi);
+await writeFile(rustProbesPath, rustProbes);
+await writeFile(rustScpiPath, rustScpi);
+await writeFile(csProbesPath, csProbes);
+await writeFile(csScpiPath, csScpi);
 await rustfmtGenerated([rustProbesPath, rustScpiPath]);
 
 console.log("Wrote", rustProbesPath.pathname);

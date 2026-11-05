@@ -1,3 +1,5 @@
+import { readFileSync, readdirSync } from "node:fs";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 /**
  * Generate Rust + C# dialect profile tables from data/dialects/profiles.toml
  * and spec/vendors/*.json. Vendor JSON is inserted before catch-all generic_*.
@@ -131,19 +133,19 @@ function loadVendorJsonProfiles(): Profile[] {
   const dir = new URL("spec/vendors/", root);
   const names: string[] = [];
   try {
-    for (const entry of Deno.readDirSync(dir)) {
-      if (entry.isFile && entry.name.endsWith(".json")) {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (entry.isFile() && entry.name.endsWith(".json")) {
         names.push(entry.name);
       }
     }
   } catch (err) {
-    if (err instanceof Deno.errors.NotFound) return [];
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") return [];
     throw err;
   }
   names.sort();
   return names.map((name) => {
     const path = new URL(name, dir);
-    const raw = JSON.parse(Deno.readTextFileSync(path)) as Record<string, unknown>;
+    const raw = JSON.parse(readFileSync(path, "utf8")) as Record<string, unknown>;
     assertVendorSchema(name, raw);
     const commands: Record<string, string> = {};
     for (const [key, value] of Object.entries(raw.commands as Record<string, unknown>)) {
@@ -179,15 +181,16 @@ function mergeProfiles(toml: Profile[], json: Profile[]): Profile[] {
 }
 
 const tomlProfiles = parseTomlProfiles(
-  await Deno.readTextFile(new URL("crates/instrument-core/data/dialects/profiles.toml", root)),
+  await readFile(new URL("crates/instrument-core/data/dialects/profiles.toml", root), "utf8"),
 );
 const profiles = mergeProfiles(tomlProfiles, loadVendorJsonProfiles());
 
-const scpiToml = await Deno.readTextFile(
+const scpiToml = await readFile(
   new URL("crates/instrument-core/data/scpi_commands.toml", root),
+  "utf8",
 );
 const genericMap = JSON.parse(
-  await Deno.readTextFile(new URL("spec/generic-scpi-map.json", root)),
+  await readFile(new URL("spec/generic-scpi-map.json", root), "utf8"),
 ) as Record<string, Record<string, [string, string]>>;
 
 function parseTomlTables(text: string): Record<string, Record<string, string>> {
@@ -240,7 +243,7 @@ for (const profile of profiles.filter((p) => p.id.startsWith("generic_"))) {
 if (mismatches.length > 0) {
   console.error("generic dialect profiles must match scpi_commands.toml:");
   for (const line of mismatches) console.error(`  ${line}`);
-  Deno.exit(1);
+  process.exit(1);
 }
 
 function esc(s: string): string {
@@ -446,11 +449,11 @@ const csOut = new URL(
   "dotnet/src/InstrumentComponents/Dialects/DialectRegistry.cs",
   root,
 );
-await Deno.mkdir(new URL("dotnet/src/InstrumentComponents/Dialects/", root), {
+await mkdir(new URL("dotnet/src/InstrumentComponents/Dialects/", root), {
   recursive: true,
 });
-await Deno.writeTextFile(rustOut, rust);
-await Deno.writeTextFile(csOut, cs);
+await writeFile(rustOut, rust);
+await writeFile(csOut, cs);
 await rustfmtGenerated([rustOut]);
 console.log("Wrote", rustOut.pathname);
 console.log("Wrote", csOut.pathname);

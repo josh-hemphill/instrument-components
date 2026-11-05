@@ -28,12 +28,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.source_ref || inputs.tag || github.ref }}
-      - uses: denoland/setup-deno@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
       - id: version
         env:
           RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
         run: |
-          version=$(deno run --allow-read tools/validate-release.ts "$RELEASE_TAG")
+          version=$(node tools/validate-release.ts "$RELEASE_TAG")
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
   ci:
@@ -86,8 +88,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.source_ref || inputs.tag || github.ref }}
-      - uses: denoland/setup-deno@v2
-      - run: deno run --allow-read --allow-write dotnet/tools/gen-registry.ts
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+      - run: node dotnet/tools/gen-registry.ts
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
@@ -122,15 +126,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.source_ref || inputs.tag || github.ref }}
-      - uses: denoland/setup-deno@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
             8.0.x
             9.0.x
-      - run: deno run --allow-read --allow-write dotnet/tools/gen-registry.ts
+      - run: node dotnet/tools/gen-registry.ts
       - run: dotnet build dotnet/src/InstrumentComponents.OpenTap/InstrumentComponents.OpenTap.csproj -c Release -p:CreateOpenTapPackage=true
-      - run: deno run --allow-read --allow-run=unzip tools/verify-opentap-package.ts "${{ needs.validate.outputs.version }}"
+      - run: node tools/verify-opentap-package.ts "${{ needs.validate.outputs.version }}"
       - uses: actions/upload-artifact@v4
         with:
           name: opentap-package

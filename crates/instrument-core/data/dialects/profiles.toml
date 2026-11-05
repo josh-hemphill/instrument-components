@@ -1,5 +1,5 @@
 # Dialect profiles — vendor SCPI variance contained in static specs.
-# Regenerate: deno run --allow-read --allow-write --allow-run=rustfmt tools/gen-dialects.ts
+# Regenerate: node tools/gen-dialects.ts
 #
 # Matching: first profile whose kind matches and manufacturer/model globs match IDN
 # (case-insensitive; `*` wildcard). Profiles are ordered; put specific dialects

@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 /**
  * Validate spec/opentap-operations.json against the curated OpenTAP contract.
  */
@@ -204,9 +205,9 @@ function validateOperation(
 }
 
 function main() {
-  JSON.parse(Deno.readTextFileSync(schemaPath));
-  const manifest = requireObject(JSON.parse(Deno.readTextFileSync(manifestPath)), "manifest");
-  const scpiMap = requireObject(JSON.parse(Deno.readTextFileSync(scpiMapPath)), "generic-scpi-map") as Record<
+  JSON.parse(readFileSync(schemaPath, "utf8"));
+  const manifest = requireObject(JSON.parse(readFileSync(manifestPath, "utf8")), "manifest");
+  const scpiMap = requireObject(JSON.parse(readFileSync(scpiMapPath, "utf8")), "generic-scpi-map") as Record<
     string,
     Record<string, unknown>
   >;

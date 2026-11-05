@@ -6,6 +6,13 @@ Dual-native work (Rust + C#) follows [docs/dual-native-plan.md](docs/dual-native
 
 ## Development setup
 
+Install Node.js 26.x for the TypeScript tooling (`.node-version`). Scripts run
+directly with `node path/to/script.ts` using built-in, unflagged type stripping;
+no npm install or build step is needed. Keep script syntax erasable (no enums or
+parameter properties), and retain `.ts` extensions in relative imports. Run the
+release validator tests with `node --test tools/validate-release_test.ts`. Rust
+generators also require `rustfmt` on PATH.
+
 ```bash
 git clone https://github.com/josh-hemphill/instrument-components.git
 cd instrument-components
@@ -68,7 +75,7 @@ kinds = ["Dmm"]
 Then regenerate the C# embed:
 
 ```bash
-deno run --allow-read --allow-write dotnet/tools/gen-registry.ts
+node dotnet/tools/gen-registry.ts
 ```
 
 Registry entries are **hints only** — capability probes and `*IDN?` can override.
@@ -80,9 +87,9 @@ Shared TOML is the source of truth for generic commands and CI dialect fixtures.
 Edit TOML under `crates/instrument-core/data/`, then:
 
 ```bash
-deno run --allow-read --allow-write --allow-run=rustfmt tools/gen-shared-tables.ts
-deno run --allow-read --allow-write --allow-run=rustfmt tools/gen-dialects.ts
-deno run --allow-read --allow-write dotnet/tools/gen-registry.ts
+node tools/gen-shared-tables.ts
+node tools/gen-dialects.ts
+node dotnet/tools/gen-registry.ts
 ```
 
 This regenerates Rust `probes.rs` / `scpi_commands.rs` / `dialect.rs` and C# `CapabilityProbes.cs` / `ScpiCommands.cs` / `DialectRegistry.cs`. Codegen runs `rustfmt` on the Rust outputs and fails if a `generic_*` dialect profile drifts from `scpi_commands.toml` (`spec/generic-scpi-map.json`). CI fails on drift.
