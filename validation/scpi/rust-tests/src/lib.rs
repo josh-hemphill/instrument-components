@@ -27,6 +27,7 @@ fn shared_sync_scpi_catalogue_values_traffic_errors_and_cleanup() {
     let cases = generated_cases::cases();
     assert_eq!(cases.len(), 139);
     for case in cases {
+        assert!(!case.calls.is_empty(), "scenario must establish an outcome");
         let script = Script::new(case.script.clone());
         let registry = DriverRegistry::new([Arc::new(ScpiFactory::new(
             profile.clone(),
@@ -72,6 +73,7 @@ async fn shared_native_and_both_worker_frontends_match_sync() {
     let profile = generated_profiles::profiles().unwrap().remove(0);
     for mode in 0..3 {
         for case in generated_cases::cases() {
+            assert!(!case.calls.is_empty(), "scenario must establish an outcome");
             let script = Script::new(case.script.clone());
             let factory: Arc<dyn DriverFactory> = if mode == 0 {
                 Arc::new(AsyncScpiFactory::new(

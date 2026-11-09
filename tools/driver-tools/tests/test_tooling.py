@@ -93,6 +93,17 @@ class ToolingTests(unittest.TestCase):
             if kind=='quantity':expected['unit']='Volt'
             data['cases'][0].pop('expectedError',None);data['cases'][0]['expected']=expected
             with self.subTest(kind=kind,value=value),self.assertRaises(ValueError):emit_cases(data)
+    def test_empty_cases_and_missing_operation_outcomes_cannot_silently_pass(self):
+        cases=json.loads((ROOT/'spec/driver-scpi-cases.json').read_text(encoding='utf-8'))
+        for calls in [[],None,{}]:
+            data=copy.deepcopy(cases);data['cases']=[{'id':'empty-outcome','calls':calls,'script':[{'kind':'close'}],'expectedError':'Timeout'}]
+            with self.subTest(calls=calls),tempfile.TemporaryDirectory() as temp:
+                folder=Path(temp);inp=folder/'in.json';inp.write_text(json.dumps(data));out=folder/'out'
+                with contextlib.redirect_stderr(io.StringIO()),self.assertRaises(SystemExit):main(['generate-tests','--input',str(inp),'--output-dir',str(out)])
+                self.assertFalse(out.exists())
+        from instrument_driver_tools.cases import emit_cases
+        data=copy.deepcopy(cases);data['cases']=[]
+        with self.assertRaises(ValueError):emit_cases(data)
     def test_numeric_defaults_and_typed_outputs_are_consistent(self):
         for value in ['NaN','Infinity','1e999','0','-1']:
             data=copy.deepcopy(self.profiles)

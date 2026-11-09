@@ -12,6 +12,7 @@ internal static class ScpiProof
         GeneratedProfiles.Create(); var cases = GeneratedCases.Create();
         for (var mode=0;mode<4;mode++) foreach(var test in cases)
         {
+            if(test.Calls.Count==0)throw new InvalidOperationException("Scenario must establish an outcome");
             var script = new Script(test.Script); IDriverFactory factory = GeneratedProfiles.CombinedFactories(script,script).Single();
             var registry = new DriverRegistry([factory]); var candidate = new DeviceCandidate(new("scpi","fixture"),new DeviceIdentity("Synthetic","All")); var selection=new DriverSelection(AllowStandardScpi:true);
             var sync = mode==0 ? registry.Open(candidate,selection) : null; var native = mode==1 ? await registry.OpenNativeAsync(candidate,selection) : null; var worker=mode>=2 ? await registry.OpenWorkerAsync(candidate,selection):null;

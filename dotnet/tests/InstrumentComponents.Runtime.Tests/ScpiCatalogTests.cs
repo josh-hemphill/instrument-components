@@ -14,6 +14,7 @@ public sealed class ScpiCatalogTests
         for (var mode = 0; mode < 4; mode++)
         foreach (var example in cases)
         {
+            Assert.NotEmpty(example.Calls);
             var script = new Script(example.Script);
             IDriverFactory factory = mode == 1 ? new AsyncScpiFactory(profile,"scpi",script) : new ScpiFactory(profile,"scpi",script);
             var registry = new DriverRegistry([factory]); var selection = new DriverSelection(AllowStandardScpi: true);

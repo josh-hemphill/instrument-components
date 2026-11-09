@@ -11,10 +11,14 @@ def emit_cases(data, module='generated_cases', namespace='GeneratedDrivers'):
     emit({'profiles': []}, module, namespace)
     if set(data) - {'schemaVersion','contractMajor','description','cases'} or data.get('schemaVersion') != 1 or data.get('contractMajor') != 1:
         raise ValueError('Unknown scenario schema/contract version/fields')
+    if not isinstance(data.get('cases'),list) or not data['cases']:
+        raise ValueError('At least one conformance case is required')
     metadata = {op['id']:op for op in catalogue()['operations']}
     errors = set('InvalidArgument DuplicateDriver IncompatibleContract DriverNotFound AmbiguousDriver UnsupportedOperation UnsupportedExecutionMode DriverContractViolation Transport Timeout Parse Device SessionNeedsRecovery SessionClosing SessionClosed Shutdown'.split())
     units = set(catalogue()['units'])
     for item in data['cases']:
+        if not isinstance(item.get('calls'),list) or not item['calls']:
+            raise ValueError('Each conformance case requires calls that establish its expected outcome')
         if 'expectedError' in item and item['expectedError'] not in errors: raise ValueError('Unknown expected error')
         for step in item['script']:
             if 'error' in step and step['error'] not in errors: raise ValueError('Unknown injected error')

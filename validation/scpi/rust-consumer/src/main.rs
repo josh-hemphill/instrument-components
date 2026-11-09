@@ -38,6 +38,10 @@ fn check(actual: Result<CatalogReply>, example: &CatalogCase, last: bool) -> Res
 fn main() -> Result<()> {
     generated_profiles::profiles()?;
     for example in generated_cases::cases() {
+        assert!(
+            !example.calls.is_empty(),
+            "scenario must establish an outcome"
+        );
         let script = Script::new(example.script.clone());
         let registry = DriverRegistry::new(generated_profiles::sync_factories(Arc::new(
             script.clone(),
@@ -89,6 +93,10 @@ fn main() -> Result<()> {
 async fn asynchronous() -> Result<()> {
     for mode in 0..3 {
         for example in generated_cases::cases() {
+            assert!(
+                !example.calls.is_empty(),
+                "scenario must establish an outcome"
+            );
             let script = Script::new(example.script.clone());
             let factory: Arc<dyn DriverFactory> = generated_profiles::combined_factories(
                 Arc::new(script.clone()),
