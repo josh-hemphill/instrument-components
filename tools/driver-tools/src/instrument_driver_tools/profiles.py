@@ -6,7 +6,7 @@ from . import CONTRACT_MAJOR
 
 
 def catalogue():
-    return json.loads(files('instrument_driver_tools').joinpath('schemas/catalog.json').read_text())
+    return json.loads(files('instrument_driver_tools').joinpath('schemas/catalog.json').read_text(encoding='utf-8'))
 
 
 def placeholders(template):
@@ -26,8 +26,8 @@ def placeholders(template):
 
 def validate(data, schema_path=None):
     import jsonschema
-    bundled = json.loads(files('instrument_driver_tools').joinpath('schemas/profiles.schema.json').read_text())
-    if schema_path is not None and json.loads(schema_path.read_text()) != bundled:
+    bundled = json.loads(files('instrument_driver_tools').joinpath('schemas/profiles.schema.json').read_text(encoding='utf-8'))
+    if schema_path is not None and json.loads(schema_path.read_text(encoding='utf-8')) != bundled:
         raise ValueError('Schema differs from this tool release; install the matching tool version')
     jsonschema.Draft202012Validator(bundled).validate(data)
     metadata = {op['id']: op for op in catalogue()['operations']}

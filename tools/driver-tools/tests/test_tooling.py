@@ -18,17 +18,17 @@ from instrument_driver_tools.inventory import inventory
 
 class ToolingTests(unittest.TestCase):
     def setUp(self):
-        self.profiles=json.loads((ROOT/'validation/scpi/profiles.json').read_text())
+        self.profiles=json.loads((ROOT/'validation/scpi/profiles.json').read_text(encoding='utf-8'))
     def test_preservation_inventory_reconciles_authoritative_sources(self):
         data=inventory(ROOT)
         self.assertEqual(len(data['modelHints']),47);self.assertEqual(len(data['usbHints']),1)
         self.assertEqual(len(data['classOperations']),8);self.assertEqual(len(data['dialectProfiles']),13)
-        self.assertEqual(data,json.loads((ROOT/'spec/device-migration-inventory.json').read_text()))
+        self.assertEqual(data,json.loads((ROOT/'spec/device-migration-inventory.json').read_text(encoding='utf-8')))
         self.assertTrue(all(row['disposition']!='UNMAPPED' for row in data['operationLedger']))
         self.assertFalse(any(row['hardwareValidated'] for row in data['modelHints']))
         self.assertTrue({'keysight_sensor','keysight_xseries','rigol_dsa'}.issubset({p['profile']['id'] for p in data['dialectProfiles']}))
     def test_bundle_has_semantic_contract_without_private_source_paths(self):
-        source=json.loads((ROOT/'spec/driver-operations.json').read_text())
+        source=json.loads((ROOT/'spec/driver-operations.json').read_text(encoding='utf-8'))
         source['operations']=[{k:v for k,v in op.items() if k!='source'} for op in source['operations']]
         self.assertEqual(catalogue(),source)
         self.assertNotIn('crates/',json.dumps(catalogue()))
@@ -64,7 +64,7 @@ class ToolingTests(unittest.TestCase):
             folder=Path(temp);inp=folder/'input.json';inp.write_text(json.dumps(self.profiles));out=folder/'out'
             command=['generate','--input',str(inp),'--output-dir',str(out),'--contract-major','1']
             main(command);before={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in out.iterdir()};main(command+['--check']);self.assertEqual(before,{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in out.iterdir()})
-            target=out/'profiles.rs';target.write_text(target.read_text()+'// drift\n')
+            target=out/'profiles.rs';target.write_text(target.read_text(encoding='utf-8')+'// drift\n')
             with contextlib.redirect_stderr(io.StringIO()),self.assertRaises(SystemExit):main(command+['--check'])
     def test_codegen_rejects_non_generated_file_and_invalid_namespace_or_module(self):
         for module,namespace in [('bad/../../path','Good'),('good','A;System.Console.WriteLine'),('self','Good'),('good','class'),('match','Good'),('good','interface')]:
@@ -72,7 +72,7 @@ class ToolingTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             folder=Path(temp);inp=folder/'input.json';inp.write_text(json.dumps(self.profiles));out=folder/'out';out.mkdir();(out/'profiles.rs').write_text('hand-written code')
             with contextlib.redirect_stderr(io.StringIO()),self.assertRaises(SystemExit):main(['generate','--input',str(inp),'--output-dir',str(out),'--contract-major','1'])
-            self.assertEqual((out/'profiles.rs').read_text(),'hand-written code');self.assertFalse((out/'GeneratedProfiles.cs').exists())
+            self.assertEqual((out/'profiles.rs').read_text(encoding='utf-8'),'hand-written code');self.assertFalse((out/'GeneratedProfiles.cs').exists())
     def test_wrong_explicit_schema_rejected(self):
         with tempfile.TemporaryDirectory() as temp:
             path=Path(temp)/'schema.json';path.write_text('{}')
@@ -84,7 +84,7 @@ class ToolingTests(unittest.TestCase):
             for raw in ['{"profiles":[],"profiles":[]}', '{"x":NaN}', '{"x":Infinity}']:
                 path.write_text(raw)
                 with self.assertRaises(ValueError):read_json(path)
-        cases=json.loads((ROOT/'spec/driver-scpi-cases.json').read_text())
+        cases=json.loads((ROOT/'spec/driver-scpi-cases.json').read_text(encoding='utf-8'))
         for kind,value in [('count','1);Injected();'),('count',True),('boolean',1),('quantity',True)]:
             data=copy.deepcopy(cases);data['cases']=data['cases'][:1]
             expected={'kind':kind,'value':value}
@@ -106,7 +106,7 @@ class ToolingTests(unittest.TestCase):
             try:(out/'profiles.rs').symlink_to(victim)
             except OSError:self.skipTest('Host cannot create symlinks')
             with contextlib.redirect_stderr(io.StringIO()),self.assertRaises(SystemExit):main(['generate','--input',str(inp),'--output-dir',str(out),'--contract-major','1'])
-            self.assertEqual(victim.read_text(),'keep');self.assertFalse((out/'GeneratedProfiles.cs').exists())
+            self.assertEqual(victim.read_text(encoding='utf-8'),'keep');self.assertFalse((out/'GeneratedProfiles.cs').exists())
     def test_preview_validator_distinguishes_legacy_version_and_rejects_stable_tags(self):
         command=[sys.executable,str(ROOT/'tools/validate-sdk-release.py')]
         self.assertEqual(subprocess.run(command+['--tag','driver-sdk-v0.2.0-alpha.1'],capture_output=True).returncode,0)

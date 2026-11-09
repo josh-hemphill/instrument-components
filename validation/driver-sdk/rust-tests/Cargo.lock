@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "instrument-api"
-version = "0.1.1"
+version = "0.2.0-alpha.1"
 
 [[package]]
 name = "instrument-driver-contract-tests"
@@ -19,7 +19,7 @@ dependencies = [
 
 [[package]]
 name = "instrument-runtime"
-version = "0.1.1"
+version = "0.2.0-alpha.1"
 dependencies = [
  "instrument-api",
  "tokio",
@@ -27,7 +27,7 @@ dependencies = [
 
 [[package]]
 name = "instrument-synthetic-driver"
-version = "0.1.1"
+version = "0.2.0-alpha.1"
 dependencies = [
  "instrument-api",
  "tokio",
