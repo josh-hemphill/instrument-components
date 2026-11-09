@@ -31,12 +31,15 @@ def main():
     parser.add_argument('--framework', choices=['net8.0', 'net10.0'], default='net8.0')
     parser.add_argument('--cpp-compiler')
     parser.add_argument('--isolate-runtime', action='store_true')
+    parser.add_argument('--isolation-sudo', action='store_true', help='Run only Linux bubblewrap through sudo (hosted CI namespace policy)')
     args = parser.parse_args()
     windows = platform.system() == 'Windows'
     if platform.machine().lower() not in ['x86_64', 'amd64'] or platform.system() not in ['Windows', 'Linux']:
         parser.error('Native x64 Linux or Windows required; cross-publication is not execution evidence')
     if args.isolate_runtime and windows:
         parser.error('--isolate-runtime uses Linux bubblewrap; Windows verifies native PE and executes natively')
+    if args.isolation_sudo and (windows or not args.isolate_runtime):
+        parser.error('--isolation-sudo requires Linux --isolate-runtime')
     rid = 'win-x64' if windows else 'linux-x64'
     work = args.artifacts.resolve() if args.artifacts else Path(tempfile.mkdtemp(prefix='instrument-sdk-'))
     if work == ROOT or ROOT in work.parents:
@@ -172,6 +175,7 @@ def main():
         for path in ['/usr/share/dotnet','/usr/lib/dotnet','/usr/local/share/dotnet','/usr/local/dotnet']:
             if Path(path).is_dir():sandbox+=['--tmpfs',path]
         sandbox+=['--ro-bind',str(work/'native'),'/app','--clearenv','--setenv','PATH','/usr/bin:/bin','--','/app/AotConsumer']
+        if args.isolation_sudo:sandbox=['sudo','--']+sandbox
         run('native-runtime-isolation',sandbox)
     probe=work/'warning-probe';shutil.copytree(aot,probe,ignore=IGNORE)
     with (probe/'Program.cs').open('a') as code:code.write('\nWarningProbe.Trigger();\n')

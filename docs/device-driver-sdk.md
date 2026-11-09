@@ -239,7 +239,9 @@ python tools/validate-driver-sdk.py --artifacts /tmp/sdk-net10 --framework net10
 The package proof requires Python 3.11+, Rust stable, .NET 8+10 SDKs and Native AOT
 prerequisites on the native x64 host. Windows uses Visual Studio C++ build tools;
 Linux uses clang/zlib (or `--cpp-compiler gcc`). Linux isolation requires bubblewrap
-namespaces, which restricted sandboxes may need permission to create. Artifacts
+namespaces, which restricted sandboxes may need permission to create. Hosted CI
+passes `--isolation-sudo` to elevate only this isolation step under its namespace
+policy; package builds and ordinary execution remain unprivileged. Artifacts
 must be outside the checkout in an empty directory. No device I/O occurs.
 
 The harness builds/installs a wheel into a fresh venv, generates consumers from

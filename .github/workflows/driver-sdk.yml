@@ -62,7 +62,7 @@ jobs:
           PROOF_FRAMEWORK: ${{ matrix.framework }}
         run: |
           if [ "$RUNNER_OS" = Linux ]; then
-            python tools/validate-driver-sdk.py --artifacts "$PROOF_DIRECTORY" --framework "$PROOF_FRAMEWORK" --isolate-runtime
+            python tools/validate-driver-sdk.py --artifacts "$PROOF_DIRECTORY" --framework "$PROOF_FRAMEWORK" --isolate-runtime --isolation-sudo
           else
             python tools/validate-driver-sdk.py --artifacts "$PROOF_DIRECTORY" --framework "$PROOF_FRAMEWORK"
           fi
