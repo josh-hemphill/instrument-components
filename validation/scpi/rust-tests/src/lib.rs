@@ -239,6 +239,73 @@ fn direct_profiles_reject_invalid_grammar_inventory_roles_and_ignored_arguments(
     )
     .is_err());
 }
+#[test]
+fn shared_semantic_token_domains_and_shutdown_profiles_validate_before_open() {
+    let data: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../../spec/driver-profile-token-cases.json"
+    ))
+    .unwrap();
+    for row in data["cases"].as_array().unwrap() {
+        let operation = generated_cases::cases()
+            .into_iter()
+            .flat_map(|c| c.calls)
+            .map(|c| c.operation())
+            .find(|o| format!("{o:?}") == row["operation"].as_str().unwrap())
+            .unwrap();
+        let metadata = operation.metadata();
+        let command = format!(
+            ":TEST {}",
+            metadata
+                .parameters
+                .iter()
+                .map(|p| format!("{{{}}}", p.name))
+                .collect::<Vec<_>>()
+                .join(",")
+        );
+        let mut plan = Plan::new(operation, vec![Step::write(&command)]);
+        for p in &metadata.parameters {
+            if let Some(domain) = p.kind.semantic_values() {
+                plan.tokens.insert(
+                    p.name.into(),
+                    domain
+                        .iter()
+                        .map(|v| (v.to_string(), v.to_string()))
+                        .collect(),
+                );
+            }
+        }
+        plan.tokens.insert(
+            row["parameter"].as_str().unwrap().into(),
+            row["tokens"]
+                .as_object()
+                .unwrap()
+                .iter()
+                .map(|(k, v)| (k.clone(), v.as_str().unwrap().to_string()))
+                .collect(),
+        );
+        let shutdown = row["shutdown"].as_bool().unwrap();
+        let mut plans = vec![plan];
+        if shutdown {
+            plans.push(Plan::new(CatalogOperation::Shutdown, vec![]));
+        }
+        let profile = Profile::new(
+            "synthetic.tokens",
+            Some(vec![1]),
+            Some(if shutdown {
+                vec![Output::FunctionGenerator]
+            } else {
+                vec![]
+            }),
+            plans,
+        );
+        assert_eq!(
+            profile.is_ok(),
+            row["accept"].as_bool().unwrap(),
+            "{}",
+            row["id"]
+        );
+    }
+}
 fn open_profile(profile: Profile, script: &Script, ownership: ConnectionOwnership) -> DeviceHandle {
     let registry =
         DriverRegistry::new([

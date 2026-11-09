@@ -75,3 +75,5 @@ jobs:
             ${{ runner.temp }}/sdk-${{ matrix.framework }}/*.log
             ${{ runner.temp }}/sdk-${{ matrix.framework }}/nuget-feed/*.nupkg
             ${{ runner.temp }}/sdk-${{ matrix.framework }}/python-feed/instrument_driver_tools*.whl
+            ${{ runner.temp }}/sdk-${{ matrix.framework }}/cargo-target/package/*.crate
+            ${{ runner.temp }}/sdk-${{ matrix.framework }}/native/AotConsumer*

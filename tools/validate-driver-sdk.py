@@ -25,6 +25,19 @@ ROOT = Path(__file__).resolve().parent.parent
 IGNORE = shutil.ignore_patterns('target', 'bin', 'obj', '__pycache__', '.git', 'build', 'dist', '*.egg-info')
 
 
+def check_rust_pins(manifest):
+    version=manifest['package']['version']
+    for name,settings in manifest.get('dependencies',{}).items():
+        requirement=settings.get('version') if isinstance(settings,dict) else settings
+        if name.startswith('instrument-') and requirement!='='+version:
+            raise ValueError('Packed SDK dependency is not exact: '+name)
+
+
+def check_nuget_pins(ranges, version='0.2.0-alpha.1'):
+    if any(v!='['+version+']' for v in ranges.values()):
+        raise ValueError('NuGet SDK dependency is not exact: '+str(ranges))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--artifacts', type=Path)
@@ -62,7 +75,7 @@ def main():
             if result.returncode == 0 or not re.search(r'\berror IL2026\b', text):
                 raise RuntimeError('Diagnostic gate did not fail with actual IL2026: '+str(log))
         elif result.returncode or diagnostics and re.search(r'\bwarning IL\d+\b', text, re.I):
-            print(text[-12000:], flush=True); raise RuntimeError('Failed check: '+str(log))
+            print(text[-12000:], flush=True); raise RuntimeError(f'Failed check (exit {result.returncode}): {log}')
         return text
 
     run('toolchain-rust', ['rustc', '-Vv']); run('toolchain-dotnet', ['dotnet', '--info'])
@@ -101,12 +114,13 @@ def main():
         manifest = re.sub(r'(?m)^(instrument-[\w-]+)\s*=\s*\{\s*path\s*=\s*"[^"]+",\s*version\s*=\s*"([^"]+)"\s*\}', r'\1 = "\2"', manifest)
         if '[workspace]' not in manifest: manifest += '\n[workspace]\n'
         meta = tomllib.loads(manifest); name = meta['package']['name']; version = meta['package']['version']
-        if any(v != '='+version for k,v in meta.get('dependencies',{}).items() if k.startswith('instrument-')):raise RuntimeError('Packed SDK dependency is not exact')
+        check_rust_pins(meta)
         stage = work/'rust-packages'/name; shutil.copytree(source/'src', stage/'src', ignore=IGNORE); (stage/'Cargo.toml').write_text(manifest)
         if 'path =' in manifest: raise RuntimeError('Source path dependency in staged crate')
         run('pack-'+name, ['cargo', 'package', '--offline', '--allow-dirty', '--no-verify'], stage, cargo_env)
         archive = work/'cargo-target/package'/f'{name}-{version}.crate'
         with tarfile.open(archive) as packed:
+            check_rust_pins(tomllib.loads(packed.extractfile(f'{name}-{version}/Cargo.toml').read().decode('utf-8')))
             for entry in packed.getmembers():
                 if registry not in (registry/entry.name).resolve().parents or entry.issym() or entry.islnk(): raise RuntimeError('Invalid archive path')
             packed.extractall(registry, filter='data')
@@ -152,7 +166,7 @@ def main():
             dependencies={d.attrib['id'] for d in metadata.findall('.//{*}dependency')}
             if dependencies != expected[name]:raise RuntimeError(f'Unexpected {name} dependencies: {dependencies}')
             ranges={d.attrib['id']:d.attrib['version'] for d in metadata.findall('.//{*}dependency')}
-            if any(v!='[0.2.0-alpha.1]' for v in ranges.values()):raise RuntimeError('NuGet SDK dependency is not exact: '+str(ranges))
+            check_nuget_pins(ranges)
             if any(n.endswith(('.json','.toml')) or 'vendors/' in n for n in packed.namelist()):raise RuntimeError('Driver data in SDK package')
             inventory.append(dict(package=name,archive=str(archive),sha256=hashlib.sha256(archive.read_bytes()).hexdigest(),dependencies=ranges,files=packed.namelist()))
     aot=work/'dotnet-consumer';shutil.copytree(ROOT/'validation/driver-sdk/dotnet-consumer',aot,ignore=IGNORE)
@@ -171,6 +185,10 @@ def main():
     if not all(v['type']=='package' for v in assets['libraries'].values()):raise RuntimeError('ProjectReference leaked into consumer')
     binary=work/'native'/('AotConsumer.exe' if windows else 'AotConsumer')
     run('native-aot-behavior',[binary])
+    # Each run creates hundreds of dedicated workers. Repetition exercises native
+    # thread-ID reuse and late async disposal; every invocation must exit zero.
+    run('native-aot-lifecycle-repeat-1',[binary])
+    run('native-aot-lifecycle-repeat-2',[binary])
     if windows:
         data=binary.read_bytes();offset=struct.unpack_from('<I',data,0x3c)[0];machine=struct.unpack_from('<H',data,offset+4)[0];optional=offset+24
         if data[offset:offset+4]!=b'PE\0\0' or machine!=0x8664 or struct.unpack_from('<H',data,optional)[0]!=0x20b or struct.unpack_from('<II',data,optional+112+14*8)!=(0,0):raise RuntimeError('Expected native x64 PE without CLR header')

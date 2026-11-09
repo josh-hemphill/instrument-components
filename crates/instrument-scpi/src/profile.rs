@@ -217,6 +217,16 @@ impl Profile {
                 {
                     return Err(invalid("invalid semantic token mapping"));
                 }
+                let kind = parameters[name.as_str()];
+                if map.keys().any(|key| {
+                    kind.semantic_values()
+                        .is_some_and(|domain| !domain.contains(&key.as_str()))
+                        || kind == ParameterKind::Symbol
+                            && (key.is_empty()
+                                || !key.chars().all(|c| c.is_ascii_alphanumeric() || c == '_'))
+                }) {
+                    return Err(invalid("token key is outside the typed semantic domain"));
+                }
             }
             for parameter in &metadata.parameters {
                 if matches!(
@@ -332,12 +342,18 @@ impl Profile {
                 }
             }
         }
-        Ok(Self {
+        let profile = Self {
             id: id.into(),
             channels,
             outputs,
             plans: indexed,
-        })
+        };
+        if profile.plans.contains_key(&CatalogOperation::Shutdown) {
+            Engine::new(profile.clone())
+                .prepare(&CatalogRequest::Shutdown)
+                .map_err(|_| invalid("shutdown cannot prepare every declared output disable"))?;
+        }
+        Ok(profile)
     }
     pub fn id(&self) -> &str {
         &self.id

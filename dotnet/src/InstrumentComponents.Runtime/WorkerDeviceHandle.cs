@@ -99,10 +99,12 @@ internal sealed class WorkerState(IDriverFactory factory, DriverOpenContext cont
     internal readonly AsyncControl State = new();
     private readonly BlockingCollection<WorkerCommand> _queue = new();
     private readonly TaskCompletionSource<FrozenSet<Operation>> _opened = new(TaskCreationOptions.RunContinuationsAsynchronously);
-    private int _threadId;
+    // Managed thread IDs may be reused after a worker exits (including Native
+    // AOT on Windows). Reentry is an executing scope, not a historical ID match.
+    [ThreadStatic] private static WorkerState? _executing;
     internal Task<FrozenSet<Operation>> Opened => _opened.Task;
     internal void CheckReentry()
-    { if (Volatile.Read(ref _threadId) == Environment.CurrentManagedThreadId) throw Error(DriverErrorKind.DriverContractViolation, "Worker backend reentry."); }
+    { if (ReferenceEquals(_executing, this)) throw Error(DriverErrorKind.DriverContractViolation, "Worker backend reentry."); }
     internal void Start() => new Thread(Run) { IsBackground = true, Name = "Instrument driver" }.Start();
     internal void Enqueue(WorkerJob job)
     {
@@ -121,7 +123,7 @@ internal sealed class WorkerState(IDriverFactory factory, DriverOpenContext cont
     }
     private void Run()
     {
-        _threadId = Environment.CurrentManagedThreadId;
+        _executing = this;
         IDeviceBackend? backend = null; Exception? failure = null;
         try
         {
@@ -183,6 +185,7 @@ internal sealed class WorkerState(IDriverFactory factory, DriverOpenContext cont
             _queue.CompleteAdding();
             while (_queue.TryTake(out var pending)) { Interlocked.Decrement(ref State.Waiting); pending.Job?.Complete(null, Error(DriverErrorKind.SessionClosed, "Worker terminated.")); }
             Volatile.Write(ref State.Active, 0); Volatile.Write(ref State.Draining, 0);
+            _executing = null;
             State.FinishClose(failure);
         }
     }

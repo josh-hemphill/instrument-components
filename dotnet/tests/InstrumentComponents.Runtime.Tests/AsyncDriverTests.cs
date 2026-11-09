@@ -154,6 +154,18 @@ public sealed class AsyncDriverTests
         await h.RecoverAsync(); await h.CloseAsync(true); Affinity(trace);
     }
     [Fact]
+    public async Task ClosedWorkerCanBeDisposedAgainFromOtherWorkerExecutionScopes()
+    {
+        var oldTrace=new WorkerTrace();var closed=await new DriverRegistry([new WorkerFactory(oldTrace)]).OpenWorkerAsync(WorkerFactory.Candidate);
+        await closed.CloseAsync();
+        for(var i=0;i<16;i++) {
+            var trace=new WorkerTrace();trace.Base.OnMeasure=closed.Dispose;
+            await using var next=await new DriverRegistry([new WorkerFactory(trace)]).OpenWorkerAsync(WorkerFactory.Candidate);
+            Assert.Equal(3.3,(await next.MeasureVoltageDcAsync()).Value);await next.CloseAsync();
+        }
+        await closed.DisposeAsync();Assert.Equal(1,oldTrace.Base.Closes);
+    }
+    [Fact]
     public async Task WorkerAbandonedOpenRetainsResourcesUntilOpenReturns()
     {
         var trace = new WorkerTrace { BlockOpen = true }; using var token = new CancellationTokenSource();

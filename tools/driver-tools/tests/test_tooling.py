@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import runpy
 
 ROOT=Path(__file__).resolve().parents[3]
 sys.path.insert(0,str(ROOT/'tools/driver-tools/src'))
@@ -105,6 +106,19 @@ class ToolingTests(unittest.TestCase):
         profile['channels']=None;profile['outputs']=[]
         profile['plans']=[p for p in profile['plans'] if p['operation']=='FunctionGeneratorSetBurstCount']
         validate(data);self.assertIn('FunctionGeneratorSetBurstCount',emit(data)['profiles.rs'])
+    def test_shared_semantic_domain_and_shutdown_cases_fail_before_emission(self):
+        examples=json.loads((ROOT/'spec/driver-profile-token-cases.json').read_text(encoding='utf-8'))['cases']
+        for example in examples:
+            data=copy.deepcopy(self.profiles);profile=data['profiles'][0]
+            plan=next(p for p in profile['plans'] if p['operation']==example['operation']);plan['tokens'][example['parameter']]=example['tokens']
+            if not example['shutdown']:profile['plans']=[p for p in profile['plans'] if p['operation']!='Shutdown']
+            with self.subTest(id=example['id']),tempfile.TemporaryDirectory() as temp:
+                folder=Path(temp);inp=folder/'in.json';inp.write_text(json.dumps(data));out=folder/'out'
+                command=['generate','--input',str(inp),'--output-dir',str(out),'--contract-major','1']
+                if example['accept']:main(command);self.assertTrue((out/'profiles.rs').is_file())
+                else:
+                    with contextlib.redirect_stderr(io.StringIO()),self.assertRaises(SystemExit):main(command)
+                    self.assertFalse(out.exists())
     def test_codegen_rejects_symlink_targets_without_writing_other_files(self):
         with tempfile.TemporaryDirectory() as temp:
             folder=Path(temp);inp=folder/'input.json';inp.write_text(json.dumps(self.profiles));out=folder/'out';out.mkdir()
@@ -118,5 +132,13 @@ class ToolingTests(unittest.TestCase):
         self.assertEqual(subprocess.run(command+['--tag','driver-sdk-v0.2.0-alpha.1'],capture_output=True).returncode,0)
         for tag in ['v0.1.1','driver-sdk-v0.2.0','driver-sdk-v0.2.0-alpha.2']:
             self.assertNotEqual(subprocess.run(command+['--tag',tag],capture_output=True).returncode,0)
+    def test_package_dependency_gate_rejects_minimum_and_caret_ranges(self):
+        checks=runpy.run_path(str(ROOT/'tools/validate-driver-sdk.py'))
+        for requirement in ['0.2.0-alpha.1','^0.2.0-alpha.1','>=0.2.0-alpha.1','[0.2.0-alpha.1,)']:
+            with self.subTest(requirement=requirement):
+                with self.assertRaises(ValueError):checks['check_rust_pins']({'package':{'version':'0.2.0-alpha.1'},'dependencies':{'instrument-api':{'version':requirement}}})
+                with self.assertRaises(ValueError):checks['check_nuget_pins']({'InstrumentComponents.Abstractions':requirement})
+        checks['check_rust_pins']({'package':{'version':'0.2.0-alpha.1'},'dependencies':{'instrument-api':{'version':'=0.2.0-alpha.1'}}})
+        checks['check_nuget_pins']({'InstrumentComponents.Abstractions':'[0.2.0-alpha.1]'})
 
 if __name__=='__main__':unittest.main()

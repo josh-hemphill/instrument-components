@@ -18,4 +18,5 @@
     <Compile Include="../../../validation/scpi/generated/GeneratedProfiles.cs" Link="GeneratedProfiles.cs" />
     <Compile Include="../../../validation/scpi/generated/GeneratedCases.cs" Link="GeneratedCases.cs" />
   </ItemGroup>
+  <ItemGroup><None Include="../../../spec/driver-profile-token-cases.json" Link="driver-profile-token-cases.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
 </Project>

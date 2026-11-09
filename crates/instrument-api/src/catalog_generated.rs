@@ -3168,6 +3168,17 @@ impl CatalogOperation {
         }
     }
 }
+impl ParameterKind {
+    pub fn semantic_values(self) -> Option<&'static [&'static str]> {
+        match self {
+            Self::Boolean => Some(&["true", "false"]),
+            Self::Waveform => Some(&["Sine", "Square", "Ramp", "Pulse", "Noise", "Dc"]),
+            Self::PowerUnit => Some(&["Watt", "Dbm"]),
+            Self::SenseMode => Some(&["Internal", "External"]),
+            _ => None,
+        }
+    }
+}
 impl CatalogOperation {
     pub fn runtime_operation(self) -> Operation {
         Operation::Catalog(self)

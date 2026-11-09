@@ -78,6 +78,9 @@ def validate(data, schema_path=None):
                     raise ValueError('Invalid token mapping')
                 if any(not re.fullmatch(r'[A-Za-z0-9_.+-]{1,128}', x) for pair in mapping.items() for x in pair):
                     raise ValueError('Unsafe token mapping')
+                typ=params[key];domain=['true','false'] if typ=='boolean' else catalogue()['enums'].get(typ)
+                if domain is not None and set(mapping)-set(domain) or typ=='symbol' and any(not re.fullmatch('[A-Za-z0-9_]+', k) for k in mapping):
+                    raise ValueError('Token key outside typed semantic domain')
             for key, value in defaults.items():
                 if params.get(key) != 'optional_number' or not re.fullmatch(r'[A-Za-z0-9_.+-]{1,128}', value):
                     raise ValueError('Invalid optional default')
@@ -107,6 +110,7 @@ def validate(data, schema_path=None):
         if outputs is not None and 'Shutdown' in plans:
             for output in outputs:
                 if output['kind']+'OutputEnable' not in plans: raise ValueError('Shutdown lacks declared output disable capability')
+                if 'false' not in plans[output['kind']+'OutputEnable'].get('tokens',{}).get('enabled',{}): raise ValueError('Shutdown cannot prepare declared output disable')
             kinds={o['kind'] for o in outputs}
             for kind in ['DcPowerSupply','FunctionGenerator']:
                 if kind+'OutputEnable' in plans and kind not in kinds: raise ValueError('Output capability cannot claim zero corresponding outputs')

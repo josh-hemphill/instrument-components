@@ -50,6 +50,20 @@ public sealed class ScpiCatalogTests
     }
     private static DeviceHandle Open(ScpiProfile profile,Script script,ConnectionOwnership ownership=ConnectionOwnership.Owned)=>new DriverRegistry([new ScpiFactory(profile,"scpi",script)]).Open(Candidate,new(AllowStandardScpi:true),ownership:ownership);
     [Fact]
+    public void SharedSemanticTokenDomainsAndShutdownProfilesValidateBeforeOpen()
+    {
+        using var data=System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"driver-profile-token-cases.json")));
+        foreach(var row in data.RootElement.GetProperty("cases").EnumerateArray()) {
+            var operation=Enum.Parse<CatalogOperation>(row.GetProperty("operation").GetString()!);var parameters=operation.Describe().Parameters;
+            var tokens=parameters.Where(p=>p.Kind.SemanticValues() is not null).ToDictionary(p=>p.Name,p=>(IReadOnlyDictionary<string,string>)p.Kind.SemanticValues()!.ToDictionary(v=>v,v=>v));
+            tokens[row.GetProperty("parameter").GetString()!]=row.GetProperty("tokens").EnumerateObject().ToDictionary(p=>p.Name,p=>p.Value.GetString()!);
+            var plans=new List<Plan>{new(operation,[new(":TEST "+string.Join(",",parameters.Select(p=>"{"+p.Name+"}")))],tokens)};
+            var shutdown=row.GetProperty("shutdown").GetBoolean();if(shutdown)plans.Add(new(CatalogOperation.Shutdown,[]));
+            var failure=Record.Exception(()=>new ScpiProfile("synthetic.tokens",[1],shutdown?[new(OutputKind.FunctionGenerator)]:[],plans));
+            if(row.GetProperty("accept").GetBoolean())Assert.Null(failure);else Assert.IsType<DriverException>(failure);
+        }
+    }
+    [Fact]
     public void BurstCountDoesNotRequireOrUsePhysicalChannelInventory()
     {
         var profile=new ScpiProfile("synthetic.counts",null,[],[new(CatalogOperation.FunctionGeneratorSetBurstCount,[new(":BURS {count}")])]);

@@ -73,6 +73,10 @@ public sealed class ScpiProfile
             }
             foreach (var entry in tokens)
                 if (!parameters.TryGetValue(entry.Key, out var pk) || pk is not (ParameterKind.Boolean or ParameterKind.Symbol or ParameterKind.Waveform or ParameterKind.PowerUnit or ParameterKind.SenseMode) || entry.Value.Count == 0 || entry.Value.Any(p => !SafeToken(p.Key) || !SafeToken(p.Value))) throw Invalid("Invalid token mapping");
+            foreach (var entry in tokens) {
+                var pk=parameters[entry.Key];var domain=pk.SemanticValues();
+                if (entry.Value.Keys.Any(key => domain is not null && !domain.Contains(key) || pk == ParameterKind.Symbol && key.Any(c=>!char.IsAsciiLetterOrDigit(c) && c!='_'))) throw Invalid("Token key outside typed semantic domain");
+            }
             foreach (var entry in defaults) {
                 if (!parameters.TryGetValue(entry.Key, out var pk) || pk != ParameterKind.OptionalNumber || !SafeToken(entry.Value)) throw Invalid("Invalid optional numeric default");
                 if (entry.Value is not ("AUTO" or "DEF" or "MIN" or "MAX")) {
@@ -101,6 +105,10 @@ public sealed class ScpiProfile
         Plans = indexed.ToFrozenDictionary(); var operations = indexed.Keys.Select(o => o.Runtime()).ToHashSet();
         foreach (var (catalog, basic) in new[] { (CatalogOperation.DmmMeasureVoltageDc, Operation.MeasureVoltageDc), (CatalogOperation.DcPowerSupplySetVoltage, Operation.SetVoltage), (CatalogOperation.DcPowerSupplyReadVoltage, Operation.ReadVoltage), (CatalogOperation.DcPowerSupplyOutputEnable, Operation.OutputEnable), (CatalogOperation.DcPowerSupplySetSenseMode, Operation.RemoteSense), (CatalogOperation.Reset, Operation.Reset), (CatalogOperation.Shutdown, Operation.Shutdown) }) if (indexed.ContainsKey(catalog)) operations.Add(basic);
         Operations = operations.ToFrozenSet();
+        if (Plans.ContainsKey(CatalogOperation.Shutdown)) {
+            try { new Engine(this).Prepare(new ShutdownRequest()); }
+            catch (DriverException) { throw Invalid("Shutdown cannot prepare every declared output disable"); }
+        }
     }
 }
 internal sealed record Prepared(IReadOnlyList<Step> Steps, ReplyKind Kind, Unit Unit);
