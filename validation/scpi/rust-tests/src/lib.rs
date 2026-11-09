@@ -161,6 +161,23 @@ async fn shared_native_and_both_worker_frontends_match_sync() {
 
 #[test]
 fn direct_profiles_reject_invalid_grammar_inventory_roles_and_ignored_arguments() {
+    assert!(Profile::new(
+        "test.invalid",
+        Some(vec![1]),
+        Some(vec![]),
+        vec![Plan::new(
+            CatalogOperation::OscilloscopeCaptureVoltageTrace,
+            vec![
+                Step::query(":DATA? {channel}"),
+                Step {
+                    command: ":PRE?".into(),
+                    response: ResponseRole::Preamble,
+                    when: None
+                }
+            ]
+        )]
+    )
+    .is_err());
     for command in [
         ":MEAS? {unknown}",
         ":MEAS? {range:bad}",

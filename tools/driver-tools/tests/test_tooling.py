@@ -54,7 +54,8 @@ class ToolingTests(unittest.TestCase):
         def unknown_field(d):d['profiles'][0]['plans'][0]['steps'][0]['unknown']='x'
         def nonascii(d):d['profiles'][0]['plans'][0]['steps'][0]['command']='é?'
         def unknown_outputs(d):d['profiles'][0]['outputs']=None
-        for mutate in [wrong_version,extra,duplicate,duplicate_op,channel,unknown_output,unknown_op,malformed,ignored,injection,token,role,unknown_field,nonascii,unknown_outputs]:
+        def late_preamble(d):next(p for p in d['profiles'][0]['plans'] if p['operation']=='OscilloscopeCaptureVoltageTrace')['steps'].reverse()
+        for mutate in [wrong_version,extra,duplicate,duplicate_op,channel,unknown_output,unknown_op,malformed,ignored,injection,token,role,unknown_field,nonascii,unknown_outputs,late_preamble]:
             with self.subTest(mutate=mutate.__name__),tempfile.TemporaryDirectory() as temp:
                 data=copy.deepcopy(self.profiles);mutate(data);folder=Path(temp);inp=folder/'input.json';inp.write_text(json.dumps(data));out=folder/'out'
                 with contextlib.redirect_stderr(io.StringIO()),self.assertRaises(SystemExit):main(['generate','--input',str(inp),'--output-dir',str(out),'--contract-major','1'])

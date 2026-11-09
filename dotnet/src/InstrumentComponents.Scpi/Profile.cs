@@ -62,6 +62,7 @@ public sealed class ScpiProfile
                 if ((step.Response == ResponseRole.Write && queries != 0) || (step.Response != ResponseRole.Write && queries != 1)) throw Invalid("Message/query response role mismatch");
                 if (step.When is not null && (!parameters.TryGetValue(step.When, out var conditionalKind) || conditionalKind != ParameterKind.OptionalNumber || step.Response is ResponseRole.Value or ResponseRole.Preamble)) throw Invalid("Invalid conditional step");
                 foreach (var key in Placeholders(step.Command)) { if (!parameters.ContainsKey(key)) throw Invalid("Unknown operation placeholder"); used.Add(key); }
+                if (step.Response == ResponseRole.Preamble && values != 0) throw Invalid("Preamble must precede trace data");
                 if (step.Response == ResponseRole.Value) values++; if (step.Response == ResponseRole.Preamble) preambles++;
             }
             foreach (var p in metadata.Parameters)

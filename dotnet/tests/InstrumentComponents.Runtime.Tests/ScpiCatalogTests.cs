@@ -46,6 +46,7 @@ public sealed class ScpiCatalogTests
         Assert.Throws<DriverException>(()=>new ScpiProfile("test.invalid",[1],null,[new(CatalogOperation.Shutdown,[])]));
         Assert.Throws<DriverException>(()=>new ScpiProfile("test.invalid",[1],[new(OutputKind.DcPowerSupply,1)],[new(CatalogOperation.Shutdown,[])]));
         Assert.Throws<DriverException>(()=>new ScpiProfile("test.invalid",[1],[],[new(CatalogOperation.Reset,[new("*OPC?")])]));
+        Assert.Throws<DriverException>(()=>new ScpiProfile("test.invalid",[1],[],[new(CatalogOperation.OscilloscopeCaptureVoltageTrace,[new(":DATA? {channel}",ResponseRole.Value),new(":PRE?",ResponseRole.Preamble)])]));
     }
     private static DeviceHandle Open(ScpiProfile profile,Script script,ConnectionOwnership ownership=ConnectionOwnership.Owned)=>new DriverRegistry([new ScpiFactory(profile,"scpi",script)]).Open(Candidate,new(AllowStandardScpi:true),ownership:ownership);
     [Fact]
