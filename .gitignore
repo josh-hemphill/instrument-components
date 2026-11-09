@@ -1,5 +1,12 @@
 /target/
+/validation/driver-sdk/**/target/
 **/*.rs.bk
 **/bin/
 **/obj/
 docs-site/site/
+
+/validation/**/target/
+**/__pycache__/
+**/*.egg-info/
+/tools/driver-tools/build/
+/tools/driver-tools/dist/

@@ -1,0 +1,670 @@
+{
+  "schemaVersion": 1,
+  "rules": {
+    "exact": {
+      "kind": "exact",
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "X100"
+    },
+    "other": {
+      "kind": "exact",
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "X100"
+    },
+    "family": {
+      "kind": "family",
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "X*"
+    },
+    "standard": {
+      "kind": "standard",
+      "scheme": "fake"
+    },
+    "product": {
+      "kind": "product",
+      "scheme": "fake",
+      "vendorId": 17,
+      "productId": 34
+    },
+    "any-family": {
+      "kind": "family",
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "*"
+    },
+    "multi-family": {
+      "kind": "family",
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "X*Z"
+    },
+    "consecutive-family": {
+      "kind": "family",
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "X**Z"
+    }
+  },
+  "selectionCases": [
+    {
+      "id": "REG-exact",
+      "drivers": [
+        "family",
+        "exact"
+      ],
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "X100",
+      "expectedDriver": "synthetic.exact"
+    },
+    {
+      "id": "REG-order",
+      "drivers": [
+        "exact",
+        "family"
+      ],
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "X100",
+      "expectedDriver": "synthetic.exact"
+    },
+    {
+      "id": "REG-family",
+      "drivers": [
+        "family"
+      ],
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "X200",
+      "expectedDriver": "synthetic.family"
+    },
+    {
+      "id": "REG-tie",
+      "drivers": [
+        "other",
+        "exact"
+      ],
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "X100",
+      "expectedError": "AmbiguousDriver"
+    },
+    {
+      "id": "REG-preference",
+      "drivers": [
+        "exact",
+        "family"
+      ],
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "X100",
+      "preferences": {
+        "synthetic.family": 1
+      },
+      "expectedDriver": "synthetic.family"
+    },
+    {
+      "id": "REG-explicit",
+      "drivers": [
+        "exact",
+        "family"
+      ],
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "X100",
+      "explicit": "synthetic.family",
+      "expectedDriver": "synthetic.family"
+    },
+    {
+      "id": "REG-absent",
+      "drivers": [
+        "exact"
+      ],
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "X100",
+      "explicit": "synthetic.absent",
+      "expectedError": "DriverNotFound"
+    },
+    {
+      "id": "REG-no-match",
+      "drivers": [
+        "exact"
+      ],
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "Y1",
+      "expectedError": "DriverNotFound"
+    },
+    {
+      "id": "REG-generic-denied",
+      "drivers": [
+        "standard"
+      ],
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "X100",
+      "expectedError": "DriverNotFound"
+    },
+    {
+      "id": "REG-generic-opt-in",
+      "drivers": [
+        "standard"
+      ],
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "X100",
+      "allowStandardScpi": true,
+      "expectedDriver": "synthetic.standard"
+    },
+    {
+      "id": "REG-ascii-case",
+      "drivers": [
+        "exact"
+      ],
+      "scheme": "fake",
+      "manufacturer": " aCMe ",
+      "model": " x100 ",
+      "expectedDriver": "synthetic.exact"
+    },
+    {
+      "id": "REG-scheme",
+      "drivers": [
+        "exact"
+      ],
+      "scheme": "other",
+      "manufacturer": "Acme",
+      "model": "X100",
+      "expectedError": "DriverNotFound"
+    },
+    {
+      "id": "REG-binding-scheme",
+      "drivers": [
+        "exact"
+      ],
+      "scheme": "other",
+      "manufacturer": "Acme",
+      "model": "X100",
+      "explicit": "synthetic.exact",
+      "expectedError": "DriverNotFound"
+    },
+    {
+      "id": "REG-product",
+      "drivers": [
+        "product"
+      ],
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "X100",
+      "vendorId": 17,
+      "productId": 34,
+      "expectedDriver": "synthetic.product"
+    },
+    {
+      "id": "REG-product-tie",
+      "drivers": [
+        "product",
+        "exact"
+      ],
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "X100",
+      "vendorId": 17,
+      "productId": 34,
+      "expectedError": "AmbiguousDriver"
+    },
+    {
+      "id": "REG-empty",
+      "drivers": [],
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "X100",
+      "expectedError": "DriverNotFound"
+    },
+    {
+      "id": "REG-duplicate",
+      "drivers": [
+        "exact",
+        "exact"
+      ],
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "X100",
+      "expectedError": "DuplicateDriver"
+    },
+    {
+      "id": "REG-invalid-endpoint",
+      "drivers": [
+        "exact"
+      ],
+      "scheme": "",
+      "manufacturer": "Acme",
+      "model": "X100",
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "REG-wildcard-in-value",
+      "drivers": [
+        "family"
+      ],
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "X*100",
+      "expectedDriver": "synthetic.family"
+    },
+    {
+      "id": "REG-wildcard-entire-pattern",
+      "drivers": [
+        "any-family"
+      ],
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "*suffix",
+      "expectedDriver": "synthetic.any-family"
+    },
+    {
+      "id": "REG-wildcard-backtrack",
+      "drivers": [
+        "multi-family"
+      ],
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "X*abcZ",
+      "expectedDriver": "synthetic.multi-family"
+    },
+    {
+      "id": "REG-wildcard-consecutive",
+      "drivers": [
+        "consecutive-family"
+      ],
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "X**abcZ",
+      "expectedDriver": "synthetic.consecutive-family"
+    },
+    {
+      "id": "REG-wildcard-no-match",
+      "drivers": [
+        "multi-family"
+      ],
+      "scheme": "fake",
+      "manufacturer": "Acme",
+      "model": "X*abcY",
+      "expectedError": "DriverNotFound"
+    }
+  ],
+  "operationCases": [
+    {
+      "id": "VALUE-binary",
+      "steps": [
+        {
+          "action": "measure",
+          "value": 3.3
+        },
+        {
+          "action": "set",
+          "channel": 2,
+          "value": 5.0
+        },
+        {
+          "action": "read",
+          "channel": 2,
+          "value": 5.0
+        },
+        {
+          "action": "output",
+          "channel": 2
+        },
+        {
+          "action": "reset"
+        },
+        {
+          "action": "close",
+          "shutdown": true
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 1,
+      "outputs": {
+        "1": false,
+        "2": false
+      },
+      "shutdownAttempts": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": "CAP-unsupported",
+      "steps": [
+        {
+          "action": "sense",
+          "channel": 1,
+          "error": "UnsupportedOperation"
+        },
+        {
+          "action": "close"
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 0
+    },
+    {
+      "id": "ARG-before-io",
+      "steps": [
+        {
+          "action": "measure",
+          "range": 0,
+          "error": "InvalidArgument"
+        },
+        {
+          "action": "set",
+          "channel": 0,
+          "value": 5,
+          "error": "InvalidArgument"
+        },
+        {
+          "action": "close"
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 0,
+      "noIo": true
+    },
+    {
+      "id": "FAIL-quarantine",
+      "steps": [
+        {
+          "action": "fail-measure"
+        },
+        {
+          "action": "measure",
+          "error": "Timeout"
+        },
+        {
+          "action": "measure",
+          "error": "SessionNeedsRecovery"
+        },
+        {
+          "action": "recover"
+        },
+        {
+          "action": "measure",
+          "value": 3.3
+        },
+        {
+          "action": "close"
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 0
+    },
+    {
+      "id": "LIFE-repeat",
+      "steps": [
+        {
+          "action": "close"
+        },
+        {
+          "action": "close"
+        },
+        {
+          "action": "measure",
+          "error": "SessionClosed"
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 0
+    },
+    {
+      "id": "SAFE-failure",
+      "steps": [
+        {
+          "action": "output",
+          "channel": 1
+        },
+        {
+          "action": "output",
+          "channel": 2
+        },
+        {
+          "action": "fail-shutdown"
+        },
+        {
+          "action": "close",
+          "shutdown": true,
+          "error": "Shutdown"
+        },
+        {
+          "action": "close"
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 1,
+      "outputs": {
+        "1": true,
+        "2": false
+      },
+      "shutdownAttempts": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": "SAFE-no-recovery",
+      "steps": [
+        {
+          "action": "fail-measure"
+        },
+        {
+          "action": "measure",
+          "error": "Timeout"
+        },
+        {
+          "action": "fail-recover"
+        },
+        {
+          "action": "close",
+          "shutdown": true,
+          "error": "Shutdown"
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 0,
+      "recoveries": 1
+    },
+    {
+      "id": "LIFE-close-failure",
+      "steps": [
+        {
+          "action": "fail-close"
+        },
+        {
+          "action": "close",
+          "error": "Shutdown"
+        },
+        {
+          "action": "close"
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 0
+    },
+    {
+      "id": "MODE-native-unsupported",
+      "mode": "NativeAsync",
+      "openError": "UnsupportedExecutionMode",
+      "steps": [],
+      "closes": 0,
+      "shutdowns": 0
+    },
+    {
+      "id": "MODE-worker-unsupported",
+      "mode": "WorkerAsync",
+      "openError": "UnsupportedExecutionMode",
+      "steps": [],
+      "closes": 0,
+      "shutdowns": 0
+    },
+    {
+      "id": "CAP-required",
+      "requiredSense": true,
+      "openError": "UnsupportedOperation",
+      "steps": [],
+      "closes": 0,
+      "shutdowns": 0
+    },
+    {
+      "id": "LIFE-borrowed",
+      "ownership": "Borrowed",
+      "steps": [
+        {
+          "action": "measure",
+          "value": 3.3
+        },
+        {
+          "action": "close"
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 0,
+      "disposes": 0
+    },
+    {
+      "id": "CAP-missing-accessor",
+      "missingDmm": true,
+      "openError": "DriverContractViolation",
+      "opens": 1,
+      "steps": [],
+      "closes": 1,
+      "shutdowns": 0
+    },
+    {
+      "id": "CAP-envelope-excess",
+      "envelope": "measureOnly",
+      "openError": "DriverContractViolation",
+      "opens": 1,
+      "steps": [],
+      "closes": 1,
+      "shutdowns": 0
+    },
+    {
+      "id": "CAP-required-actual-subset",
+      "envelope": "withSense",
+      "requiredSense": true,
+      "openError": "UnsupportedOperation",
+      "opens": 1,
+      "steps": [],
+      "closes": 1,
+      "shutdowns": 0
+    },
+    {
+      "id": "CAP-cleanup-failure",
+      "missingDmm": true,
+      "failClose": true,
+      "openError": "DriverContractViolation",
+      "opens": 1,
+      "steps": [],
+      "closes": 1,
+      "shutdowns": 0
+    },
+    {
+      "id": "SAFE-disabled-support",
+      "disabledOperations": [
+        "Shutdown"
+      ],
+      "steps": [
+        {
+          "action": "output",
+          "channel": 1
+        },
+        {
+          "action": "close",
+          "shutdown": true,
+          "error": "Shutdown"
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 0,
+      "recoveries": 0,
+      "shutdownAttempts": [],
+      "outputs": {
+        "1": true
+      }
+    },
+    {
+      "id": "SAFE-disabled-quarantined",
+      "disabledOperations": [
+        "Shutdown"
+      ],
+      "steps": [
+        {
+          "action": "fail-measure"
+        },
+        {
+          "action": "measure",
+          "error": "Timeout"
+        },
+        {
+          "action": "close",
+          "shutdown": true,
+          "error": "Shutdown"
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 0,
+      "recoveries": 0,
+      "shutdownAttempts": []
+    },
+    {
+      "id": "SAFE-unknown-inventory",
+      "unknownInventory": true,
+      "steps": [
+        {
+          "action": "output",
+          "channel": 1
+        },
+        {
+          "action": "output",
+          "channel": 2
+        },
+        {
+          "action": "close",
+          "shutdown": true,
+          "error": "Shutdown"
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 1,
+      "shutdownAttempts": [
+        1,
+        2
+      ],
+      "outputs": {
+        "1": false,
+        "2": false
+      }
+    },
+    {
+      "id": "CAP-disabled-reset",
+      "disabledOperations": [
+        "Reset"
+      ],
+      "steps": [
+        {
+          "action": "reset",
+          "error": "UnsupportedOperation"
+        },
+        {
+          "action": "close"
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 0,
+      "noIo": true
+    }
+  ]
+}

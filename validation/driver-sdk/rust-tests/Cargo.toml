@@ -1,0 +1,18 @@
+[package]
+name = "instrument-driver-contract-tests"
+version = "0.1.1"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[dependencies]
+instrument-api = { path = "../../../crates/instrument-api" }
+instrument-runtime = { path = "../../../crates/instrument-runtime" }
+instrument-synthetic-driver = { path = "../rust-provider" }
+serde_json = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"], optional = true }
+
+[features]
+default = []
+async = ["instrument-api/async", "instrument-runtime/async", "instrument-synthetic-driver/async", "dep:tokio"]

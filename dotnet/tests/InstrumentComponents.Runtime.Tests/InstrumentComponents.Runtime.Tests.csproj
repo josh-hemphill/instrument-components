@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable><IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <ProjectReference Include="../../src/InstrumentComponents.Runtime/InstrumentComponents.Runtime.csproj" />
+    <ProjectReference Include="../../../validation/driver-sdk/dotnet-provider/InstrumentComponents.SyntheticDriver.csproj" />
+    <Using Include="Xunit" />
+    <Content Include="../../../spec/driver-async-cases.json" Link="driver-async-cases.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../../spec/driver-contract-cases.json" Link="driver-contract-cases.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/InstrumentComponents.TestKit/InstrumentComponents.TestKit.csproj" />
+    <Compile Include="../../../validation/scpi/generated/GeneratedProfiles.cs" Link="GeneratedProfiles.cs" />
+    <Compile Include="../../../validation/scpi/generated/GeneratedCases.cs" Link="GeneratedCases.cs" />
+  </ItemGroup>
+</Project>

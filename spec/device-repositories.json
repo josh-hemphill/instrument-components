@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "proposedOwner": "josh-hemphill",
+  "proposedVisibility": "public",
+  "manufacturers": {
+    "Keysight Technologies": "instrument-components-keysight",
+    "Agilent Technologies": "instrument-components-keysight",
+    "Keithley Instruments": "instrument-components-keithley",
+    "Rigol Technologies": "instrument-components-rigol",
+    "Siglent Technologies": "instrument-components-siglent",
+    "Tektronix": "instrument-components-tektronix"
+  },
+  "profileOwners": {
+    "keysight_n6705c": "instrument-components-keysight",
+    "keithley_dmm6500": "instrument-components-keithley",
+    "keysight_sensor": "instrument-components-keysight",
+    "keysight_xseries": "instrument-components-keysight",
+    "rigol_dsa": "instrument-components-rigol"
+  },
+  "note": "Proposed external repo names; not created. Independently version family packages inside each vendor repo. Proprietary implementations require separate private repositories when introduced.",
+  "behaviorMigration": [
+    {
+      "migration": "external Keysight package; explicit Internal/External only after transcripts/specification; no inferred hardware support",
+      "sourceBehavior": "explicit unsupported; no write",
+      "subject": "N6705 boolean sense"
+    },
+    {
+      "migration": "no silent fallback in new interpreter; real driver must explicitly implement and validate ranged support",
+      "sourceBehavior": "legacy generic fallback exists for ranged template mismatch",
+      "subject": "DMM6500 ranged measure"
+    },
+    {
+      "migration": "SCPI engine tracks configured units; reset and clean-boundary recovery invalidate them",
+      "sourceBehavior": "configuration state shared through sessions",
+      "subject": "DMM and power read units"
+    },
+    {
+      "migration": "explicit profile physical channels/output inventory; complete disable plan before shutdown IO",
+      "sourceBehavior": "shared session output inventory/state",
+      "subject": "PSU outputs and channel tracking"
+    }
+  ]
+}

@@ -1,6 +1,10 @@
 [workspace]
 resolver = "2"
 members = [
+    "crates/instrument-api",
+    "crates/instrument-scpi",
+    "crates/instrument-testkit",
+    "crates/instrument-runtime",
     "crates/instrument-core",
     "crates/instrument-visa",
     "crates/instrument",

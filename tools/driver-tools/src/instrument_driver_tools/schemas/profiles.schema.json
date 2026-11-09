@@ -1,0 +1,288 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://josh-hemphill.github.io/instrument-components/driver-profiles/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "contractMajor",
+    "profiles"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "contractMajor": {
+      "const": 1
+    },
+    "profiles": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1024,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "channels",
+          "outputs",
+          "plans"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]*(\\.[a-z0-9_-]+)+$",
+            "maxLength": 128
+          },
+          "channels": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 4294967295
+                },
+                "uniqueItems": true,
+                "maxItems": 4096
+              }
+            ]
+          },
+          "outputs": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "array",
+                "maxItems": 4096,
+                "uniqueItems": true,
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "kind",
+                        "channel"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "const": "DcPowerSupply"
+                        },
+                        "channel": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 4294967295
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "kind"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "const": "FunctionGenerator"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "plans": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 83,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "operation",
+                "steps"
+              ],
+              "properties": {
+                "operation": {
+                  "enum": [
+                    "DmmMeasureVoltageDc",
+                    "DmmMeasureVoltageAc",
+                    "DmmMeasureCurrentDc",
+                    "DmmMeasureCurrentAc",
+                    "DmmMeasureResistance",
+                    "DmmMeasureResistance2Wire",
+                    "DmmMeasureResistance4Wire",
+                    "DmmMeasureTemperature",
+                    "DmmConfigureVoltageDc",
+                    "DmmConfigureVoltageAc",
+                    "DmmConfigureCurrentDc",
+                    "DmmConfigureCurrentAc",
+                    "DmmConfigureResistance",
+                    "DmmConfigureResistance4Wire",
+                    "DmmInitiate",
+                    "DmmFetch",
+                    "DmmRead",
+                    "DmmSoftwareTrigger",
+                    "DcPowerSupplyChannelCount",
+                    "DcPowerSupplySetVoltage",
+                    "DcPowerSupplySetCurrentLimit",
+                    "DcPowerSupplyOutputEnable",
+                    "DcPowerSupplyOutputStateQuery",
+                    "DcPowerSupplyOvpLevel",
+                    "DcPowerSupplyOvpEnable",
+                    "DcPowerSupplyOvpQuery",
+                    "DcPowerSupplyReadVoltage",
+                    "DcPowerSupplyReadCurrent",
+                    "FunctionGeneratorSetWaveform",
+                    "FunctionGeneratorSetFrequency",
+                    "FunctionGeneratorSetAmplitude",
+                    "FunctionGeneratorSetOffset",
+                    "FunctionGeneratorSetDutyCycle",
+                    "FunctionGeneratorSetLoad",
+                    "FunctionGeneratorOutputEnable",
+                    "FunctionGeneratorSetBurstCount",
+                    "FunctionGeneratorSetBurstState",
+                    "FunctionGeneratorSetBurstTriggerSource",
+                    "FunctionGeneratorReadFrequency",
+                    "OscilloscopeSetTimebaseScale",
+                    "OscilloscopeReadTimebaseScale",
+                    "OscilloscopeSetChannelScale",
+                    "OscilloscopeSetChannelDisplay",
+                    "OscilloscopeSetChannelCoupling",
+                    "OscilloscopeSetTriggerSource",
+                    "OscilloscopeSetTriggerLevel",
+                    "OscilloscopeSetTriggerSlope",
+                    "OscilloscopeRun",
+                    "OscilloscopeStop",
+                    "OscilloscopeSingle",
+                    "OscilloscopeMeasureVpp",
+                    "OscilloscopeMeasureFrequency",
+                    "OscilloscopeCaptureVoltageTrace",
+                    "SwitchCloseRoute",
+                    "SwitchOpenRoute",
+                    "SwitchIsClosed",
+                    "SwitchOpenAll",
+                    "CounterMeasureFrequency",
+                    "CounterMeasurePeriod",
+                    "CounterSetGateTime",
+                    "CounterSelectChannel",
+                    "CounterResetTotalize",
+                    "CounterReadTotalize",
+                    "PowerMeterConfigureMeasurement",
+                    "PowerMeterInitiate",
+                    "PowerMeterFetch",
+                    "PowerMeterRead",
+                    "SpectrumAnalyzerSetCenterFrequency",
+                    "SpectrumAnalyzerSetSpan",
+                    "SpectrumAnalyzerSetRbw",
+                    "SpectrumAnalyzerSetVbw",
+                    "SpectrumAnalyzerSetRefLevel",
+                    "SpectrumAnalyzerFetchTraceAscii",
+                    "SpectrumAnalyzerMarkerPeak",
+                    "SpectrumAnalyzerMarkerX",
+                    "SpectrumAnalyzerMarkerY",
+                    "SpectrumAnalyzerSweepContinuous",
+                    "SpectrumAnalyzerSingleSweep",
+                    "SpectrumAnalyzerWaitOpc",
+                    "DcPowerSupplySetSenseMode",
+                    "QueryIdentity",
+                    "Reset",
+                    "Shutdown"
+                  ]
+                },
+                "steps": {
+                  "type": "array",
+                  "maxItems": 32,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "command",
+                      "response"
+                    ],
+                    "properties": {
+                      "command": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 65536
+                      },
+                      "response": {
+                        "enum": [
+                          "Write",
+                          "Value",
+                          "Completion",
+                          "Preamble"
+                        ]
+                      },
+                      "when": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+                      }
+                    }
+                  }
+                },
+                "tokens": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128
+                    }
+                  }
+                },
+                "defaults": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  }
+                }
+              }
+            }
+          },
+          "scheme": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9+.-]*$"
+          },
+          "rules": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "manufacturer",
+                "model"
+              ],
+              "properties": {
+                "manufacturer": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                },
+                "model": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                },
+                "family": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

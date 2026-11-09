@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Experimental vendor-neutral Rust/.NET driver contracts and sync/native-async/worker runtimes, shared matching/lifecycle scenarios, cancellation and thread-affine ownership checks, and an isolated synthetic-package Native AOT proof (see `docs/device-driver-sdk.md`). Existing facade behavior is unchanged; real device extraction remains pending.
 - Contributor contract for HardwareTest / OpenTAP consumption (`docs/opentap-consumer.md`): session injection, OpenTAP pack with all eight instrument types, and explicit non-goals
 - C# `IScpiIo` message session plus `InstrumentSession.FromIo` so a host can inject Write/Query without wrapping VISA as `ITransport`
 - `QueryIdn` / `OutputOff` / `Reset` on all eight typed classes (`IInstrumentIdentity`, `IInstrumentShutdown`)

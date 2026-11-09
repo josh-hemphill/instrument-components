@@ -69,6 +69,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "instrument-api"
+version = "0.2.0-alpha.1"
+
+[[package]]
 name = "instrument-components"
 version = "0.1.1"
 dependencies = [
@@ -91,6 +95,29 @@ dependencies = [
  "tokio",
  "toml 0.8.23",
  "tracing",
+]
+
+[[package]]
+name = "instrument-runtime"
+version = "0.2.0-alpha.1"
+dependencies = [
+ "instrument-api",
+ "tokio",
+]
+
+[[package]]
+name = "instrument-scpi"
+version = "0.2.0-alpha.1"
+dependencies = [
+ "instrument-api",
+]
+
+[[package]]
+name = "instrument-testkit"
+version = "0.2.0-alpha.1"
+dependencies = [
+ "instrument-api",
+ "instrument-scpi",
 ]
 
 [[package]]

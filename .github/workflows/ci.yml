@@ -17,6 +17,12 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  driver-sdk:
+    name: Driver SDK and native package proofs
+    uses: ./.github/workflows/driver-sdk.yml
+    with:
+      source_ref: ${{ inputs.source_ref }}
+
   test:
     name: Test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}

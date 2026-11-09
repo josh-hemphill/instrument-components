@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "version": "0.2.0-alpha.1",
+  "pythonVersion": "0.2.0a1",
+  "contractMajor": 1,
+  "tagPrefix": "driver-sdk-v",
+  "rustPackages": ["instrument-api", "instrument-runtime", "instrument-scpi", "instrument-testkit"],
+  "nugetPackages": ["InstrumentComponents.Abstractions", "InstrumentComponents.Runtime", "InstrumentComponents.Scpi", "InstrumentComponents.TestKit"],
+  "frameworks": ["net8.0", "net10.0"],
+  "runtimeIdentifiers": ["linux-x64", "win-x64"],
+  "publicationRequiresNativePlatformJobs": true,
+  "publicationRequiresHardwareEvidence": false,
+  "hardwareValidated": false,
+  "devicePackageCutoverComplete": false
+}
