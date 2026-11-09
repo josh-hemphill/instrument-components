@@ -56,6 +56,7 @@ pub enum Argument {
     Number(f64),
     OptionalNumber(Option<f64>),
     Channel(u32),
+    Count(u32),
     Boolean(bool),
     Symbol(String),
 }
@@ -206,6 +207,7 @@ pub enum ParameterKind {
     Number,
     OptionalNumber,
     Channel,
+    Count,
     Boolean,
     Symbol,
     Waveform,

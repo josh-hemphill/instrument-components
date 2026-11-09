@@ -100,6 +100,11 @@ class ToolingTests(unittest.TestCase):
             with self.subTest(value=value),self.assertRaises(ValueError):validate(data)
         data=copy.deepcopy(self.profiles);data['profiles'][0]['outputs']=[{'kind':'FunctionGenerator'}]
         with self.assertRaises(ValueError):validate(data)
+    def test_burst_count_profile_needs_no_physical_channels(self):
+        data=copy.deepcopy(self.profiles);profile=data['profiles'][0]
+        profile['channels']=None;profile['outputs']=[]
+        profile['plans']=[p for p in profile['plans'] if p['operation']=='FunctionGeneratorSetBurstCount']
+        validate(data);self.assertIn('FunctionGeneratorSetBurstCount',emit(data)['profiles.rs'])
     def test_codegen_rejects_symlink_targets_without_writing_other_files(self):
         with tempfile.TemporaryDirectory() as temp:
             folder=Path(temp);inp=folder/'input.json';inp.write_text(json.dumps(self.profiles));out=folder/'out';out.mkdir()

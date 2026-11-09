@@ -7,7 +7,7 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-instrument-api = { path = "../instrument-api", version = "0.2.0-alpha.1" }
+instrument-api = { path = "../instrument-api", version = "=0.2.0-alpha.1" }
 
 tokio = { version = "1", features = ["rt", "sync"], optional = true }
 

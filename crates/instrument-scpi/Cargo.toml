@@ -7,7 +7,7 @@ description = "Explicit-profile SCPI implementation for vendor-neutral Instrumen
 repository = "https://github.com/josh-hemphill/instrument-components"
 
 [dependencies]
-instrument-api = { path = "../instrument-api", version = "0.2.0-alpha.1" }
+instrument-api = { path = "../instrument-api", version = "=0.2.0-alpha.1" }
 
 [features]
 default = []

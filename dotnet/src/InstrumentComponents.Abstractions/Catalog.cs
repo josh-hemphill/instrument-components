@@ -6,12 +6,13 @@ public enum ReplyKind { Unit, Quantity, Boolean, Count, Samples, Trace, Identity
 public readonly record struct Quantity(double Value, Unit Unit, MeasurementStatus Status = MeasurementStatus.Valid);
 public sealed record Samples(IReadOnlyList<double> Values, Unit Unit, double? SampleIntervalS = null);
 public sealed record DeviceIdentity(string Manufacturer, string Model, string Serial, string Revision);
-public enum ArgumentKind { Number, OptionalNumber, Channel, Boolean, Symbol }
-public readonly record struct Argument(ArgumentKind Kind, double? Number = null, uint ChannelValue = 0, bool Bool = false, string? Token = null)
+public enum ArgumentKind { Number, OptionalNumber, Channel, Count, Boolean, Symbol }
+public readonly record struct Argument(ArgumentKind Kind, double? Number = null, uint ChannelValue = 0, bool Bool = false, string? Token = null, uint CountValue = 0)
 {
     public static Argument Numeric(double v) => new(ArgumentKind.Number, v);
     public static Argument Optional(double? v) => new(ArgumentKind.OptionalNumber, v);
     public static Argument Channel(uint v) => new(ArgumentKind.Channel, ChannelValue: v);
+    public static Argument Count(uint v) => new(ArgumentKind.Count, CountValue: v);
     public static Argument Boolean(bool v) => new(ArgumentKind.Boolean, Bool: v);
     public static Argument Symbol(string v) => new(ArgumentKind.Symbol, Token: v);
 }
@@ -60,6 +61,6 @@ public interface IAsyncCatalogBackend { ValueTask<CatalogReply> InvokeAsync(Cata
 public interface ICatalogExecutor { CatalogReply Invoke(CatalogRequest request); }
 public interface IAsyncCatalogExecutor { Task<CatalogReply> InvokeAsync(CatalogRequest request, CancellationToken cancellationToken = default); }
 
-public enum ParameterKind { Number, OptionalNumber, Channel, Boolean, Symbol, Waveform, PowerUnit, SenseMode }
+public enum ParameterKind { Number, OptionalNumber, Channel, Count, Boolean, Symbol, Waveform, PowerUnit, SenseMode }
 public sealed record ParameterSpec(string Name, ParameterKind Kind, string Constraint);
 public sealed record OperationMetadata(string Kind, IReadOnlyList<ParameterSpec> Parameters, ReplyKind Result, Unit Unit);

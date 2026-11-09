@@ -97,9 +97,11 @@ def main():
         manifest = (source/'Cargo.toml').read_text()
         for key, value in workspace.items():
             manifest = re.sub(rf'(?m)^{re.escape(key)}\.workspace\s*=\s*true\s*$', f'{key} = {json.dumps(value)}', manifest)
-        manifest = re.sub(r'(?m)^(instrument-[\w-]+)\s*=\s*\{\s*path\s*=\s*"[^"]+",\s*version\s*=\s*"([^"]+)"\s*\}', r'\1 = "=\2"', manifest)
+        # Preserve the real requirement verbatim; do not strengthen proof metadata.
+        manifest = re.sub(r'(?m)^(instrument-[\w-]+)\s*=\s*\{\s*path\s*=\s*"[^"]+",\s*version\s*=\s*"([^"]+)"\s*\}', r'\1 = "\2"', manifest)
         if '[workspace]' not in manifest: manifest += '\n[workspace]\n'
         meta = tomllib.loads(manifest); name = meta['package']['name']; version = meta['package']['version']
+        if any(v != '='+version for k,v in meta.get('dependencies',{}).items() if k.startswith('instrument-')):raise RuntimeError('Packed SDK dependency is not exact')
         stage = work/'rust-packages'/name; shutil.copytree(source/'src', stage/'src', ignore=IGNORE); (stage/'Cargo.toml').write_text(manifest)
         if 'path =' in manifest: raise RuntimeError('Source path dependency in staged crate')
         run('pack-'+name, ['cargo', 'package', '--offline', '--allow-dirty', '--no-verify'], stage, cargo_env)
@@ -132,6 +134,8 @@ def main():
         if not feature and 'tokio' in closure:raise RuntimeError('Default core unexpectedly requires Tokio')
 
     feed=work/'nuget-feed';feed.mkdir()
+    (work/'dotnet-pack-sources/dotnet').mkdir(parents=True)
+    shutil.copy2(ROOT/'dotnet/DriverSdk.Package.targets',work/'dotnet-pack-sources/dotnet/DriverSdk.Package.targets')
     expected={'InstrumentComponents.Abstractions':set(),'InstrumentComponents.Runtime':{'InstrumentComponents.Abstractions'},'InstrumentComponents.Scpi':{'InstrumentComponents.Abstractions'},'InstrumentComponents.TestKit':{'InstrumentComponents.Scpi'},'InstrumentComponents.SyntheticDriver':{'InstrumentComponents.Abstractions'}}
     for name in expected:
         source=ROOT/'validation/driver-sdk/dotnet-provider' if name.endswith('SyntheticDriver') else ROOT/'dotnet/src'/name
@@ -147,8 +151,10 @@ def main():
             metadata=ET.fromstring(packed.read(next(n for n in packed.namelist() if n.endswith('.nuspec')))); name=metadata.find('.//{*}id').text
             dependencies={d.attrib['id'] for d in metadata.findall('.//{*}dependency')}
             if dependencies != expected[name]:raise RuntimeError(f'Unexpected {name} dependencies: {dependencies}')
+            ranges={d.attrib['id']:d.attrib['version'] for d in metadata.findall('.//{*}dependency')}
+            if any(v!='[0.2.0-alpha.1]' for v in ranges.values()):raise RuntimeError('NuGet SDK dependency is not exact: '+str(ranges))
             if any(n.endswith(('.json','.toml')) or 'vendors/' in n for n in packed.namelist()):raise RuntimeError('Driver data in SDK package')
-            inventory.append(dict(package=name,archive=str(archive),sha256=hashlib.sha256(archive.read_bytes()).hexdigest(),dependencies=sorted(dependencies),files=packed.namelist()))
+            inventory.append(dict(package=name,archive=str(archive),sha256=hashlib.sha256(archive.read_bytes()).hexdigest(),dependencies=ranges,files=packed.namelist()))
     aot=work/'dotnet-consumer';shutil.copytree(ROOT/'validation/driver-sdk/dotnet-consumer',aot,ignore=IGNORE)
     # Restore evaluates the project's declared framework independently of publish's
     # TargetFramework override. Keep the copied project and selected target equal.

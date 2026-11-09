@@ -12,4 +12,5 @@
   <ItemGroup>
     <ProjectReference Include="../InstrumentComponents.Abstractions/InstrumentComponents.Abstractions.csproj" />
   </ItemGroup>
+  <Import Project="../../DriverSdk.Package.targets" />
 </Project>

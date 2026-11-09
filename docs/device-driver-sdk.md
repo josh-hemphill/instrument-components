@@ -4,6 +4,8 @@ The independently versioned SDK implements synchronous, native async and dedicat
 worker device composition in Rust and .NET. Its production packages are independent
 of `instrument-core` / `InstrumentComponents`, VISA and vendor implementations.
 Version `0.2.0-alpha.1` is a prepared preview, not a published stable contract.
+Internal Cargo and NuGet package dependencies pin that exact preview revision;
+package proofs inspect the real emitted dependency ranges without strengthening them.
 The legacy facade remains until external device packages are integrated.
 
 The November 2026 decisions permit a breaking API and preview publication before

@@ -434,6 +434,7 @@ impl Engine {
                 let arg = &args[name.as_str()];
                 let text = match arg {
                     Argument::Number(v) | Argument::OptionalNumber(Some(v)) => format_number(*v)?,
+                    Argument::Count(v) => v.to_string(),
                     Argument::OptionalNumber(None) => {
                         plan.defaults.get(&name).cloned().ok_or_else(|| {
                             fail(

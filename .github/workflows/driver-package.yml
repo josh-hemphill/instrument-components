@@ -92,6 +92,7 @@ jobs:
         run: |
           instrument-driver generate --input "$PROFILE_MANIFEST" --output-dir "$GENERATED_DIRECTORY" --contract-major 1 --check
           instrument-driver generate-tests --input "$SCENARIO_MANIFEST" --output-dir "$GENERATED_DIRECTORY" --check
+          cargo test --manifest-path "$RUST_MANIFEST" --locked
           cargo test --manifest-path "$RUST_MANIFEST" --all-features --locked
           dotnet test "$DOTNET_TESTS" -c Release
       - name: Publish and execute driver Native AOT consumer

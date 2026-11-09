@@ -50,6 +50,15 @@ public sealed class ScpiCatalogTests
     }
     private static DeviceHandle Open(ScpiProfile profile,Script script,ConnectionOwnership ownership=ConnectionOwnership.Owned)=>new DriverRegistry([new ScpiFactory(profile,"scpi",script)]).Open(Candidate,new(AllowStandardScpi:true),ownership:ownership);
     [Fact]
+    public void BurstCountDoesNotRequireOrUsePhysicalChannelInventory()
+    {
+        var profile=new ScpiProfile("synthetic.counts",null,[],[new(CatalogOperation.FunctionGeneratorSetBurstCount,[new(":BURS {count}")])]);
+        var script=new Script([ScriptStep.Write(":BURS 100"),ScriptStep.Close()]);
+        using var handle=Open(profile,script);var generator=new InstrumentComponents.Drivers.Catalog.FunctionGenerator(handle);
+        generator.SetBurstCount(100);Assert.Equal(DriverErrorKind.InvalidArgument,Assert.Throws<DriverException>(()=>generator.SetBurstCount(0)).Kind);
+        handle.Close();script.AssertComplete();
+    }
+    [Fact]
     public void RecoveryEstablishesBoundaryResetInvalidatesUnitsAndBorrowedIoSurvives()
     {
         var profile=GeneratedProfiles.Create().Single();var script=new Script([

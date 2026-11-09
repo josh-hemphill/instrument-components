@@ -257,6 +257,36 @@ fn open_profile(profile: Profile, script: &Script, ownership: ConnectionOwnershi
         .unwrap()
 }
 #[test]
+fn burst_counts_are_positive_quantities_without_physical_channel_inventory() {
+    let profile = Profile::new(
+        "synthetic.counts",
+        None,
+        Some(vec![]),
+        vec![Plan::new(
+            CatalogOperation::FunctionGeneratorSetBurstCount,
+            vec![Step::write(":BURS {count}")],
+        )],
+    )
+    .unwrap();
+    let script = Script::new(vec![
+        ScriptStep::Write(":BURS 100".into()),
+        ScriptStep::Close(Ok(())),
+    ]);
+    let handle = open_profile(profile, &script, ConnectionOwnership::Owned);
+    instrument_api::catalog::FunctionGenerator(&handle)
+        .set_burst_count(100)
+        .unwrap();
+    assert_eq!(
+        instrument_api::catalog::FunctionGenerator(&handle)
+            .set_burst_count(0)
+            .unwrap_err()
+            .kind,
+        ErrorKind::InvalidArgument
+    );
+    handle.close(false).unwrap();
+    script.assert_complete().unwrap();
+}
+#[test]
 fn explicit_recovery_reset_units_borrowed_io_and_missing_range_have_no_fallback() {
     let profile = generated_profiles::profiles().unwrap().remove(0);
     let script = Script::new([

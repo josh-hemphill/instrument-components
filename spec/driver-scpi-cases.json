@@ -1327,14 +1327,14 @@
         {
           "operation": "FunctionGeneratorSetBurstCount",
           "arguments": {
-            "count": 1
+            "count": 100
           }
         }
       ],
       "script": [
         {
           "kind": "write",
-          "message": ":TEST:FunctionGeneratorSetBurstCount 1"
+          "message": ":TEST:FunctionGeneratorSetBurstCount 100"
         },
         {
           "kind": "close"

@@ -390,7 +390,7 @@ private protected override void ValidateArguments() {
 public sealed record FunctionGeneratorSetBurstCountRequest(uint Count) : CatalogRequest {
 public override CatalogOperation Operation => CatalogOperation.FunctionGeneratorSetBurstCount;
 public override IReadOnlyDictionary<string, Argument> Arguments => new Dictionary<string, Argument> {
-["count"] = Argument.Channel(Count),
+["count"] = Argument.Count(Count),
 };
 public override (ReplyKind Kind, Unit Unit) Result => (ReplyKind.Unit, global::InstrumentComponents.Drivers.Catalog.Unit.Unknown);
 private protected override void ValidateArguments() {
@@ -1117,7 +1117,7 @@ CatalogOperation.FunctionGeneratorSetOffset => new("FunctionGenerator", [new("vo
 CatalogOperation.FunctionGeneratorSetDutyCycle => new("FunctionGenerator", [new("percent", ParameterKind.Number, "percent")], ReplyKind.Unit, global::InstrumentComponents.Drivers.Catalog.Unit.Unknown),
 CatalogOperation.FunctionGeneratorSetLoad => new("FunctionGenerator", [new("ohms", ParameterKind.Number, "positive")], ReplyKind.Unit, global::InstrumentComponents.Drivers.Catalog.Unit.Unknown),
 CatalogOperation.FunctionGeneratorOutputEnable => new("FunctionGenerator", [new("enabled", ParameterKind.Boolean, "finite")], ReplyKind.Unit, global::InstrumentComponents.Drivers.Catalog.Unit.Unknown),
-CatalogOperation.FunctionGeneratorSetBurstCount => new("FunctionGenerator", [new("count", ParameterKind.Channel, "positive")], ReplyKind.Unit, global::InstrumentComponents.Drivers.Catalog.Unit.Unknown),
+CatalogOperation.FunctionGeneratorSetBurstCount => new("FunctionGenerator", [new("count", ParameterKind.Count, "positive")], ReplyKind.Unit, global::InstrumentComponents.Drivers.Catalog.Unit.Unknown),
 CatalogOperation.FunctionGeneratorSetBurstState => new("FunctionGenerator", [new("enabled", ParameterKind.Boolean, "finite")], ReplyKind.Unit, global::InstrumentComponents.Drivers.Catalog.Unit.Unknown),
 CatalogOperation.FunctionGeneratorSetBurstTriggerSource => new("FunctionGenerator", [new("source", ParameterKind.Symbol, "finite")], ReplyKind.Unit, global::InstrumentComponents.Drivers.Catalog.Unit.Unknown),
 CatalogOperation.FunctionGeneratorReadFrequency => new("FunctionGenerator", [], ReplyKind.Quantity, global::InstrumentComponents.Drivers.Catalog.Unit.Hertz),

@@ -1,0 +1,11 @@
+<Project>
+  <!-- ProjectReference is used for development, but the prerelease package must
+       resolve the exact SDK revision exercised by its package-only proof. -->
+  <Target Name="PinDriverSdkPackageDependencies" AfterTargets="_GetProjectReferenceVersions">
+    <ItemGroup>
+      <_ProjectReferencesWithVersions Update="@(_ProjectReferencesWithVersions)">
+        <ProjectVersion>[%(_ProjectReferencesWithVersions.ProjectVersion)]</ProjectVersion>
+      </_ProjectReferencesWithVersions>
+    </ItemGroup>
+  </Target>
+</Project>

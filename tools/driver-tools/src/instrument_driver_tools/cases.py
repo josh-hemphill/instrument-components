@@ -38,7 +38,7 @@ def emit_cases(data, module='generated_cases', namespace='GeneratedDrivers'):
                 v=args[p['name']];typ=p['type']
                 if typ=='optional_number':rv='None' if v is None else 'Some('+scalar(v)+')';cv='null' if v is None else scalar(v)
                 elif typ=='number':rv=cv=scalar(v)
-                elif typ=='channel':
+                elif typ in ['channel','count']:
                     if not isinstance(v,int) or isinstance(v,bool) or not 0<=v<=4294967295:raise ValueError('Invalid channel scalar')
                     rv=cv=str(v)
                 elif typ=='boolean':

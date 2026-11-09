@@ -17,6 +17,11 @@ def validate(root, tag=None):
     if tag is not None and tag!=manifest['tagPrefix']+version:raise ValueError('Tag does not match SDK preview version')
     pep='.'.join(match.groups()[:3])+{'alpha':'a','beta':'b','rc':'rc'}[match[4]]+match[5]
     if manifest['pythonVersion']!=pep:raise ValueError('Python and SDK preview versions disagree')
+    if set(manifest['frameworks'])!={'net8.0','net10.0'} or set(manifest['runtimeIdentifiers'])!={'linux-x64','win-x64'}:raise ValueError('Both native platforms/frameworks are required')
+    major=manifest['contractMajor']
+    for file,pattern in [('crates/instrument-api/src/lib.rs',r'CONTRACT_MAJOR: u32 = (\d+)'),('dotnet/src/InstrumentComponents.Abstractions/Drivers.cs',r'const uint Major = (\d+)'),('tools/driver-tools/src/instrument_driver_tools/__init__.py',r'CONTRACT_MAJOR = (\d+)')]:
+        actual=re.search(pattern,(root/file).read_text(encoding='utf-8'))
+        if actual is None or int(actual[1])!=major:raise ValueError('SDK contract major drift: '+file)
     allowed=set(manifest['rustPackages'])
     for name in manifest['rustPackages']:
         cargo=tomllib.loads((root/'crates'/name/'Cargo.toml').read_text())
@@ -24,11 +29,12 @@ def validate(root, tag=None):
         for dependency,settings in cargo.get('dependencies',{}).items():
             if dependency.startswith('instrument-'):
                 if dependency not in allowed:raise ValueError('External/legacy implementation dependency: '+name)
-                if not isinstance(settings,dict) or settings.get('version','').lstrip('=')!=version:raise ValueError('SDK dependency version drift: '+name)
+                if not isinstance(settings,dict) or settings.get('version')!='='+version:raise ValueError('SDK dependency must pin exact preview: '+name)
         if name!='instrument-testkit' and 'instrument-testkit' in cargo.get('dependencies',{}):raise ValueError('Production package depends on TestKit')
     for name in manifest['nugetPackages']:
         project=ET.parse(root/'dotnet/src'/name/(name+'.csproj')).getroot()
         if project.findtext('.//Version')!=version:raise ValueError('NuGet SDK version drift: '+name)
+        if project.findall('.//ProjectReference') and not any(i.get('Project')=='../../DriverSdk.Package.targets' for i in project.findall('Import')):raise ValueError('NuGet exact SDK dependency policy missing: '+name)
         for reference in project.findall('.//ProjectReference'):
             dep=Path(reference.attrib['Include']).stem
             if dep not in manifest['nugetPackages'] or dep.endswith('TestKit') and name!='InstrumentComponents.TestKit':raise ValueError('External/test implementation dependency: '+name)

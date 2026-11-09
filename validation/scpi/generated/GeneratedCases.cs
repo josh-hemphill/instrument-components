@@ -411,9 +411,9 @@ new ScriptStep("close", "", "", null),
 },
 new CatalogReply.Empty()),
 new CatalogCase("SCPI-FunctionGeneratorSetBurstCount", new CatalogRequest[] {
-new FunctionGeneratorSetBurstCountRequest(1),
+new FunctionGeneratorSetBurstCountRequest(100),
 }, new ScriptStep[] {
-new ScriptStep("write", ":TEST:FunctionGeneratorSetBurstCount 1", "", null),
+new ScriptStep("write", ":TEST:FunctionGeneratorSetBurstCount 100", "", null),
 new ScriptStep("close", "", "", null),
 },
 new CatalogReply.Empty()),

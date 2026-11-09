@@ -578,7 +578,7 @@
       "parameters": [
         {
           "name": "count",
-          "type": "channel",
+          "type": "count",
           "constraint": "positive"
         }
       ],

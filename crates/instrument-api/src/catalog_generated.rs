@@ -566,7 +566,7 @@ impl CatalogRequest {
                 vec![("enabled", Argument::Boolean(*enabled))]
             }
             Self::FunctionGeneratorSetBurstCount { count } => {
-                vec![("count", Argument::Channel(*count))]
+                vec![("count", Argument::Count(*count))]
             }
             Self::FunctionGeneratorSetBurstState { enabled } => {
                 vec![("enabled", Argument::Boolean(*enabled))]
@@ -2706,7 +2706,7 @@ impl CatalogOperation {
                 kind: "FunctionGenerator",
                 parameters: vec![ParameterSpec {
                     name: "count",
-                    kind: ParameterKind::Channel,
+                    kind: ParameterKind::Count,
                     constraint: "positive",
                 }],
                 result: ReplyKind::Unit,

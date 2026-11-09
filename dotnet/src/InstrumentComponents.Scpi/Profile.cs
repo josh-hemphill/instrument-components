@@ -130,6 +130,7 @@ internal sealed class Engine(ScpiProfile profile)
             {
                 var arg = args[name]; string text;
                 if (arg.Kind == ArgumentKind.Number || arg.Kind == ArgumentKind.OptionalNumber && arg.Number is not null) text = ScpiNumbers.Format(arg.Number!.Value);
+                else if (arg.Kind == ArgumentKind.Count) text = arg.CountValue.ToString(CultureInfo.InvariantCulture);
                 else if (arg.Kind == ArgumentKind.OptionalNumber) text = plan.Defaults!.TryGetValue(name, out var d) ? d : throw new DriverException(DriverErrorKind.UnsupportedOperation, "Profile has no default for absent argument");
                 else if (arg.Kind == ArgumentKind.Channel) { if (Profile.Channels is null || !Profile.Channels.Contains(arg.ChannelValue) || request.Operation.Describe().Kind == "DcPowerSupply" && Profile.Outputs is not null && !Profile.Outputs.Contains(new Output(OutputKind.DcPowerSupply, arg.ChannelValue))) throw ContractValidation.Invalid("Unknown physical channel"); text = arg.ChannelValue.ToString(CultureInfo.InvariantCulture); }
                 else { var key = arg.Kind == ArgumentKind.Boolean ? (arg.Bool ? "true" : "false") : arg.Token!; text = plan.Tokens!.TryGetValue(name, out var map) && map.TryGetValue(key, out var token) ? token : throw new DriverException(DriverErrorKind.UnsupportedOperation, "Semantic mode not mapped"); }
