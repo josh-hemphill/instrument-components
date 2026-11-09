@@ -1,14 +1,22 @@
-# Experimental device driver SDK
+# Device driver SDK preview
 
-The additive SDK implements synchronous, native async and dedicated worker
-device composition in Rust and .NET. It is independent of the existing `instrument-core` /
-`InstrumentComponents` implementation and does not change existing applications.
-The API is experimental; it is not a published stable contract.
+The independently versioned SDK implements synchronous, native async and dedicated
+worker device composition in Rust and .NET. Its production packages are independent
+of `instrument-core` / `InstrumentComponents`, VISA and vendor implementations.
+Version `0.2.0-alpha.1` is a prepared preview, not a published stable contract.
+The legacy facade remains until external device packages are integrated.
+
+The November 2026 decisions permit a breaking API and preview publication before
+hardware validation. All current model hints and all eight classes remain in the
+final cutover scope. Required deployment targets are Linux x64 and Windows x64,
+with .NET 8 and .NET 10 Native AOT. See [delivery and setup](device-package-delivery.md).
 
 | Role | Rust | .NET |
 |---|---|---|
 | Public contracts | `instrument-api` | `InstrumentComponents.Abstractions` |
 | Selection and shared handles | `instrument-runtime` | `InstrumentComponents.Runtime` |
+| Explicit-profile SCPI interpreter | `instrument-scpi` | `InstrumentComponents.Scpi` |
+| Development conformance helpers | `instrument-testkit` | `InstrumentComponents.TestKit` |
 | Synthetic binary package proof | `validation/driver-sdk/rust-provider` | `validation/driver-sdk/dotnet-provider` |
 
 The new production packages have no dependency on the legacy packages, VISA,
@@ -41,18 +49,27 @@ that possible; missing actual requirements or invalid accessors close the newly
 opened backend. Optional reduced support is permitted. Runtime holds an immutable
 support snapshot and rejects unsupported operations before calling the provider.
 
-| Capability | Sync | Native async | Worker sync/async |
-|---|---|---|---|
-| DMM DC voltage, in volts with explicit status | Implemented | Implemented | Implemented |
-| PSU voltage/read/output, positive one-based channels | Implemented | Implemented | Implemented |
-| Optional explicit internal/external remote sense | Implemented contract | Implemented contract | Implemented contract |
-| Optional reset, recovery and safe shutdown | Implemented contract | Implemented contract | Implemented contract |
+All eight typed class views are implemented: DMM, DC power supply, function
+generator, oscilloscope, switch, counter, power meter and spectrum analyzer.
+[`spec/driver-operations.json`](../spec/driver-operations.json) defines 83 closed
+operations, parameter constraints and units, including common identity, reset and
+shutdown. Generated Rust request enums and sealed C# request records feed the
+protocol-neutral `CatalogExecutor` / `ICatalogExecutor`. Strongly typed sync/async
+views convert and validate owned replies; callers need no SCPI session. Existing
+basic DMM/PSU interfaces also remain as SDK convenience capabilities; the legacy
+facade constructors/raw-session escape hatches are not compatibility requirements.
 
-The three binary fixtures implement DMM/PSU/reset/shutdown and deliberately omit
-remote sense. The original fixture supports Sync; the native fixture supports
-NativeAsync; the local SDK fixture supports WorkerAsync with explicit sync and
-async frontends. Unsupported modes fail before factory opening or I/O. No SCPI
-implementation package is supplied yet.
+A backend advertises only operations actually implemented. The descriptor is an
+upper bound, checked against accessor availability and the actual immutable
+operation set at open. Catalog-only non-SCPI backends support typed operations and
+checked shutdown without implementing the older basic capability interfaces.
+The binary fixtures prove this boundary independently of SCPI.
+
+`ScpiFactory` exposes Sync and WorkerAsync; adding a native connector exposes
+NativeAsync under the same driver ID. A native-only factory is also available.
+Generated factory helpers accept explicit passive identity rules from their input.
+Neither SDK contains manufacturer/model defaults. Application registration is
+static and explicit; mode selection never falls back.
 
 Factories expose an immutable execution-mode set, captured at registration along
 with their descriptors. Existing factories default to Sync. New APIs are explicit:
@@ -69,7 +86,7 @@ Neither runtime converts native async into a synchronous API.
 
 ## Session ownership
 
-Typed DMM/PSU views share one handle and lock for each complete backend operation,
+All typed views share one handle and lock for each complete backend operation,
 including multi-message exchanges and state updates. There is no public raw-I/O
 escape hatch or public multi-operation/nested transaction API in this milestone.
 Backend callbacks must not reenter the handle; runtime rejects reentry rather
@@ -133,76 +150,139 @@ Reentry is rejected across awaits in the native task/context, and on the worker
 thread before queuing. Providers must not create arbitrary cross-task callback
 cycles around an active lease: task-local checks cannot detect every such cycle.
 
-## Shared tests and package proof
+## Explicit-profile SCPI package
 
-Both suites preserve all 43 `spec/driver-contract-cases.json` scenarios
-(schema version 1), asserting
-selection, values, errors, unsupported modes, quarantine/recovery and lifecycle
-counts. Language-specific adversarial tests cover capability validation, concurrent
-views, queued operations versus close, simultaneous close callers and backend
-reentry. The synthetic PSU models enabled output states: shutdown attempts both
-known outputs after a failure, and reports unknown inventory as failure. The fixture uses a strict two-message binary
-measurement; a generic SCPI fallback cannot satisfy it.
+The interpreter contains opt-in IEEE 488.2 common-command literals, not subsystem
+templates or bundled device profiles. Each external driver supplies an explicit
+validated profile: operation plans, named placeholders, token maps, optional
+numeric defaults, channels and complete typed output inventory. Legacy `generic_*`
+traffic is evidence for conversion, not a universally supported standard. Missing
+operations or templates fail; there is no generic fallback or automatic probing.
 
-The additional `spec/driver-async-cases.json` runs 14 shared scenarios in each
-native async, worker async and worker sync cell in both languages.
-Language-specific controlled tests cover
-queued/running cancellation, abandoned/undelivered open, close waiter cancellation,
-first-close policy, reentry, worker affinity and native executor interruption.
-Rust runtime unit tests pause the final unlock to verify interrupted-close
-cleanup cannot lose ownership, and pause worker recovery before dispatch to
-verify cancellation prevents provider I/O. The converse test proves dispatched
-recovery stays owned until it returns. .NET tests cover queued/running recovery
-cancellation, task abandonment and worker finalization, whose semantics differ from dropping a Rust future.
+Message IO accepts a complete unterminated body and returns exactly one complete
+response. The host adapter owns terminators, framing, transport timeouts and bounds
+before allocation; the interpreter rechecks the 1 MiB response limit and rejects
+NUL. Commands are printable ASCII, bounded to 64 KiB, with at most 32 plan steps.
+Argument tokens use closed explicit mappings, never arbitrary wire fragments.
+Numeric formatting/parsing is invariant, finite and strict. Scalar overload has an
+explicit status. Samples/traces are owned, finite and bounded to one million points.
+The current scope waveform contract remains ASCII preamble plus data; binary scope
+capture was not present in the old library and is not introduced here.
+
+A whole multistep configuration/acquisition runs under the same handle lease.
+DMM READ/FETCH requires a configured measurement unit; successful direct measure
+and configure operations establish it. Reset and successful clean-boundary recovery
+invalidate configured DMM/power state. Scope preamble must provide a positive
+sample interval. Failed/partial operations quarantine the handle; recovery delegates
+to an explicit host strategy that establishes a clean message boundary or fails.
+Nothing silently flushes, retries, resets or reconnects.
+
+Shutdown inventory distinguishes PSU channel outputs from generator outputs.
+All disable requests are prepared before the first write; failure on one output
+does not prevent attempts on the others. Unknown coverage cannot advertise checked
+shutdown. Metadata channel count counts PSU outputs, not input channels. No-output
+instruments may explicitly declare an empty inventory. Reset is a separate operation.
+
+Owned IO is closed once. Borrowed IO is not closed/disposed by the interpreter;
+its host resource must survive destruction of the adapter wrapper as well. Rust
+borrowed adapters must not close the underlying resource from `Drop`; use host-owned
+shared storage rather than a wrapper whose destruction owns the host connection.
+Connectors retain cleanup responsibility for partial acquisition/open failure.
+Native cancellation must stop all resource access before completing/canceling;
+uninterruptible work belongs on the worker thread.
+
+## External tooling and tests
+
+The installable Python package `instrument-driver-tools==0.2.0a1` includes the
+exact versioned profile schema and semantic operation catalog. Generate static
+Rust/C# profiles and typed test scenarios from any directory, without a main-repo
+checkout, runtime JSON parsing or reflection activation:
+
+```sh
+python -m pip install ./tools/driver-tools
+instrument-driver generate --input profiles.json --output-dir generated --contract-major 1
+instrument-driver generate-tests --input cases.json --output-dir generated
+# CI runs the same commands with --check (read-only drift detection).
+```
+
+This initial installation command is for this checkout. External repositories
+install the checksummed wheel attached to the SDK preview release; no PyPI release
+is assumed. Both `generate` commands accept `--module` / `--namespace`. An optional
+`--schema` must match the installed release exactly. Malformed versions, names,
+placeholders, roles, inventories and injection tokens fail before file emission.
+The CLI rejects duplicate JSON properties, non-JSON numeric constants, symlink
+outputs and overwriting handwritten code. Generated contracts in the main SDK
+come from the operation manifest using the `contracts` subcommand and rustfmt.
+
+The TestKit packages supply strict scripted message IO, thread/lifetime observation
+and typed catalog scenarios. Unexpected traffic fails even if the backend catches
+an error; assert complete consumption. They are development dependencies only.
+The 139 shared SCPI cases assert typed replies, units, errors and exact traffic for
+all 83 operations across Sync, NativeAsync, WorkerAsync and worker blocking
+frontends in both languages. Separate tests cover non-SCPI catalog backends,
+multistep serialization, profile rejection, recovery, partial shutdown, borrowed
+IO and native cancellation. The original 43 synchronous SDK cases and 14 async
+cases remain, including worker cancellation/affinity, abandoned opening, reentry,
+close ownership and Rust executor interruption. Synthetic tests establish no
+physical-device compatibility claim.
 
 ```sh
 cargo test -p instrument-runtime --features async
 cargo test --manifest-path validation/driver-sdk/rust-tests/Cargo.toml --features async
-cargo test --manifest-path validation/driver-sdk/rust-tests/Cargo.toml
+cargo test --manifest-path validation/scpi/rust-tests/Cargo.toml --features async
 dotnet test dotnet/tests/InstrumentComponents.Runtime.Tests -c Release
-python tools/validate-driver-sdk.py --artifacts /tmp/driver-sdk-proof --isolate-runtime
+python -m unittest discover -s tools/driver-tools/tests
+python tools/validate-driver-sdk.py --artifacts /tmp/sdk-net8 --framework net8.0 --isolate-runtime
+python tools/validate-driver-sdk.py --artifacts /tmp/sdk-net10 --framework net10.0 --isolate-runtime
 ```
 
-The proof requires Python 3.11+, Rust, .NET 8+, Linux x64 Native AOT prerequisites
-and bubblewrap. The artifact directory must be empty and outside the checkout.
-If necessary, pass `--cpp-compiler gcc`; the default uses the SDK's compiler choice.
-Restricted sandboxes may need permission for bubblewrap namespaces. Omitting
-`--isolate-runtime` explicitly records that isolation was not tested.
+The package proof requires Python 3.11+, Rust stable, .NET 8+10 SDKs and Native AOT
+prerequisites on the native x64 host. Windows uses Visual Studio C++ build tools;
+Linux uses clang/zlib (or `--cpp-compiler gcc`). Linux isolation requires bubblewrap
+namespaces, which restricted sandboxes may need permission to create. Artifacts
+must be outside the checkout in an empty directory. No device I/O occurs.
 
-The tool packs the new SDK and synthetic driver, removes source path dependencies
-from staged Rust package manifests, uses a checksummed Cargo directory registry,
-vendors ordinary released dependencies, and builds consumers outside the workspace
-with fresh Cargo/NuGet caches. Rust runs both default and optional async modes. The
-.NET consumer uses only PackageReferences. It publishes and runs `net8.0` /
-`linux-x64` Native AOT, with reflection-based JSON disabled and trimming/AOT warnings
-as errors. Its assertions cover binary values/traffic, PSU behavior, unsupported
-operations/modes, recovery, shutdown and resource lifetime. A separate Rust core-only
-consumer checks that its package closure excludes the synthetic driver and legacy
-packages. SDK package inventories and dependency checks accompany the logs.
+The harness builds/installs a wheel into a fresh venv, generates consumers from
+copied JSON, packs the four SDK crates/NuGets plus unpublished synthetic fixture,
+and builds outside the checkout. Cargo uses checksummed package archives/offline
+registry; NuGet permits SDK IDs from the local feed only and framework packages
+from nuget.org. Consumers use package dependencies only, with fresh caches.
+Rust default and optional async consumers assert binary and SCPI behavior,
+including strongly typed views for all eight classes. A separate clean core build
+removes TestKit/fixture packages from the available feed and checks the closure;
+the default Rust closure also excludes Tokio. This proves the new SDK can build
+without external implementations, not that the old facade has been cut over.
 
-The `--isolate-runtime` execution hides installed shared .NET runtimes, SDK trees,
-source and network, keeping only published files and required OS libraries visible.
-These checks establish this sync/native/worker synthetic Linux proof only, not hardware,
-Windows/macOS, vendor SDK deployment or OpenTAP host AOT compatibility.
+.NET package consumers disable reflection JSON and publish Native AOT with all
+trimming/AOT warnings treated as errors. An intentional actual IL2026 failure
+proves the warning gate is active. The native consumer executes its assertions.
+Linux isolation hides source, SDK/shared runtimes and network. Windows verifies
+native x64 PE with no CLR header and runs on the native host. Logs, exact commands,
+exit codes, package/dependency inventories and binary hashes are recorded.
+`--framework` selects net8.0 or net10.0; `--isolate-runtime` is Linux-only.
+Source inspection or cross-publishing does not substitute for native execution.
 
-## Migration status and next work
+`.github/workflows/driver-sdk.yml` runs the Linux/Windows × net8/net10 native
+matrix and is called by PR CI and preview release CI. `driver-package.yml` is the
+reusable external-repo gate: pin its main-repo commit, pass a checksummed released
+wheel URL and caller-relative manifests, test projects and native consumer. It
+checks out only the caller repo, requires SDK package dependencies and executes
+both native platforms/TFMs. Driver consumers must assert values and fail nonzero.
+Caller-owned production packages must not depend on TestKit. All runtime/vendor
+SDK deployment prerequisites remain the external repository's responsibility.
 
-- **Implemented:** standalone contracts/runtime, sync/native/worker operations, passive
-  selection, cancellation/ownership and affine SDK cleanup, shared contracts,
-  isolated package consumers and executable Native AOT validation tooling.
-- **Pending:** full SCPI implementation package,
-  reusable profile generators/schemas/TestKit/external workflows, additional
-  synthetic SCPI fixtures, broader scenario coverage and targets.
-- **Pending:** integrating new handles with the existing facade/discovery/OpenTAP
-  and extracting vendor profiles, model hints, state and exceptions.
+## Migration status
 
-Existing legacy core/facade artifacts still bundle their current device support.
-The additive SDK does not yet accomplish the final repository-wide separation.
-No package versions are bumped or published. The existing hardware prerequisite
-for the breaking release remains in force; see [roadmap](roadmap.md).
+Implemented in this checkout: independently versioned preview contracts/runtime,
+eight typed classes, standards-only explicit-profile SCPI interpreter, generator,
+schema, TestKit, all-mode synthetic tests, portable package/AOT proof and release
+assets. The release manifest is `spec/driver-sdk-release.json`; publication has
+not happened merely because pack/publish tooling exists.
 
-No external repository is needed for this milestone. Before extracting the first
-real family (proposed pilot: N6705C), notify the user that a separate family-driver
-repository is needed. Do not create or publish it implicitly. Extraction must move
-behavior, profiles, identification hints and fixtures together and retain explicit
-registration in application composition.
+Pending after repository/publisher setup: convert and validate every real device
+profile/behavior in independent driver packages; compose selected factories into
+facade/discovery/OpenTAP applications; remove vendor tables/branches from shared
+classes and old artifacts; publish previews after both native platform gates.
+The old facade/core artifacts still bundle current device support. No real device
+package or hardware support is established by synthetic conformance. See the
+[exact delivery sequence and inputs](device-package-delivery.md).

@@ -1,5 +1,19 @@
 # Roadmap
 
+## November 2026 driver package direction
+
+The current user decision supersedes earlier preview/hardware prerequisites below:
+prepare breaking SDK and device-package previews before physical bench validation,
+with native Windows x64 and Linux x64 Rust/.NET 8+10 AOT gates. Hardware evidence
+still gates hardware support claims. Preserve all existing devices at initial
+external-package cutover; old constructor compatibility is unnecessary.
+The new independently versioned SDK is prepared at `0.2.0-alpha.1`; legacy packages
+remain at their historical versions. Nothing has been published by local pack
+validation. See [SDK](device-driver-sdk.md) and [delivery/setup](device-package-delivery.md)
+for implemented boundaries, exact repository/publisher inputs and remaining work.
+
+## Historical implementation and release notes
+
 Dual-native work follows [dual-native-plan.md](dual-native-plan.md). Streams A–G and Stream H's self-hosted DMM smoke infrastructure are implemented in this checkout. Workflow implementation is not passing hardware evidence. `0.2.0` stays deferred until a passing hardware run is recorded.
 
 **Still deferred:** package publishing (`0.2.0`), UniFFI, process-supervised HAL, IVI Config Store / `IIvi*` conformance, vendor VISA on GitHub-hosted CI.

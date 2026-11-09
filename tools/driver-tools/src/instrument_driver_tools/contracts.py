@@ -11,11 +11,20 @@ def pascal(text):
 def generate_contracts(manifest: dict) -> dict[str, str]:
     if manifest.get('schemaVersion') != 1 or manifest.get('contractMajor') != 1: raise ValueError('Unknown contract manifest version')
     identifiers = [*manifest['classes'], *manifest['units']]
+    for name, choices in manifest['enums'].items():
+        identifiers += [name, *choices, *choices.values()]
+        if any(k != v for k,v in choices.items()):raise ValueError('Enum semantics must match in Rust and C#')
     for op in manifest['operations']:
         identifiers += [op['id'], op['method'], op['kind'], op['unit']]
         identifiers += [p['name'] for p in op['parameters']]
         if op['result'] not in ['unit','quantity','boolean','count','samples','trace','identity']: raise ValueError('Unknown reply kind')
         if op['unit'] not in manifest['units']+['ConfiguredDmm','ConfiguredPower']: raise ValueError('Unknown result unit')
+        if op['kind'] not in manifest['classes']+['Common']:raise ValueError('Unknown operation class')
+        if len({p['name'] for p in op['parameters']}) != len(op['parameters']):raise ValueError('Duplicate parameter')
+        for p in op['parameters']:
+            if p['type'] not in ['number','optional_number','channel','boolean','symbol','waveform','power_unit','sense_mode']:raise ValueError('Unknown parameter type')
+            if p['constraint'] not in ['finite','positive','nonnegative','percent','positive_integer','safe_symbol','enum','none']:raise ValueError('Unknown parameter constraint')
+        if 'setsUnit' in op and op['setsUnit'] not in manifest['units']+['PowerArgument']:raise ValueError('Unknown configured unit')
     if any(not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', n) for n in identifiers): raise ValueError('Unsafe contract identifier')
     if len({op['id'] for op in manifest['operations']}) != len(manifest['operations']): raise ValueError('Duplicate operation')
     ops = manifest['operations']

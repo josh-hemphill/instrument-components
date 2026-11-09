@@ -11,7 +11,7 @@ import unittest
 
 ROOT=Path(__file__).resolve().parents[3]
 sys.path.insert(0,str(ROOT/'tools/driver-tools/src'))
-from instrument_driver_tools.cli import main
+from instrument_driver_tools.cli import main, read_json
 from instrument_driver_tools.profiles import validate,emit,catalogue
 from instrument_driver_tools.inventory import inventory
 
@@ -67,7 +67,7 @@ class ToolingTests(unittest.TestCase):
             target=out/'profiles.rs';target.write_text(target.read_text()+'// drift\n')
             with contextlib.redirect_stderr(io.StringIO()),self.assertRaises(SystemExit):main(command+['--check'])
     def test_codegen_rejects_non_generated_file_and_invalid_namespace_or_module(self):
-        for module,namespace in [('bad/../../path','Good'),('good','A;System.Console.WriteLine'),('self','Good'),('good','class')]:
+        for module,namespace in [('bad/../../path','Good'),('good','A;System.Console.WriteLine'),('self','Good'),('good','class'),('match','Good'),('good','interface')]:
             with self.subTest(module=module),self.assertRaises(ValueError):emit(self.profiles,module,namespace)
         with tempfile.TemporaryDirectory() as temp:
             folder=Path(temp);inp=folder/'input.json';inp.write_text(json.dumps(self.profiles));out=folder/'out';out.mkdir();(out/'profiles.rs').write_text('hand-written code')
@@ -77,6 +77,36 @@ class ToolingTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             path=Path(temp)/'schema.json';path.write_text('{}')
             with self.assertRaises(ValueError):validate(self.profiles,path)
+    def test_json_and_scenario_types_reject_invalid_source_before_emission(self):
+        from instrument_driver_tools.cases import emit_cases
+        with tempfile.TemporaryDirectory() as temp:
+            path=Path(temp)/'input.json'
+            for raw in ['{"profiles":[],"profiles":[]}', '{"x":NaN}', '{"x":Infinity}']:
+                path.write_text(raw)
+                with self.assertRaises(ValueError):read_json(path)
+        cases=json.loads((ROOT/'spec/driver-scpi-cases.json').read_text())
+        for kind,value in [('count','1);Injected();'),('count',True),('boolean',1),('quantity',True)]:
+            data=copy.deepcopy(cases);data['cases']=data['cases'][:1]
+            expected={'kind':kind,'value':value}
+            if kind=='quantity':expected['unit']='Volt'
+            data['cases'][0].pop('expectedError',None);data['cases'][0]['expected']=expected
+            with self.subTest(kind=kind,value=value),self.assertRaises(ValueError):emit_cases(data)
+    def test_numeric_defaults_and_typed_outputs_are_consistent(self):
+        for value in ['NaN','Infinity','1e999','0','-1']:
+            data=copy.deepcopy(self.profiles)
+            plan=next(p for p in data['profiles'][0]['plans'] if p['operation']=='DmmMeasureVoltageDc')
+            plan.setdefault('defaults',{})['range']=value
+            with self.subTest(value=value),self.assertRaises(ValueError):validate(data)
+        data=copy.deepcopy(self.profiles);data['profiles'][0]['outputs']=[{'kind':'FunctionGenerator'}]
+        with self.assertRaises(ValueError):validate(data)
+    def test_codegen_rejects_symlink_targets_without_writing_other_files(self):
+        with tempfile.TemporaryDirectory() as temp:
+            folder=Path(temp);inp=folder/'input.json';inp.write_text(json.dumps(self.profiles));out=folder/'out';out.mkdir()
+            victim=folder/'handwritten';victim.write_text('keep')
+            try:(out/'profiles.rs').symlink_to(victim)
+            except OSError:self.skipTest('Host cannot create symlinks')
+            with contextlib.redirect_stderr(io.StringIO()),self.assertRaises(SystemExit):main(['generate','--input',str(inp),'--output-dir',str(out),'--contract-major','1'])
+            self.assertEqual(victim.read_text(),'keep');self.assertFalse((out/'GeneratedProfiles.cs').exists())
     def test_preview_validator_distinguishes_legacy_version_and_rejects_stable_tags(self):
         command=[sys.executable,str(ROOT/'tools/validate-sdk-release.py')]
         self.assertEqual(subprocess.run(command+['--tag','driver-sdk-v0.2.0-alpha.1'],capture_output=True).returncode,0)

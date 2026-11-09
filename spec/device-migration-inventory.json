@@ -20061,10 +20061,10 @@
     }
   },
   "sourceSha256": {
-    "crates/instrument-core/data/capability_probes.toml": "9b38b3192c7353207a8ea251540b5abdd91e19682aee2b23e4dfe82f5fca35e3",
-    "crates/instrument-core/data/dialects/profiles.toml": "0fefa833a08da901a07d8faf3be12e6e34d642d824af94697750f94616283e03",
+    "crates/instrument-core/data/capability_probes.toml": "bfd50661ec106f5abfb8223b1e9bed7fcf6e1ea9208a57b057b89691b51fdfa7",
+    "crates/instrument-core/data/dialects/profiles.toml": "44814efe718c25f44552fad7fd822d9aaeb55eb87d482080f73a303dd58306d3",
     "crates/instrument-core/data/model_registry.toml": "46603d30261596bc96faa205fd1b65338432054cb9aeb7a8aec812d818f1004d",
-    "crates/instrument-core/data/scpi_commands.toml": "3fd9ac7903657889a0fa87c1f88ea69a7143b14e39a3289b379fd91855d8764f",
+    "crates/instrument-core/data/scpi_commands.toml": "48d43999d03f71a4462cb7fed86cdc21ecace2d546b8d94d82142ba39a9cab30",
     "crates/instrument/src/classes/async_counter.rs": "e55630ac1ba4fd085a576f05606e38f8e68a71f96b641dfee8111cf08fbc0cba",
     "crates/instrument/src/classes/async_dc_psu.rs": "2d4df78e0e421d9a6eebb6ef856abf4575de6b1d9c7463bb44ec3ac7347f80d1",
     "crates/instrument/src/classes/async_dmm.rs": "1a3229a8049f8d8dcd0ae9eaed6a94b4e43e745a9e8c94fce10188378c1d5835",

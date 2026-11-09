@@ -46,10 +46,11 @@ impl Script {
         self.state.lock().unwrap().closes
     }
     pub fn assert_complete(&self) -> Result<()> {
-        if {
+        let complete = {
             let state = self.state.lock().unwrap();
             state.remaining.is_empty() && state.violations == 0
-        } {
+        };
+        if complete {
             Ok(())
         } else {
             Err(DriverError::new(

@@ -122,7 +122,7 @@ impl Profile {
         }
         for list in [&channels].into_iter().flatten() {
             if list.len() > 4096
-                || list.iter().any(|c| *c == 0)
+                || list.contains(&0)
                 || list.iter().copied().collect::<BTreeSet<_>>().len() != list.len()
             {
                 return Err(invalid("invalid or duplicate channel inventory"));

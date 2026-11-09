@@ -127,7 +127,8 @@ def quoted(text):
 
 
 def emit(data, module='generated_profiles', namespace='GeneratedDrivers'):
-    reserved = {'self', 'super', 'crate', 'mod', 'type', 'async', 'await', 'fn', 'pub', 'use', 'namespace', 'class', 'new', 'public', 'internal', 'static', 'record', 'struct'}
+    # Reject both languages' keywords rather than emit source that fails later.
+    reserved = set('Self self super crate mod type async await fn pub use namespace class new public internal static record struct abstract as base bool break byte case catch char checked const continue decimal default delegate do double else enum event explicit extern false finally fixed float for foreach goto if impl implicit in int interface is let lock long loop match move mut null object operator out override params private protected readonly ref return sbyte sealed short sizeof stackalloc string switch this throw trait true try typeof uint ulong unchecked unsafe unsized ushort using var virtual void volatile where while yield dyn union become box final macro priv typeof gen'.split())
     if not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', module) or module in reserved:
         raise ValueError('Invalid Rust module name')
     if not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*', namespace) or any(p in reserved for p in namespace.split('.')):

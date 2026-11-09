@@ -56,6 +56,15 @@ cargo clippy --workspace --no-default-features -- -D warnings
 
 ## Adding instrument models
 
+The new driver SDK migration uses external device repositories; see
+[SDK guide](docs/device-driver-sdk.md) and [delivery/setup](docs/device-package-delivery.md).
+All eight typed class contracts, profile schema and tests are shared across Rust/C#.
+Regenerate typed SDK contracts from `spec/driver-operations.json` with
+`instrument-driver contracts`; regenerate external profiles/scenarios with
+`instrument-driver generate` / `generate-tests`. CI uses `--check` for drift.
+Do not add device exceptions to the new SDK. The instructions below describe
+the legacy data path retained until the external-package cutover.
+
 Edit `crates/instrument-core/data/model_registry.toml`:
 
 ```toml

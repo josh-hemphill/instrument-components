@@ -3,6 +3,36 @@ use std::sync::mpsc;
 use std::thread::ThreadId;
 use tokio::sync::oneshot;
 
+impl CatalogExecutor for WorkerDeviceHandle {
+    fn invoke(&self, request: CatalogRequest) -> Result<CatalogReply> {
+        request.validate()?;
+        match self.sync(Action::Catalog(Box::new(request)))? {
+            Value::Catalog(v) => Ok(v),
+            _ => Err(error(
+                ErrorKind::DriverContractViolation,
+                "invalid worker reply",
+            )),
+        }
+    }
+}
+impl instrument_api::catalog::AsyncCatalogExecutor for WorkerDeviceHandle {
+    fn invoke_async(&self, request: CatalogRequest) -> DriverFuture<'_, CatalogReply> {
+        Box::pin(async move {
+            request.validate()?;
+            match self
+                .asynchronous(Action::Catalog(Box::new(request)))
+                .await?
+            {
+                Value::Catalog(v) => Ok(v),
+                _ => Err(error(
+                    ErrorKind::DriverContractViolation,
+                    "invalid worker reply",
+                )),
+            }
+        })
+    }
+}
+
 #[cfg(test)]
 static BEFORE_DISPATCH: Mutex<Option<Box<dyn FnOnce() + Send>>> = Mutex::new(None);
 
@@ -775,35 +805,5 @@ mod tests {
         assert_eq!(calls.load(Ordering::SeqCst), 0);
         assert!(state.common.recovery.load(Ordering::Acquire));
         assert!(!state.common.draining.load(Ordering::Acquire));
-    }
-}
-
-impl CatalogExecutor for WorkerDeviceHandle {
-    fn invoke(&self, request: CatalogRequest) -> Result<CatalogReply> {
-        request.validate()?;
-        match self.sync(Action::Catalog(Box::new(request)))? {
-            Value::Catalog(v) => Ok(v),
-            _ => Err(error(
-                ErrorKind::DriverContractViolation,
-                "invalid worker reply",
-            )),
-        }
-    }
-}
-impl instrument_api::catalog::AsyncCatalogExecutor for WorkerDeviceHandle {
-    fn invoke_async(&self, request: CatalogRequest) -> DriverFuture<'_, CatalogReply> {
-        Box::pin(async move {
-            request.validate()?;
-            match self
-                .asynchronous(Action::Catalog(Box::new(request)))
-                .await?
-            {
-                Value::Catalog(v) => Ok(v),
-                _ => Err(error(
-                    ErrorKind::DriverContractViolation,
-                    "invalid worker reply",
-                )),
-            }
-        })
     }
 }
