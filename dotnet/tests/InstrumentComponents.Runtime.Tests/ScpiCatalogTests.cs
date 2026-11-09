@@ -52,25 +52,35 @@ public sealed class ScpiCatalogTests
     [Fact]
     public void SharedSemanticTokenDomainsAndShutdownProfilesValidateBeforeOpen()
     {
-        using var data=System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"driver-profile-token-cases.json")));
+        using var data=System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"driver-profile-cases.json")));
         foreach(var row in data.RootElement.GetProperty("cases").EnumerateArray()) {
             var operation=Enum.Parse<CatalogOperation>(row.GetProperty("operation").GetString()!);var parameters=operation.Describe().Parameters;
             var tokens=parameters.Where(p=>p.Kind.SemanticValues() is not null).ToDictionary(p=>p.Name,p=>(IReadOnlyDictionary<string,string>)p.Kind.SemanticValues()!.ToDictionary(v=>v,v=>v));
-            tokens[row.GetProperty("parameter").GetString()!]=row.GetProperty("tokens").EnumerateObject().ToDictionary(p=>p.Name,p=>p.Value.GetString()!);
-            var plans=new List<Plan>{new(operation,[new(":TEST "+string.Join(",",parameters.Select(p=>"{"+p.Name+"}")))],tokens)};
+            if(row.TryGetProperty("parameter",out var parameter))tokens[parameter.GetString()!]=row.GetProperty("tokens").EnumerateObject().ToDictionary(p=>p.Name,p=>p.Value.GetString()!);
+            var steps=row.TryGetProperty("steps",out var supplied)?supplied.EnumerateArray().Select(s=>new Step(s.GetProperty("command").GetString()!,Enum.Parse<ResponseRole>(s.GetProperty("response").GetString()!))).ToArray():[new Step(":TEST "+string.Join(",",parameters.Select(p=>"{"+p.Name+"}")))];
+            var plans=new List<Plan>{new(operation,steps,tokens)};
             var shutdown=row.GetProperty("shutdown").GetBoolean();if(shutdown)plans.Add(new(CatalogOperation.Shutdown,[]));
             var failure=Record.Exception(()=>new ScpiProfile("synthetic.tokens",[1],shutdown?[new(OutputKind.FunctionGenerator)]:[],plans));
             if(row.GetProperty("accept").GetBoolean())Assert.Null(failure);else Assert.IsType<DriverException>(failure);
         }
     }
     [Fact]
-    public void BurstCountDoesNotRequireOrUsePhysicalChannelInventory()
+    public async Task BurstCountDoesNotRequireOrUsePhysicalChannelInventory()
     {
         var profile=new ScpiProfile("synthetic.counts",null,[],[new(CatalogOperation.FunctionGeneratorSetBurstCount,[new(":BURS {count}")])]);
-        var script=new Script([ScriptStep.Write(":BURS 100"),ScriptStep.Close()]);
-        using var handle=Open(profile,script);var generator=new InstrumentComponents.Drivers.Catalog.FunctionGenerator(handle);
-        generator.SetBurstCount(100);Assert.Equal(DriverErrorKind.InvalidArgument,Assert.Throws<DriverException>(()=>generator.SetBurstCount(0)).Kind);
-        handle.Close();script.AssertComplete();
+        for(var mode=0;mode<4;mode++) {
+            var script=new Script([ScriptStep.Write(":BURS 100"),ScriptStep.Write(":BURS 4294967295"),ScriptStep.Close()]);
+            var registry=new DriverRegistry([new ScpiFactory(profile,"scpi",script,nativeConnector:script)]);var selection=new DriverSelection(AllowStandardScpi:true);
+            var sync=mode==0?registry.Open(Candidate,selection):null;var native=mode==1?await registry.OpenNativeAsync(Candidate,selection):null;var worker=mode>=2?await registry.OpenWorkerAsync(Candidate,selection):null;
+            async Task Call(uint count) {
+                if(sync is not null)new InstrumentComponents.Drivers.Catalog.FunctionGenerator(sync).SetBurstCount(count);
+                else if(native is not null)await new AsyncFunctionGenerator(native).SetBurstCountAsync(count);
+                else if(mode==2)await new AsyncFunctionGenerator(worker!).SetBurstCountAsync(count);
+                else new InstrumentComponents.Drivers.Catalog.FunctionGenerator(worker!).SetBurstCount(count);
+            }
+            await Call(100);await Call(uint.MaxValue);Assert.Equal(DriverErrorKind.InvalidArgument,(await Assert.ThrowsAsync<DriverException>(()=>Call(0))).Kind);
+            if(sync is not null)sync.Close();else if(native is not null)await native.CloseAsync();else await worker!.CloseAsync();script.AssertComplete();
+        }
     }
     [Fact]
     public void RecoveryEstablishesBoundaryResetInvalidatesUnitsAndBorrowedIoSurvives()

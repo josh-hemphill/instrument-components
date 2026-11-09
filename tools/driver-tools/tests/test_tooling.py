@@ -107,10 +107,12 @@ class ToolingTests(unittest.TestCase):
         profile['plans']=[p for p in profile['plans'] if p['operation']=='FunctionGeneratorSetBurstCount']
         validate(data);self.assertIn('FunctionGeneratorSetBurstCount',emit(data)['profiles.rs'])
     def test_shared_semantic_domain_and_shutdown_cases_fail_before_emission(self):
-        examples=json.loads((ROOT/'spec/driver-profile-token-cases.json').read_text(encoding='utf-8'))['cases']
+        examples=json.loads((ROOT/'spec/driver-profile-cases.json').read_text(encoding='utf-8'))['cases']
         for example in examples:
             data=copy.deepcopy(self.profiles);profile=data['profiles'][0]
-            plan=next(p for p in profile['plans'] if p['operation']==example['operation']);plan['tokens'][example['parameter']]=example['tokens']
+            plan=next(p for p in profile['plans'] if p['operation']==example['operation'])
+            if 'parameter' in example:plan['tokens'][example['parameter']]=example['tokens']
+            if 'steps' in example:plan['steps']=example['steps']
             if not example['shutdown']:profile['plans']=[p for p in profile['plans'] if p['operation']!='Shutdown']
             with self.subTest(id=example['id']),tempfile.TemporaryDirectory() as temp:
                 folder=Path(temp);inp=folder/'in.json';inp.write_text(json.dumps(data));out=folder/'out'

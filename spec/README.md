@@ -9,7 +9,7 @@ These files are the executable contract between the Rust and C# implementations.
 | `driver-contract-cases.json` | Experimental SDK v1 passive matching, synchronous values/errors, unsupported modes and ownership/lifecycle cases |
 | `driver-operations.json` | Closed typed eight-class SDK operation IDL: requests, units, constraints and deliberate breaking removals |
 | `driver-scpi-cases.json` | 139 shared exact-traffic/value/error cases, emitted as static Rust/C# TestKit inputs |
-| `driver-profile-token-cases.json` | Shared direct/generated semantic-domain and shutdown-profile acceptance/rejection cases |
+| `driver-profile-cases.json` | Shared direct/generated semantic-domain and shutdown-profile acceptance/rejection cases |
 | `device-repositories.json` | Proposed external repository ownership and explicit exception/state conversion obligations |
 | `device-migration-inventory.json` | Generated all-device/source/profile/public-symbol/OpenTAP preservation ledger with hashes |
 | `driver-sdk-release.json` | Independent preview versions, package IDs and both native platform/framework publication gates |

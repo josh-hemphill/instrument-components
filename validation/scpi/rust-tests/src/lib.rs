@@ -241,10 +241,8 @@ fn direct_profiles_reject_invalid_grammar_inventory_roles_and_ignored_arguments(
 }
 #[test]
 fn shared_semantic_token_domains_and_shutdown_profiles_validate_before_open() {
-    let data: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../../spec/driver-profile-token-cases.json"
-    ))
-    .unwrap();
+    let data: serde_json::Value =
+        serde_json::from_str(include_str!("../../../../spec/driver-profile-cases.json")).unwrap();
     for row in data["cases"].as_array().unwrap() {
         let operation = generated_cases::cases()
             .into_iter()
@@ -262,7 +260,25 @@ fn shared_semantic_token_domains_and_shutdown_profiles_validate_before_open() {
                 .collect::<Vec<_>>()
                 .join(",")
         );
-        let mut plan = Plan::new(operation, vec![Step::write(&command)]);
+        let steps = if let Some(steps) = row.get("steps") {
+            steps
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|s| Step {
+                    command: s["command"].as_str().unwrap().into(),
+                    response: match s["response"].as_str().unwrap() {
+                        "Value" => ResponseRole::Value,
+                        "Preamble" => ResponseRole::Preamble,
+                        _ => panic!("unknown role"),
+                    },
+                    when: None,
+                })
+                .collect()
+        } else {
+            vec![Step::write(&command)]
+        };
+        let mut plan = Plan::new(operation, steps);
         for p in &metadata.parameters {
             if let Some(domain) = p.kind.semantic_values() {
                 plan.tokens.insert(
@@ -274,15 +290,17 @@ fn shared_semantic_token_domains_and_shutdown_profiles_validate_before_open() {
                 );
             }
         }
-        plan.tokens.insert(
-            row["parameter"].as_str().unwrap().into(),
-            row["tokens"]
-                .as_object()
-                .unwrap()
-                .iter()
-                .map(|(k, v)| (k.clone(), v.as_str().unwrap().to_string()))
-                .collect(),
-        );
+        if row.get("parameter").is_some() {
+            plan.tokens.insert(
+                row["parameter"].as_str().unwrap().into(),
+                row["tokens"]
+                    .as_object()
+                    .unwrap()
+                    .iter()
+                    .map(|(k, v)| (k.clone(), v.as_str().unwrap().to_string()))
+                    .collect(),
+            );
+        }
         let shutdown = row["shutdown"].as_bool().unwrap();
         let mut plans = vec![plan];
         if shutdown {
@@ -337,11 +355,15 @@ fn burst_counts_are_positive_quantities_without_physical_channel_inventory() {
     .unwrap();
     let script = Script::new(vec![
         ScriptStep::Write(":BURS 100".into()),
+        ScriptStep::Write(":BURS 4294967295".into()),
         ScriptStep::Close(Ok(())),
     ]);
     let handle = open_profile(profile, &script, ConnectionOwnership::Owned);
     instrument_api::catalog::FunctionGenerator(&handle)
         .set_burst_count(100)
+        .unwrap();
+    instrument_api::catalog::FunctionGenerator(&handle)
+        .set_burst_count(u32::MAX)
         .unwrap();
     assert_eq!(
         instrument_api::catalog::FunctionGenerator(&handle)
@@ -352,6 +374,81 @@ fn burst_counts_are_positive_quantities_without_physical_channel_inventory() {
     );
     handle.close(false).unwrap();
     script.assert_complete().unwrap();
+}
+#[cfg(feature = "async")]
+#[tokio::test]
+async fn count_only_profiles_work_in_native_and_both_worker_frontends() {
+    for mode in 0..3 {
+        let profile = Profile::new(
+            "synthetic.counts",
+            None,
+            Some(vec![]),
+            vec![Plan::new(
+                CatalogOperation::FunctionGeneratorSetBurstCount,
+                vec![Step::write(":BURS {count}")],
+            )],
+        )
+        .unwrap();
+        let script = Script::new(vec![
+            ScriptStep::Write(":BURS 100".into()),
+            ScriptStep::Write(":BURS 4294967295".into()),
+            ScriptStep::Close(Ok(())),
+        ]);
+        let factory = ScpiFactory::new(profile, "scpi", Arc::new(script.clone()))
+            .with_native_connector(Arc::new(script.clone()));
+        let registry = DriverRegistry::new([Arc::new(factory) as Arc<dyn DriverFactory>]).unwrap();
+        let native = if mode == 0 {
+            Some(
+                registry
+                    .open_native(
+                        &candidate(),
+                        &selection(),
+                        &BTreeSet::new(),
+                        ConnectionOwnership::Owned,
+                    )
+                    .await
+                    .unwrap(),
+            )
+        } else {
+            None
+        };
+        let worker = if mode != 0 {
+            Some(
+                registry
+                    .open_worker(
+                        &candidate(),
+                        &selection(),
+                        &BTreeSet::new(),
+                        ConnectionOwnership::Owned,
+                    )
+                    .await
+                    .unwrap(),
+            )
+        } else {
+            None
+        };
+        for count in [100, u32::MAX, 0] {
+            let request = CatalogRequest::FunctionGeneratorSetBurstCount { count };
+            let actual = if let Some(h) = &native {
+                h.invoke_async(request).await
+            } else if mode == 1 {
+                worker.as_ref().unwrap().invoke_async(request).await
+            } else {
+                worker.as_ref().unwrap().invoke(request)
+            };
+            if count == 0 {
+                assert_eq!(actual.unwrap_err().kind, ErrorKind::InvalidArgument);
+            } else {
+                assert_eq!(actual.unwrap(), CatalogReply::Unit);
+            }
+        }
+        if let Some(h) = native {
+            h.close(false).await.unwrap();
+        } else {
+            worker.unwrap().close(false).await.unwrap();
+        }
+        script.assert_complete().unwrap();
+    }
 }
 #[test]
 fn explicit_recovery_reset_units_borrowed_io_and_missing_range_have_no_fallback() {

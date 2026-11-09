@@ -409,8 +409,10 @@ ScriptStep::Close(Ok(())),
 expected: Some(CatalogReply::Unit), expected_error: None },
 CatalogCase { id: "SCPI-FunctionGeneratorSetBurstCount", calls: vec![
 CatalogRequest::FunctionGeneratorSetBurstCount { count: 100 },
+CatalogRequest::FunctionGeneratorSetBurstCount { count: 4294967295 },
 ], script: vec![
 ScriptStep::Write(":TEST:FunctionGeneratorSetBurstCount 100".into()),
+ScriptStep::Write(":TEST:FunctionGeneratorSetBurstCount 4294967295".into()),
 ScriptStep::Close(Ok(())),
 ],
 expected: Some(CatalogReply::Unit), expected_error: None },

@@ -1329,12 +1329,22 @@
           "arguments": {
             "count": 100
           }
+        },
+        {
+          "operation": "FunctionGeneratorSetBurstCount",
+          "arguments": {
+            "count": 4294967295
+          }
         }
       ],
       "script": [
         {
           "kind": "write",
           "message": ":TEST:FunctionGeneratorSetBurstCount 100"
+        },
+        {
+          "kind": "write",
+          "message": ":TEST:FunctionGeneratorSetBurstCount 4294967295"
         },
         {
           "kind": "close"
