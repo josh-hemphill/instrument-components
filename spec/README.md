@@ -23,11 +23,11 @@ These files are the executable contract between the Rust and C# implementations.
 5. `tools/gen-dialects.ts` rejects vendor JSON that does not match `vendors.schema.json` (id pattern, extra properties, empty commands). Optional `notes` are documentation only and are not generated into dialect tables.
 
 ```bash
-deno run --allow-read --allow-write --allow-run=rustfmt tools/gen-shared-tables.ts
-deno run --allow-read --allow-write --allow-run=rustfmt tools/gen-dialects.ts
-deno run --allow-read --allow-write dotnet/tools/gen-registry.ts
-deno run --allow-read tools/validate-opentap-operations.ts
-deno run --allow-read --allow-write tools/gen-opentap-steps.ts
+node tools/gen-shared-tables.ts
+node tools/gen-dialects.ts
+node dotnet/tools/gen-registry.ts
+node tools/validate-opentap-operations.ts
+node tools/gen-opentap-steps.ts
 ```
 
 `driver-async-cases.json` extends the experimental driver SDK with a binding

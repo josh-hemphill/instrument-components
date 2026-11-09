@@ -1,3 +1,4 @@
+import { readFile, writeFile } from "node:fs/promises";
 /**
  * Converts model_registry.toml to embedded JSON for the C# package.
  */
@@ -10,7 +11,7 @@ const outPath = new URL(
   import.meta.url,
 );
 
-const text = await Deno.readTextFile(tomlPath);
+const text = await readFile(tomlPath, "utf8");
 const entries: Array<{ manufacturer: string; model: string; kinds: string[] }> =
   [];
 const usbEntries: Array<{
@@ -58,5 +59,5 @@ if (current && section === "entry") entries.push(current as typeof entries[0]);
 if (current && section === "usb_entry") usbEntries.push(current as typeof usbEntries[0]);
 
 const output = JSON.stringify({ entries, usbEntries }, null, 2) + "\n";
-await Deno.writeTextFile(outPath, output);
+await writeFile(outPath, output);
 console.log(`Wrote ${outPath.pathname}`);

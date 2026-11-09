@@ -1,5 +1,5 @@
 # Capability probe command lists — single source for Rust + C# codegen.
-# Regenerate: deno run --allow-read --allow-write tools/gen-shared-tables.ts
+# Regenerate: node tools/gen-shared-tables.ts
 
 probe_timeout_ms = 800
 

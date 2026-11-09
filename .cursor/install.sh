@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Idempotent Cloud Agent bootstrap: Rust toolchain, Deno, .NET 8 SDK, docs deps.
+# Idempotent Cloud Agent bootstrap: Rust toolchain, Node.js 26, .NET 8 SDK, docs deps.
 set -euo pipefail
 
 readonly DOTNET_CHANNEL="8.0"
 readonly DOTNET_INSTALL_DIR="/usr/local/dotnet"
-readonly DENO_INSTALL_DIR="/usr/local"
+readonly NODE_MAJOR="26"
 readonly WINDOWS_TARGET="x86_64-pc-windows-gnu"
 readonly REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
@@ -18,12 +18,14 @@ rustup default stable
 rustup component add clippy rustfmt
 rustup target add "${WINDOWS_TARGET}"
 
-# Deno powers the shared-table / dialect / registry code generators.
-if command -v deno >/dev/null 2>&1; then
-  log "Deno already installed ($(deno --version | head -n1))"
+# Node 26 runs the TypeScript generators with built-in, unflagged type stripping.
+if command -v node >/dev/null 2>&1 && [[ "$(node -p 'process.versions.node.split(".")[0]')" == "${NODE_MAJOR}" ]]; then
+  log "Node.js already installed ($(node --version))"
 else
-  log "Installing Deno"
-  curl -fsSL https://deno.land/install.sh | sudo env DENO_INSTALL="${DENO_INSTALL_DIR}" sh -s -- -y
+  log "Installing Node.js ${NODE_MAJOR}"
+  curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" -o /tmp/nodesource-setup.sh
+  sudo bash /tmp/nodesource-setup.sh
+  sudo apt-get install -y nodejs
 fi
 
 # .NET 8 SDK builds and tests the C# port under dotnet/.

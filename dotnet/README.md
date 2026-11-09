@@ -124,7 +124,7 @@ dotnet test tests/InstrumentComponents.OpenTap.Visa.Tests --filter "Category!=Ha
 ## Registry / shared-table drift check
 
 ```bash
-deno run --allow-read --allow-write dotnet/tools/gen-registry.ts
-deno run --allow-read --allow-write tools/gen-shared-tables.ts
+node dotnet/tools/gen-registry.ts
+node tools/gen-shared-tables.ts
 git diff --exit-code
 ```

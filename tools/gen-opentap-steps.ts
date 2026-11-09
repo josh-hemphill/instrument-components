@@ -1,3 +1,4 @@
+import { mkdirSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
 /**
  * Generate explicit OpenTAP TestStep classes from spec/opentap-operations.json.
  */
@@ -217,7 +218,7 @@ ${body}
 }
 
 function main() {
-  const manifest = JSON.parse(Deno.readTextFileSync(manifestPath)) as Manifest;
+  const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as Manifest;
   const generated = manifest.operations
     .filter((operation) => operation.implementation === "generated")
     .sort((a, b) => a.stepTypeName.localeCompare(b.stepTypeName));
@@ -225,10 +226,10 @@ function main() {
     throw new Error("no generated operations in spec/opentap-operations.json");
   }
 
-  Deno.mkdirSync(outputDir, { recursive: true });
-  for (const stale of Deno.readDirSync(outputDir)) {
-    if (stale.isFile && stale.name.endsWith(".g.cs")) {
-      Deno.removeSync(new URL(stale.name, outputDir));
+  mkdirSync(outputDir, { recursive: true });
+  for (const stale of readdirSync(outputDir, { withFileTypes: true })) {
+    if (stale.isFile() && stale.name.endsWith(".g.cs")) {
+      unlinkSync(new URL(stale.name, outputDir));
     }
   }
 
@@ -239,7 +240,7 @@ function main() {
     byKind.set(operation.instrumentKind, list);
   }
   for (const [kind, operations] of [...byKind.entries()].sort(([a], [b]) => a.localeCompare(b))) {
-    Deno.writeTextFileSync(new URL(`${kind}Steps.g.cs`, outputDir), emitFile(kind, operations));
+    writeFileSync(new URL(`${kind}Steps.g.cs`, outputDir), emitFile(kind, operations));
   }
 
   const names = generated.map((operation) => `        typeof(${operation.stepTypeName}),`).join("\n");
@@ -254,7 +255,7 @@ ${names}
     ];
 }
 `;
-  Deno.writeTextFileSync(new URL("OperationCatalog.g.cs", outputDir), catalog);
+  writeFileSync(new URL("OperationCatalog.g.cs", outputDir), catalog);
 }
 
 main();

@@ -74,8 +74,8 @@ Core async APIs take `CancellationToken` and return `Task` / `ValueTask`.
 SCPI command strings and capability-probe lists are generated from TOML under `crates/instrument-core/data/`:
 
 ```bash
-deno run --allow-read --allow-write tools/gen-shared-tables.ts
-deno run --allow-read --allow-write dotnet/tools/gen-registry.ts
+node tools/gen-shared-tables.ts
+node dotnet/tools/gen-registry.ts
 ```
 
 ## More

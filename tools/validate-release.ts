@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 // Release tags must agree with package versions and internal Rust dependency requirements.
 const root = new URL("../", import.meta.url);
 export function validateRelease(tag: string): string {
@@ -5,7 +6,7 @@ export function validateRelease(tag: string): string {
   const version = tag.slice(1);
   const prerelease = version.includes("-") ? version.slice(version.indexOf("-") + 1) : "";
   if (prerelease && prerelease.split(".").some(id => !id || (/^[0-9]+$/.test(id) && id.length > 1 && id.startsWith("0")))) throw new Error(`Invalid release tag: ${tag}`);
-  const cargo = Deno.readTextFileSync(new URL("Cargo.toml", root));
+  const cargo = readFileSync(new URL("Cargo.toml", root), "utf8");
   const actual = cargo.match(/\[workspace.package\][\s\S]*?version\s*=\s*"([^"]+)"/)?.[1];
   if (actual !== version) throw new Error(`Tag ${tag} disagrees with Cargo version ${actual}`);
   for (const name of ["instrument-core", "instrument-visa"]) {
@@ -13,13 +14,13 @@ export function validateRelease(tag: string): string {
     if (dependency !== version) throw new Error(`${name} dependency ${dependency} disagrees with ${version}`);
   }
   for (const name of ["InstrumentComponents", "InstrumentComponents.Visa", "InstrumentComponents.OpenTap", "InstrumentComponents.OpenTap.Visa"]) {
-    const project = Deno.readTextFileSync(new URL(`dotnet/src/${name}/${name}.csproj`, root));
+    const project = readFileSync(new URL(`dotnet/src/${name}/${name}.csproj`, root), "utf8");
     const packageVersion = project.match(/<Version>([^<]+)<\/Version>/)?.[1];
     if (packageVersion !== version) throw new Error(`${name} version ${packageVersion} disagrees with ${version}`);
   }
-  const tap = Deno.readTextFileSync(new URL("dotnet/src/InstrumentComponents.OpenTap/package.xml", root));
+  const tap = readFileSync(new URL("dotnet/src/InstrumentComponents.OpenTap/package.xml", root), "utf8");
   const tapVersion = tap.match(/<Package\b[^>]*\bVersion="([^"]+)"/)?.[1];
   if (tapVersion !== version) throw new Error(`OpenTAP version ${tapVersion} disagrees with ${version}`);
   return version;
 }
-if (import.meta.main) console.log(validateRelease(Deno.args[0] ?? ""));
+if (import.meta.main) console.log(validateRelease(process.argv[2] ?? ""));
