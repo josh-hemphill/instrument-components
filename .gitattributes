@@ -1,0 +1,3 @@
+# Keep generated source comparisons and migration source hashes identical on
+# Windows/Linux. Git still detects binary assets automatically.
+* text=auto eol=lf

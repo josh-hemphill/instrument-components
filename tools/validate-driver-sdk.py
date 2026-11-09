@@ -66,7 +66,7 @@ def main():
     # Package/install the CLI into a clean venv with offline dependencies.
     python_feed = work/'python-feed'; python_feed.mkdir()
     tool_source=work/'tool-source';shutil.copytree(ROOT/'tools/driver-tools',tool_source,ignore=IGNORE)
-    run('tool-wheel', [sys.executable, '-m', 'pip', 'wheel', '--no-deps', '--no-build-isolation', '-w', python_feed, tool_source])
+    run('tool-wheel', [sys.executable, '-m', 'pip', 'wheel', '--no-deps', '-w', python_feed, tool_source])
     run('tool-dependency-wheels', [sys.executable, '-m', 'pip', 'download', '--index-url', 'https://pypi.org/simple', '--dest', python_feed]+tomllib.loads((tool_source/'pyproject.toml').read_text())['project']['dependencies'])
     run('tool-fresh-venv', [sys.executable, '-m', 'venv', work/'tool-venv'])
     python = work/'tool-venv'/('Scripts/python.exe' if windows else 'bin/python')
