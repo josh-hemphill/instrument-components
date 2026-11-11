@@ -84,7 +84,7 @@ remain untouched.
 python -m unittest discover -s tools/publisher-setup -p 'test_*.py' -v
 ```
 
-The eleven-test offline suite needs Node.js for its isolated NuGet account-page fixture. It
+The thirteen-test offline suite needs Node.js for its isolated NuGet account-page fixture. It
 checks exact scope, dry runs, repeated runs, existing/conflicting/disabled
 policies, origin restrictions, pagination, errors and returned policy identity.
 It performs no authentication, publication or registry writes.
@@ -96,3 +96,39 @@ without writing. Retest after registry UI changes. Final release validation must
 still exercise each actual workflow's OIDC login and publication against public
 registries after release approval. Artifact-bootstrap package tests do not prove
 that registry publisher permissions are configured.
+
+## First-publication bootstrap (after preview release approval)
+
+The SDK and five vendor crate workflows accept an optional temporary repository
+secret `CARGO_BOOTSTRAP_TOKEN`. It is used only instead of OIDC for the crates
+publish job. With that secret absent, the workflows use their trusted publisher.
+NuGet continues to use OIDC with the policies created above.
+
+After the reviewed previews are approved, create one short-lived crates.io token
+with first-publication permission for the nine new SDK/driver names. Apply the
+narrowest name restrictions offered by the registry.
+Provide it through `CARGO_BOOTSTRAP_TOKEN` in the environment. The GitHub CLI
+must have permission to manage Actions secrets in the six exact repositories.
+One batch configures the initial secret, preserving any existing secret:
+
+```sh
+python tools/publisher-setup/bootstrap-secrets.py
+python tools/publisher-setup/bootstrap-secrets.py --apply
+```
+
+This creates no release tags and publishes nothing. Release the SDK preview
+first, then the facade/integration packages, then the five driver previews.
+After each new crate exists, the policy helper can configure it. Once all12
+crate policies are verified, remove the temporary secrets with one batch and
+revoke the token:
+
+```sh
+python tools/publisher-setup/bootstrap-secrets.py --remove --apply
+```
+
+An existing secret reports `EXISTING_SECRET_PRESERVED`; account-owner review is
+needed before replacing it. Keep the batch output if a request fails midway.
+The configuration-only token described earlier does not have publication rights;
+use only the narrow permissions appropriate to each separate step. Authentication,
+release approval and actual OIDC/public-registry execution are still required;
+none has been performed by preparing these scripts.

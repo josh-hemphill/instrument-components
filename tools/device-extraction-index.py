@@ -80,7 +80,7 @@ def generate(parent):
         if current[step['id']]['publish']['mode'] in ['sample','sampleAndScalar']:step['changedSemantics']=(step['changedSemantics'] or '')+' Sample rows additionally preserve the actual physical Unit.'
     return dict(executionEvidenceFile='spec/device-execution-evidence.json',executionEvidenceSha256=digest(evidencePath) if evidencePath.exists() else None,schemaVersion=1,baselineCommit='5eb92b17f775d326e5a3542ee40855b156321745',hardwareValidated=False,apiCompatibilityRequired=False,publicationStatus='not-published-by-this-migration',sourceHashes=baseline['sourceSha256']|baseline['extractionSources'],models=models,usbHints=[dict(row,repository=canonical[(row['manufacturer'],row['model'])]['repository'],driver=canonical[(row['manufacturer'],row['model'])]['driver']) for row in baseline['usbHints']],profiles=profiles,operations=baseline['implementedNeutralOperationIds'],publicSymbols=symbols,openTapSteps=steps,packages=packages,operationCoverage=coverage)
 
-def check(index,parent=None):
+def check(index,parent=None,complete=False):
     assert len(index['models'])==47 and sum(len(m['kinds']) for m in index['models'])==48
     assert len(index['usbHints'])==1 and len(index['profiles'])==15
     assert sum(p['disposition']=='development-only-synthetic' for p in index['profiles'])==2
@@ -96,6 +96,7 @@ def check(index,parent=None):
     assert digest(ROOT/index['executionEvidenceFile'])==index['executionEvidenceSha256'],'Execution index drift'
     cells={cell['id']:cell for cell in evidence['cells']};assert len(cells)==len(evidence['cells'])
     for cell in cells.values():
+        for phase in cell.get('phaseLogs',[]):assert digest(ROOT/phase['log'])==phase['logSha256'],'Composition phase log drift'
         assert digest(ROOT/cell['log'])==cell['logSha256'],'Executed log drift: '+cell['id']
     for row in index['operationCoverage']:
         assert row['executionCellIds'],'Missing execution join: '+row['id']
@@ -106,6 +107,14 @@ def check(index,parent=None):
         selected=[cells[identity] for identity in package['executionCellIds']]
         assert {(cell['rid'],cell['framework']) for cell in selected}=={(rid,framework) for rid in ['linux-x64','win-x64'] for framework in ['net8.0','net10.0']}
         assert evidence['corpora'][package['caseCorpusId']]['caseManifestSha256']==package['files']['cases.json']
+        required={'generated-rust-default','generated-rust-async','generated-native-execute','packed-rust-default','packed-rust-async','packed-native-execute'}
+        for rid in ['linux-x64','win-x64']:
+            for framework in ['net8.0','net10.0']:
+                group=[cell for cell in selected if cell['rid']==rid and cell['framework']==framework]
+                assert {cell['phase'] for cell in group}==required and len(group)==6,'Incomplete generated/packed frontend matrix'
+                for cell in group:
+                    assert cell['frontends']==(['Sync'] if cell['phase'].endswith('-rust-default') else ['Sync','NativeAsync','WorkerAsync','WorkerBlocking'])
+
     assert all(row['targetOperation'] is None or row['executionCellIds'] for row in index['publicSymbols'])
     for row in index['openTapSteps']:
         assert row['executionCellIds'] and digest(ROOT/row['oracle'])==row['oracleSha256'],'Missing/current OpenTAP evidence'
@@ -114,6 +123,12 @@ def check(index,parent=None):
             assert set(row['testCaseIds'])<=set(cell['caseIds']) and cell['oracleSha256']==row['oracleSha256']
             for file,expected in cell['sourceFileSha256'].items():assert source_digest(ROOT/file)==expected,'Tested OpenTAP source drift: '+file
 
+    if complete:
+        diagnostics=[cell for cell in cells.values() if cell['kind']=='intended-negative-warning-gate']
+        assert len(diagnostics)==20 and all(cell['status']=='PASS' and set(cell['diagnostics'])=={'IL2026','IL3050'} for cell in diagnostics),'Both native diagnostics must be verified for all20 vendor cells'
+        composition=[cell for cell in cells.values() if cell['kind']=='all-five-composition']
+        assert len(composition)==4 and {(cell['rid'],cell['framework']) for cell in composition}=={(rid,framework) for rid in ['linux-x64','win-x64'] for framework in ['net8.0','net10.0']},'All-four composition cells required'
+        assert all(cell['status']=='PASS' and set(cell['diagnostics'])=={'IL2026','IL3050'} and (cell['rid']!='linux-x64' or cell['isolationExecuted']) for cell in composition),'Current native composition gates incomplete'
     # Production dependencies/resources never pull implementation packages or old
     # model/dialect tables into the standalone main build.
     forbidden=['crates/instrument-core/data/model_registry.toml','crates/instrument-core/data/dialects/profiles.toml','crates/instrument-core/data/scpi_commands.toml','dotnet/src/InstrumentComponents/Dialects','dotnet/src/InstrumentComponents/Classes']
@@ -128,6 +143,6 @@ def check(index,parent=None):
             for file,expected in package['files'].items():assert digest(root/file)==expected,'External source drift: '+str(root/file)
     print('PASS extraction index:47 hints+USB,48 model-kind rows,13TOML+2JSON,83ops,458symbols,74steps; standalone main ownership')
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--write',action='store_true');parser.add_argument('--external-root',type=Path);args=parser.parse_args();path=ROOT/'spec/device-extraction-index.json'
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--write',action='store_true');parser.add_argument('--external-root',type=Path);parser.add_argument('--require-complete-evidence',action='store_true');args=parser.parse_args();path=ROOT/'spec/device-extraction-index.json'
     if args.write:write(path,generate(args.external_root or ROOT.parent))
-    check(read(path),args.external_root)
+    check(read(path),args.external_root,args.require_complete_evidence)

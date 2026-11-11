@@ -2,9 +2,9 @@
 [1m[92m   Compiling[0m instrument-api v0.2.0-alpha.1
 [1m[92m   Compiling[0m instrument-scpi v0.2.0-alpha.1
 [1m[92m   Compiling[0m instrument-runtime v0.2.0-alpha.1
-[1m[92m   Compiling[0m instrument-driver-tektronix v0.2.0-alpha.1 (/home/runner/work/_temp/driver-proof/consumer-generated)
 [1m[92m   Compiling[0m instrument-testkit v0.2.0-alpha.1
+[1m[92m   Compiling[0m instrument-driver-tektronix v0.2.0-alpha.1 (/home/runner/work/_temp/driver-proof/consumer-generated)
 [1m[92m   Compiling[0m tektronix-package-proof v0.0.0 (/home/runner/work/_temp/driver-proof/consumer-generated/validation/rust)
-[1m[92m    Finished[0m `release` profile [optimized] target(s) in 7.58s
+[1m[92m    Finished[0m `release` profile [optimized] target(s) in 4.83s
 [1m[92m     Running[0m `/home/runner/work/_temp/driver-proof/cargo-target/release/tektronix-package-proof`
 PASS Tektronix package: 118 independent cases; exact traffic, values, units, errors and resource lifetime

@@ -6,6 +6,8 @@ from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+from unittest.mock import patch
+from types import SimpleNamespace
 
 ROOT=Path(__file__).resolve().parent
 spec=importlib.util.spec_from_file_location('provision',ROOT/'provision.py')
@@ -76,5 +78,25 @@ class Policies(unittest.TestCase):
         # exercise production code; no registry endpoint is contacted.
         result=subprocess.run(['node',ROOT/'test-nuget.cjs'],capture_output=True,text=True,check=True)
         self.assertIn('PASS',result.stdout)
+
+class BootstrapSecrets(unittest.TestCase):
+    @staticmethod
+    def helper():
+        spec=importlib.util.spec_from_file_location('bootstrap_secrets',ROOT/'bootstrap-secrets.py')
+        helper=importlib.util.module_from_spec(spec);spec.loader.exec_module(helper);return helper
+    def test_default_is_plan_without_github_calls(self):
+        helper=self.helper()
+        def forbidden(*args,**kwargs):raise AssertionError('Plan contacted GitHub')
+        rows=helper.run(MANIFEST,command=forbidden);self.assertEqual(len(rows),6)
+        self.assertTrue(all(row['status']=='WOULD_CREATE_IF_MISSING' for row in rows))
+    def test_token_only_on_stdin_and_existing_preserved(self):
+        helper=self.helper();calls=[]
+        def command(args,**kwargs):
+            calls.append((args,kwargs))
+            if args[2]=='list':return SimpleNamespace(returncode=0,stdout='[{"name":"CARGO_BOOTSTRAP_TOKEN"}]' if args[4].endswith('keysight') else '[]')
+            self.assertEqual(kwargs['input'],'fixture-token-only');self.assertNotIn('fixture-token-only',str(args));return SimpleNamespace(returncode=0)
+        with patch.dict('os.environ',{'CARGO_BOOTSTRAP_TOKEN':'fixture-token-only'}):rows=helper.run(MANIFEST,True,command=command)
+        self.assertEqual(sum(row['status']=='CREATED' for row in rows),5);self.assertEqual(sum(row['status']=='EXISTING_SECRET_PRESERVED' for row in rows),1)
+        self.assertEqual(sum(args[2]=='set' for args,_ in calls),5)
 
 if __name__=='__main__':unittest.main()
