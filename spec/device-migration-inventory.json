@@ -10524,7 +10524,7 @@
       "sourceSha256": "88639e2c36b0bb23dcf9960c464109bc20b172a95fd6d49c208dc413001e1eb0",
       "symbol": "measure_temperature",
       "targetOperation": "DmmMeasureTemperature",
-      "unit": "Celsius",
+      "unit": "Temperature",
       "verification": "shared typed operation/traffic/value cases"
     },
     {
@@ -10995,7 +10995,7 @@
       "sourceSha256": "9d887ef49fd2300d27464f0d02aa70060a2b71c941a4c36ad1170710f1804de9",
       "symbol": "MeasureTemperature",
       "targetOperation": "DmmMeasureTemperature",
-      "unit": "Celsius",
+      "unit": "Temperature",
       "verification": "shared typed operation/traffic/value cases"
     },
     {
@@ -11517,7 +11517,7 @@
       "sourceSha256": "1a3229a8049f8d8dcd0ae9eaed6a94b4e43e745a9e8c94fce10188378c1d5835",
       "symbol": "measure_temperature",
       "targetOperation": "DmmMeasureTemperature",
-      "unit": "Celsius",
+      "unit": "Temperature",
       "verification": "shared typed operation/traffic/value cases"
     },
     {
@@ -11988,7 +11988,7 @@
       "sourceSha256": "450b51e6bc611201369698b0a46900f9435a9a6c45a5730ac1ced3bb6994f2c3",
       "symbol": "MeasureTemperatureAsync",
       "targetOperation": "DmmMeasureTemperature",
-      "unit": "Celsius",
+      "unit": "Temperature",
       "verification": "shared typed operation/traffic/value cases"
     },
     {
@@ -20098,7 +20098,7 @@
     "dotnet/src/InstrumentComponents/Classes/SpectrumAnalyzer.cs": "73bda582bd6c7d04922e9549c405a16acae44bb9a1975f83492c7f936715a7fd",
     "dotnet/src/InstrumentComponents/Classes/Switch.cs": "566f10dea90ea95bc294ce2d98a2c567d048df87adaec87feace9439ef59932b",
     "spec/device-repositories.json": "1abad94466668475ce6bc006a88ba83faadb4eacb749765c1a93fdb8aba26c9a",
-    "spec/driver-operations.json": "c361b0c9edc9848b0130c7b0ca88b883ab23af0c3c3ddb32993023868598494f",
+    "spec/driver-operations.json": "2b288e722b86d0940691cb6f0bd9894451ed67ad734406272d12ffa4629f2b3a",
     "spec/generic-scpi-map.json": "00a8db7ddbfe9063e4dc906a1f0f4a6f635346d8399073688a2c15e1960e8af5",
     "spec/opentap-operations.json": "ccdb6472697e12a5fffde6007fdc806c09a06eb5a2897c9507a3325ac74c777b",
     "spec/vendors/keithley-dmm6500.json": "269ccf07190c4003af15cff5443caf70ffc900280c8852e535c2afbc943ecfb0",

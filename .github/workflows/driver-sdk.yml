@@ -2,6 +2,10 @@ name: Driver SDK conformance
 on:
   workflow_call:
     inputs:
+      source_repository:
+        type: string
+        default: 'josh-hemphill/instrument-components'
+        required: false
       source_ref:
         type: string
         default: ''
@@ -21,6 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          repository: ${{ inputs.source_repository }}
           ref: ${{ inputs.source_ref }}
       - uses: dtolnay/rust-toolchain@stable
         with:
@@ -44,6 +49,8 @@ jobs:
           instrument-driver inventory --repository . --output spec/device-migration-inventory.json --check
           instrument-driver generate --input validation/scpi/profiles.json --output-dir validation/scpi/generated --contract-major 1 --check
           instrument-driver generate-tests --input spec/driver-scpi-cases.json --output-dir validation/scpi/generated --check
+          instrument-driver generate --input validation/scpi/choice-profiles.json --output-dir validation/scpi/choice-generated --contract-major 1 --module choice_profiles --namespace GeneratedChoice --check
+          instrument-driver generate-tests --input spec/driver-choice-cases.json --output-dir validation/scpi/choice-generated --module choice_cases --namespace GeneratedChoice --check
           python -m unittest discover -s tools/driver-tools/tests
       - name: SDK and existing scenario regression gates
         shell: bash
@@ -73,6 +80,7 @@ jobs:
           path: |
             ${{ runner.temp }}/sdk-${{ matrix.framework }}/*.json
             ${{ runner.temp }}/sdk-${{ matrix.framework }}/*.log
+            ${{ runner.temp }}/sdk-${{ matrix.framework }}/cargo-dependencies.tar.gz
             ${{ runner.temp }}/sdk-${{ matrix.framework }}/nuget-feed/*.nupkg
             ${{ runner.temp }}/sdk-${{ matrix.framework }}/python-feed/instrument_driver_tools*.whl
             ${{ runner.temp }}/sdk-${{ matrix.framework }}/cargo-target/package/*.crate

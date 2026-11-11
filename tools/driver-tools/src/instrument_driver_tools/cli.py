@@ -64,9 +64,15 @@ def main(argv=None):
     contracts.add_argument('--rust-output', type=Path, required=True)
     contracts.add_argument('--dotnet-output', type=Path, required=True)
     contracts.add_argument('--check', action='store_true')
+    feeds = sub.add_parser('prepare-feeds', help='Verify pinned SDK CI artifacts and prepare explicit development package feeds')
+    feeds.add_argument('--artifacts', type=Path, required=True)
+    feeds.add_argument('--output', type=Path, required=True)
     args = parser.parse_args(argv)
     try:
-        if args.command == 'inventory':
+        if args.command == 'prepare-feeds':
+            from .feeds import prepare
+            print(json.dumps(prepare(args.artifacts,args.output),indent=2))
+        elif args.command == 'inventory':
             write(args.output, canonical(inventory(args.repository.resolve())), args.check)
         elif args.command in ('generate', 'generate-tests'):
             from .profiles import emit, validate

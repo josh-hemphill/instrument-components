@@ -1,0 +1,1226 @@
+{
+  "schemaVersion": 1,
+  "contractMajor": 1,
+  "description": "Independent synthetic presence routing, unit-domain and combined shutdown contract",
+  "cases": [
+    {
+      "id": "DmmMeasureVoltageDc-0",
+      "calls": [
+        {
+          "operation": "DmmMeasureVoltageDc",
+          "arguments": {
+            "range": null
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":CHOICE:DmmMeasureVoltageDc? NO_RANGE",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Volt",
+        "status": "Valid"
+      }
+    },
+    {
+      "id": "DmmMeasureVoltageDc-1",
+      "calls": [
+        {
+          "operation": "DmmMeasureVoltageDc",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":CHOICE:DmmMeasureVoltageDc? RANGE 2.5",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Volt",
+        "status": "Valid"
+      }
+    },
+    {
+      "id": "DmmMeasureVoltageAc-0",
+      "calls": [
+        {
+          "operation": "DmmMeasureVoltageAc",
+          "arguments": {
+            "range": null
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":CHOICE:DmmMeasureVoltageAc? NO_RANGE",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Volt",
+        "status": "Valid"
+      }
+    },
+    {
+      "id": "DmmMeasureVoltageAc-1",
+      "calls": [
+        {
+          "operation": "DmmMeasureVoltageAc",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":CHOICE:DmmMeasureVoltageAc? RANGE 2.5",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Volt",
+        "status": "Valid"
+      }
+    },
+    {
+      "id": "DmmMeasureCurrentDc-0",
+      "calls": [
+        {
+          "operation": "DmmMeasureCurrentDc",
+          "arguments": {
+            "range": null
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":CHOICE:DmmMeasureCurrentDc? NO_RANGE",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Ampere",
+        "status": "Valid"
+      }
+    },
+    {
+      "id": "DmmMeasureCurrentDc-1",
+      "calls": [
+        {
+          "operation": "DmmMeasureCurrentDc",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":CHOICE:DmmMeasureCurrentDc? RANGE 2.5",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Ampere",
+        "status": "Valid"
+      }
+    },
+    {
+      "id": "DmmMeasureCurrentAc-0",
+      "calls": [
+        {
+          "operation": "DmmMeasureCurrentAc",
+          "arguments": {
+            "range": null
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":CHOICE:DmmMeasureCurrentAc? NO_RANGE",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Ampere",
+        "status": "Valid"
+      }
+    },
+    {
+      "id": "DmmMeasureCurrentAc-1",
+      "calls": [
+        {
+          "operation": "DmmMeasureCurrentAc",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":CHOICE:DmmMeasureCurrentAc? RANGE 2.5",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Ampere",
+        "status": "Valid"
+      }
+    },
+    {
+      "id": "DmmMeasureResistance-0",
+      "calls": [
+        {
+          "operation": "DmmMeasureResistance",
+          "arguments": {
+            "range": null
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":CHOICE:DmmMeasureResistance? NO_RANGE",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Ohm",
+        "status": "Valid"
+      }
+    },
+    {
+      "id": "DmmMeasureResistance-1",
+      "calls": [
+        {
+          "operation": "DmmMeasureResistance",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":CHOICE:DmmMeasureResistance? RANGE 2.5",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Ohm",
+        "status": "Valid"
+      }
+    },
+    {
+      "id": "DmmMeasureResistance2Wire-0",
+      "calls": [
+        {
+          "operation": "DmmMeasureResistance2Wire",
+          "arguments": {
+            "range": null
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":CHOICE:DmmMeasureResistance2Wire? NO_RANGE",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Ohm",
+        "status": "Valid"
+      }
+    },
+    {
+      "id": "DmmMeasureResistance2Wire-1",
+      "calls": [
+        {
+          "operation": "DmmMeasureResistance2Wire",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":CHOICE:DmmMeasureResistance2Wire? RANGE 2.5",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Ohm",
+        "status": "Valid"
+      }
+    },
+    {
+      "id": "DmmMeasureResistance4Wire-0",
+      "calls": [
+        {
+          "operation": "DmmMeasureResistance4Wire",
+          "arguments": {
+            "range": null
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":CHOICE:DmmMeasureResistance4Wire? NO_RANGE",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Ohm",
+        "status": "Valid"
+      }
+    },
+    {
+      "id": "DmmMeasureResistance4Wire-1",
+      "calls": [
+        {
+          "operation": "DmmMeasureResistance4Wire",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":CHOICE:DmmMeasureResistance4Wire? RANGE 2.5",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Ohm",
+        "status": "Valid"
+      }
+    },
+    {
+      "id": "DmmMeasureTemperature-0",
+      "calls": [
+        {
+          "operation": "DmmMeasureTemperature",
+          "arguments": {
+            "range": null
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":CHOICE:DmmMeasureTemperature? NO_RANGE",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Unknown",
+        "status": "Valid"
+      }
+    },
+    {
+      "id": "DmmMeasureTemperature-1",
+      "calls": [
+        {
+          "operation": "DmmMeasureTemperature",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":CHOICE:DmmMeasureTemperature? RANGE 2.5",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Kelvin",
+        "status": "Valid"
+      }
+    },
+    {
+      "id": "DmmConfigureVoltageDc-00",
+      "calls": [
+        {
+          "operation": "DmmConfigureVoltageDc",
+          "arguments": {
+            "range": null,
+            "resolution": null
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureVoltageDc DEFAULTS"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureVoltageDc-01",
+      "calls": [
+        {
+          "operation": "DmmConfigureVoltageDc",
+          "arguments": {
+            "range": null,
+            "resolution": 0.01
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureVoltageDc DEF,1e-2"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureVoltageDc-10",
+      "calls": [
+        {
+          "operation": "DmmConfigureVoltageDc",
+          "arguments": {
+            "range": 2.5,
+            "resolution": null
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureVoltageDc RANGE 2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureVoltageDc-11",
+      "calls": [
+        {
+          "operation": "DmmConfigureVoltageDc",
+          "arguments": {
+            "range": 2.5,
+            "resolution": 0.01
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureVoltageDc 2.5,1e-2"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureVoltageAc-00",
+      "calls": [
+        {
+          "operation": "DmmConfigureVoltageAc",
+          "arguments": {
+            "range": null,
+            "resolution": null
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureVoltageAc DEFAULTS"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureVoltageAc-01",
+      "calls": [
+        {
+          "operation": "DmmConfigureVoltageAc",
+          "arguments": {
+            "range": null,
+            "resolution": 0.01
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureVoltageAc DEF,1e-2"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureVoltageAc-10",
+      "calls": [
+        {
+          "operation": "DmmConfigureVoltageAc",
+          "arguments": {
+            "range": 2.5,
+            "resolution": null
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureVoltageAc RANGE 2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureVoltageAc-11",
+      "calls": [
+        {
+          "operation": "DmmConfigureVoltageAc",
+          "arguments": {
+            "range": 2.5,
+            "resolution": 0.01
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureVoltageAc 2.5,1e-2"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureCurrentDc-00",
+      "calls": [
+        {
+          "operation": "DmmConfigureCurrentDc",
+          "arguments": {
+            "range": null,
+            "resolution": null
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureCurrentDc DEFAULTS"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureCurrentDc-01",
+      "calls": [
+        {
+          "operation": "DmmConfigureCurrentDc",
+          "arguments": {
+            "range": null,
+            "resolution": 0.01
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureCurrentDc DEF,1e-2"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureCurrentDc-10",
+      "calls": [
+        {
+          "operation": "DmmConfigureCurrentDc",
+          "arguments": {
+            "range": 2.5,
+            "resolution": null
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureCurrentDc RANGE 2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureCurrentDc-11",
+      "calls": [
+        {
+          "operation": "DmmConfigureCurrentDc",
+          "arguments": {
+            "range": 2.5,
+            "resolution": 0.01
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureCurrentDc 2.5,1e-2"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureCurrentAc-00",
+      "calls": [
+        {
+          "operation": "DmmConfigureCurrentAc",
+          "arguments": {
+            "range": null,
+            "resolution": null
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureCurrentAc DEFAULTS"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureCurrentAc-01",
+      "calls": [
+        {
+          "operation": "DmmConfigureCurrentAc",
+          "arguments": {
+            "range": null,
+            "resolution": 0.01
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureCurrentAc DEF,1e-2"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureCurrentAc-10",
+      "calls": [
+        {
+          "operation": "DmmConfigureCurrentAc",
+          "arguments": {
+            "range": 2.5,
+            "resolution": null
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureCurrentAc RANGE 2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureCurrentAc-11",
+      "calls": [
+        {
+          "operation": "DmmConfigureCurrentAc",
+          "arguments": {
+            "range": 2.5,
+            "resolution": 0.01
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureCurrentAc 2.5,1e-2"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureResistance-00",
+      "calls": [
+        {
+          "operation": "DmmConfigureResistance",
+          "arguments": {
+            "range": null,
+            "resolution": null
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureResistance DEFAULTS"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureResistance-01",
+      "calls": [
+        {
+          "operation": "DmmConfigureResistance",
+          "arguments": {
+            "range": null,
+            "resolution": 0.01
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureResistance DEF,1e-2"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureResistance-10",
+      "calls": [
+        {
+          "operation": "DmmConfigureResistance",
+          "arguments": {
+            "range": 2.5,
+            "resolution": null
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureResistance RANGE 2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureResistance-11",
+      "calls": [
+        {
+          "operation": "DmmConfigureResistance",
+          "arguments": {
+            "range": 2.5,
+            "resolution": 0.01
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureResistance 2.5,1e-2"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureResistance4Wire-00",
+      "calls": [
+        {
+          "operation": "DmmConfigureResistance4Wire",
+          "arguments": {
+            "range": null,
+            "resolution": null
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureResistance4Wire DEFAULTS"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureResistance4Wire-01",
+      "calls": [
+        {
+          "operation": "DmmConfigureResistance4Wire",
+          "arguments": {
+            "range": null,
+            "resolution": 0.01
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureResistance4Wire DEF,1e-2"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureResistance4Wire-10",
+      "calls": [
+        {
+          "operation": "DmmConfigureResistance4Wire",
+          "arguments": {
+            "range": 2.5,
+            "resolution": null
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureResistance4Wire RANGE 2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "DmmConfigureResistance4Wire-11",
+      "calls": [
+        {
+          "operation": "DmmConfigureResistance4Wire",
+          "arguments": {
+            "range": 2.5,
+            "resolution": 0.01
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":CHOICE:DmmConfigureResistance4Wire 2.5,1e-2"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "UnknownTemperature-DmmRead",
+      "calls": [
+        {
+          "operation": "DmmMeasureTemperature",
+          "arguments": {
+            "range": null
+          }
+        },
+        {
+          "operation": "DmmRead",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":CHOICE:DmmMeasureTemperature? NO_RANGE",
+          "response": "21"
+        },
+        {
+          "kind": "query",
+          "message": ":TEST:DmmRead?",
+          "response": "22"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 22,
+        "unit": "Unknown",
+        "status": "Valid"
+      }
+    },
+    {
+      "id": "KnownKelvin-DmmRead",
+      "calls": [
+        {
+          "operation": "DmmMeasureTemperature",
+          "arguments": {
+            "range": 2.5
+          }
+        },
+        {
+          "operation": "DmmRead",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":CHOICE:DmmMeasureTemperature? RANGE 2.5",
+          "response": "293.15"
+        },
+        {
+          "kind": "query",
+          "message": ":TEST:DmmRead?",
+          "response": "294.15"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 294.15,
+        "unit": "Kelvin",
+        "status": "Valid"
+      }
+    },
+    {
+      "id": "UnknownTemperature-DmmFetch",
+      "calls": [
+        {
+          "operation": "DmmMeasureTemperature",
+          "arguments": {
+            "range": null
+          }
+        },
+        {
+          "operation": "DmmFetch",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":CHOICE:DmmMeasureTemperature? NO_RANGE",
+          "response": "21"
+        },
+        {
+          "kind": "query",
+          "message": ":TEST:DmmFetch?",
+          "response": "22"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 22,
+        "unit": "Unknown",
+        "status": "Valid"
+      }
+    },
+    {
+      "id": "KnownKelvin-DmmFetch",
+      "calls": [
+        {
+          "operation": "DmmMeasureTemperature",
+          "arguments": {
+            "range": 2.5
+          }
+        },
+        {
+          "operation": "DmmFetch",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":CHOICE:DmmMeasureTemperature? RANGE 2.5",
+          "response": "293.15"
+        },
+        {
+          "kind": "query",
+          "message": ":TEST:DmmFetch?",
+          "response": "294.15"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 294.15,
+        "unit": "Kelvin",
+        "status": "Valid"
+      }
+    },
+    {
+      "id": "TemperatureResetInvalidates",
+      "calls": [
+        {
+          "operation": "DmmMeasureTemperature",
+          "arguments": {
+            "range": null
+          }
+        },
+        {
+          "operation": "Reset",
+          "arguments": {}
+        },
+        {
+          "operation": "DmmRead",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":CHOICE:DmmMeasureTemperature? NO_RANGE",
+          "response": "21"
+        },
+        {
+          "kind": "write",
+          "message": ":TEST:Reset"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "CombinedShutdown",
+      "calls": [
+        {
+          "operation": "Shutdown",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:DcPowerSupplyOutputEnable 1,OFF"
+        },
+        {
+          "kind": "write",
+          "message": ":TEST:DcPowerSupplyOutputEnable 2,OFF"
+        },
+        {
+          "kind": "write",
+          "message": ":TEST:FunctionGeneratorOutputEnable OFF"
+        },
+        {
+          "kind": "write",
+          "message": ":CHOICE:STOP"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    }
+  ]
+}

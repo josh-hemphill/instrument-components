@@ -124,7 +124,8 @@
           "tokens": {},
           "defaults": {
             "range": "AUTO"
-          }
+          },
+          "unit": "Celsius"
         },
         {
           "operation": "DmmConfigureVoltageDc",

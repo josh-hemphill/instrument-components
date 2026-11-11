@@ -10,7 +10,9 @@ public sealed class ScpiCatalogTests
     [Fact]
     public async Task AllTypedOperationsAgreeAcrossFourFrontends()
     {
-        var profile = GeneratedProfiles.Create().Single(); var cases = GeneratedCases.Create(); Assert.Equal(139, cases.Count);
+        Assert.Equal(139,GeneratedCases.Create().Count);
+        var groups=new[] { (GeneratedProfiles.Create().Single(),GeneratedCases.Create()),(GeneratedChoice.GeneratedProfiles.Create().Single(),GeneratedChoice.GeneratedCases.Create()) };
+        foreach(var (profile,cases) in groups)
         for (var mode = 0; mode < 4; mode++)
         foreach (var example in cases)
         {
@@ -61,7 +63,7 @@ public sealed class ScpiCatalogTests
             var steps=row.TryGetProperty("steps",out var supplied)?supplied.EnumerateArray().Select(s=>new Step(s.GetProperty("command").GetString()!,Enum.Parse<ResponseRole>(s.GetProperty("response").GetString()!))).ToArray():[new Step(":TEST "+string.Join(",",parameters.Select(p=>"{"+p.Name+"}")))];
             var plans=new List<Plan>{new(operation,steps,tokens)};
             var shutdown=row.GetProperty("shutdown").GetBoolean();if(shutdown)plans.Add(new(CatalogOperation.Shutdown,[]));
-            var failure=Record.Exception(()=>new ScpiProfile("synthetic.tokens",[1],shutdown?[new(OutputKind.FunctionGenerator)]:[],plans));
+            var failure=Record.Exception(()=>new ScpiProfile("synthetic.tokens",[1],shutdown?[new(OutputKind.FunctionGenerator)]:null,plans));
             if(row.GetProperty("accept").GetBoolean())Assert.Null(failure);else Assert.IsType<DriverException>(failure);
         }
     }
@@ -163,4 +165,63 @@ public sealed class ScpiCatalogTests
         }
     }
 
+    [Fact]
+    public void SharedInvalidChoicesFailBeforeOpenAndRebindingDoesNotMutateProfile()
+    {
+        var profile=GeneratedChoice.GeneratedProfiles.Create().Single();
+        using var data=System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"driver-choice-invalid-cases.json")));
+        foreach(var row in data.RootElement.GetProperty("cases").EnumerateArray()) {
+            var plan=profile.OperationPlans.Single(p=>p.Operation==CatalogOperation.DmmMeasureVoltageDc);var choices=plan.Choices!.ToList();
+            switch(row.GetProperty("mutation").GetString()) {
+                case "overlap":choices.Add(choices[0] with{Presence=new Dictionary<string,bool>()});break;
+                case "unknown":choices[0]=choices[0] with{Presence=new Dictionary<string,bool>{{"unknown",true}}};break;
+                case "nonoptional":plan=plan with{Operation=CatalogOperation.DcPowerSupplySetVoltage};choices[0]=choices[0] with{Presence=new Dictionary<string,bool>{{"channel",true}}};break;
+                case "ignored":choices[1]=choices[1] with{Steps=[new(":READ?",ResponseRole.Value)]};break;
+                case "absent":choices[0]=choices[0] with{Steps=[new(":READ? {range}",ResponseRole.Value)]};break;
+                case "no-value":choices[1]=choices[1] with{Steps=[new(":WRITE {range}")]};break;
+                case "two-values":choices[1]=choices[1] with{Steps=[choices[1].Steps[0],choices[1].Steps[0]]};break;
+                case "unit":choices[1]=choices[1] with{Unit=Unit.Kelvin};break;
+                case "excessive":choices=Enumerable.Repeat(choices[0],17).ToList();break;
+                default:throw new InvalidOperationException("Unknown mutation");
+            }
+            Assert.Throws<DriverException>(()=>new ScpiProfile("synthetic.invalid",[1],[],[plan with{Choices=choices}]));
+        }
+        var root=profile.OperationPlans.Single(p=>p.Operation==CatalogOperation.DmmMeasureVoltageDc);
+        var restricted=new ScpiProfile("synthetic.restricted",null,[],[root with{Choices=[root.Choices![0]]}]);
+        var script=new Script([ScriptStep.Close()]);using var h=Open(restricted,script);
+        Assert.Equal(DriverErrorKind.UnsupportedOperation,Assert.Throws<DriverException>(()=>h.Invoke(new DmmMeasureVoltageDcRequest(2.5))).Kind);h.Close();script.AssertComplete();
+        Assert.Equal(2,root.Choices!.Count);
+    }
+    [Fact]
+    public void TemperatureUnknownIsNotUnconfiguredAndRecoveryNeverAssumesCelsius()
+    {
+        var script=new Script([
+            ScriptStep.Query(":CHOICE:DmmMeasureTemperature? NO_RANGE","bad"),ScriptStep.Recover(),
+            ScriptStep.Query(":CHOICE:DmmMeasureTemperature? NO_RANGE","21"),ScriptStep.Query(":TEST:DmmRead?","22"),ScriptStep.Query(":CHOICE:DmmMeasureTemperature? NO_RANGE","bad"),ScriptStep.Recover(),
+            ScriptStep.Query(":CHOICE:DmmMeasureTemperature? RANGE 2.5","294.15"),ScriptStep.Query(":TEST:DmmFetch?","295.15"),ScriptStep.Write(":TEST:Reset"),ScriptStep.Close()]);
+        using var handle=Open(GeneratedChoice.GeneratedProfiles.Create().Single(),script);var dmm=new InstrumentComponents.Drivers.Catalog.Dmm(handle);
+        Assert.Equal(DriverErrorKind.Parse,Assert.Throws<DriverException>(()=>dmm.MeasureTemperature(null)).Kind);handle.Recover();
+        Assert.Equal(DriverErrorKind.InvalidArgument,Assert.Throws<DriverException>(()=>dmm.Read()).Kind);
+        Assert.Equal(Unit.Unknown,dmm.MeasureTemperature(null).Unit);Assert.Equal(Unit.Unknown,dmm.Read().Unit);Assert.Equal(DriverErrorKind.Parse,Assert.Throws<DriverException>(()=>dmm.MeasureTemperature(null)).Kind);handle.Recover();
+        Assert.Equal(DriverErrorKind.InvalidArgument,Assert.Throws<DriverException>(()=>dmm.Fetch()).Kind);
+        Assert.Equal(Unit.Kelvin,dmm.MeasureTemperature(2.5).Unit);Assert.Equal(Unit.Kelvin,dmm.Fetch().Unit);dmm.Reset();
+        Assert.Equal(DriverErrorKind.InvalidArgument,Assert.Throws<DriverException>(()=>dmm.Read()).Kind);handle.Close();script.AssertComplete();
+    }
+    [Fact]
+    public void InventoryBindingIsFrozenBeforeOpenAndShutdownAttemptsSparseOutputs()
+    {
+        var original=GeneratedProfiles.Create().Single();
+        var unknown=original.BindInventory(new([1,3],null),[]);
+        Assert.DoesNotContain(Operation.CatalogShutdown,unknown.Operations);
+        Assert.DoesNotContain(Operation.CatalogDcPowerSupplyChannelCount,unknown.Operations);
+        Assert.Throws<DriverException>(()=>original.BindInventory(new([1,3],[]),[]));
+        Assert.Throws<DriverException>(()=>original.BindInventory(new([1],[new(OutputKind.DcPowerSupply,3),new(OutputKind.FunctionGenerator)]),[]));
+        var channels=new List<uint>{1,3};var outputs=new List<Output>{new(OutputKind.DcPowerSupply,1),new(OutputKind.DcPowerSupply,3),new(OutputKind.FunctionGenerator)};
+        var bound=original.BindInventory(new(channels,outputs),[new(":STOP")]);channels.Clear();outputs.Clear();
+        Assert.Equal(new uint[]{1,2},original.ChannelIds);
+        var script=new Script([new("write",":TEST:DcPowerSupplyOutputEnable 1,OFF",Failure:DriverErrorKind.Transport),ScriptStep.Write(":TEST:DcPowerSupplyOutputEnable 3,OFF"),ScriptStep.Write(":TEST:FunctionGeneratorOutputEnable OFF"),ScriptStep.Write(":STOP"),ScriptStep.Close()]);
+        using var h=Open(bound,script);Assert.Equal(2u,h.Invoke(new DcPowerSupplyChannelCountRequest()).IntoCount());
+        Assert.Equal(DriverErrorKind.InvalidArgument,Assert.Throws<DriverException>(()=>h.Invoke(new DcPowerSupplySetVoltageRequest(2,1))).Kind);
+        Assert.Equal(DriverErrorKind.Shutdown,Assert.Throws<DriverException>(()=>h.Close(true)).Kind);script.AssertComplete();
+    }
 }

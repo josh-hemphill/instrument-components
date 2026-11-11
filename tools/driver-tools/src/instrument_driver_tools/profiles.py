@@ -1,6 +1,7 @@
 """Closed profile grammar and deterministic reflection-free Rust/C# emission."""
 import json
 import re
+import itertools
 from importlib.resources import files
 from . import CONTRACT_MAJOR
 
@@ -37,6 +38,7 @@ def validate(data, schema_path=None):
             raise ValueError('Duplicate profile id')
         ids.add(profile['id'])
         for rule in profile.get('rules', []):
+            if 'vendorId' in rule:continue
             if not rule['manufacturer'].strip() or not rule['model'].strip() or any(ord(c)<32 or ord(c)==127 for c in rule['manufacturer']+rule['model']): raise ValueError('Empty match rule')
         channels = profile['channels']; outputs = profile['outputs']
         if outputs is not None and any(o['kind']=='DcPowerSupply' and o['channel'] not in (channels or []) for o in outputs):
@@ -48,6 +50,30 @@ def validate(data, schema_path=None):
                 raise ValueError('Duplicate operation')
             plans[name] = plan
             params = {p['name']: p['type'] for p in op['parameters']}
+            if plan.get('choices'):
+                if plan['steps'] or plan.get('tokens') or plan.get('defaults') or plan.get('unit') is not None:raise ValueError('Choice plan also contains flat plan data')
+                optional=[p['name'] for p in op['parameters'] if p['type']=='optional_number']
+                if not optional or len(optional)>8 or len(plan['choices'])>16:raise ValueError('Invalid or excessive choices')
+                for choice in plan['choices']:
+                    if set(choice['presence'])-set(optional):raise ValueError('Presence key must name optional argument')
+                    flat={k:v for k,v in choice.items() if k!='presence'};flat['operation']=name
+                    validate(dict(schemaVersion=1,contractMajor=1,profiles=[dict(profile,plans=[flat])]))
+                for values_mask in itertools.product([False,True],repeat=len(optional)):
+                    mask=dict(zip(optional,values_mask));matches=[c for c in plan['choices'] if all(mask[k]==v for k,v in c['presence'].items())]
+                    if len(matches)>1:raise ValueError('Overlapping optional choices')
+                    if not matches:continue
+                    choice=matches[0];used=set()
+                    for step in choice['steps']:
+                        if step.get('when') is not None and not mask[step['when']]:continue
+                        for key in placeholders(step['command']):
+                            if mask.get(key) is False and key not in choice.get('defaults',{}):raise ValueError('Absent optional placeholder lacks explicit default')
+                            used.add(key)
+                    if any((typ!='optional_number' or mask[key]) and key not in used for key,typ in params.items()):raise ValueError('Choice ignores supplied or required argument')
+                continue
+            declared=plan.get('unit')
+            if declared is not None:
+                allowed=['Celsius','Kelvin','Unknown'] if op['unit']=='Temperature' else [op['unit']]
+                if op['result']!='quantity' or op['unit'] in ['ConfiguredDmm','ConfiguredPower'] or declared not in allowed:raise ValueError('Result unit declaration violates dimension')
             used = set(); values = 0; preambles = 0
             for step in plan['steps']:
                 command = step['command']; role = step['response']
@@ -93,8 +119,6 @@ def validate(data, schema_path=None):
                 raise ValueError('Channel count requires inventory')
             if shutdown and outputs is None:
                 raise ValueError('Shutdown requires complete output inventory')
-            if shutdown and outputs and plan['steps']:
-                raise ValueError('Shutdown derives individual output disable plans')
             if local and plan['steps']: raise ValueError('Metadata channel count performs no IO')
             if name=='SpectrumAnalyzerWaitOpc' and not any(s['response']=='Completion' for s in plan['steps']): raise ValueError('Completion requires explicit completion query')
             if not local and not shutdown and not plan['steps']:
@@ -107,6 +131,10 @@ def validate(data, schema_path=None):
                 raise ValueError('Unexpected value query')
             if op['result'] != 'trace' and preambles != 0:
                 raise ValueError('Unexpected preamble query')
+        if outputs is not None:
+            kinds={o['kind'] for o in outputs}
+            if any(metadata[name]['kind']=='DcPowerSupply' and any(p['type']=='channel' for p in metadata[name]['parameters']) for name in plans) and 'DcPowerSupply' not in kinds:raise ValueError('PSU channel operations contradict complete output inventory')
+            if 'FunctionGeneratorOutputEnable' in plans and 'FunctionGenerator' not in kinds:raise ValueError('Generator output operation contradicts complete inventory')
         if outputs is not None and 'Shutdown' in plans:
             for output in outputs:
                 if output['kind']+'OutputEnable' not in plans: raise ValueError('Shutdown lacks declared output disable capability')
@@ -130,6 +158,40 @@ def quoted(text):
     return json.dumps(text, ensure_ascii=False)
 
 
+def rust_map(mapping, value):
+    return 'BTreeMap::from(['+', '.join('('+quoted(k)+'.into(), '+value(v)+')' for k,v in sorted(mapping.items()))+'])'
+
+
+def cs_map(mapping, typename, value):
+    return 'new Dictionary<string, '+typename+'> { '+', '.join('['+quoted(k)+'] = '+value(v) for k,v in sorted(mapping.items()))+' }'
+
+
+def emit_rust_steps(steps):
+    return 'vec!['+', '.join('Step { command: '+quoted(s['command'])+'.into(), response: ResponseRole::'+s['response']+', when: '+('Some('+quoted(s['when'])+'.into())' if s.get('when') is not None else 'None')+' }' for s in steps)+']'
+
+
+def emit_cs_steps(steps):
+    return 'new Step[] { '+', '.join('new Step('+quoted(s['command'])+', ResponseRole.'+s['response']+', '+(quoted(s['when']) if s.get('when') is not None else 'null')+')' for s in steps)+' }'
+
+
+def emit_rust_body(plan):
+    return 'steps: '+emit_rust_steps(plan['steps'])+', tokens: '+rust_map(plan.get('tokens',{}),lambda m:rust_map(m,lambda v:quoted(v)+'.into()'))+', defaults: '+rust_map(plan.get('defaults',{}),lambda v:quoted(v)+'.into()')+', unit: '+('Some(instrument_api::catalog::Unit::'+plan['unit']+')' if plan.get('unit') else 'None')
+
+
+def emit_rust_plan(plan):
+    choices=', '.join('instrument_scpi::PlanChoice { presence: '+rust_map(c['presence'],lambda v:'true' if v else 'false')+', '+emit_rust_body(c)+' }' for c in plan.get('choices',[]))
+    return 'Plan { operation: CatalogOperation::'+plan['operation']+', '+emit_rust_body(plan)+', choices: vec!['+choices+'] }'
+
+
+def emit_cs_body(plan):
+    return emit_cs_steps(plan['steps'])+', '+cs_map(plan.get('tokens',{}),'IReadOnlyDictionary<string, string>',lambda m:cs_map(m,'string',quoted))+', '+cs_map(plan.get('defaults',{}),'string',quoted)
+
+
+def emit_cs_plan(plan):
+    choices=', '.join('new PlanChoice('+cs_map(c['presence'],'bool',lambda v:'true' if v else 'false')+', '+emit_cs_body(c)+', Unit: '+('Unit.'+c['unit'] if c.get('unit') else 'null')+')' for c in plan.get('choices',[]))
+    return 'new Plan(CatalogOperation.'+plan['operation']+', '+emit_cs_body(plan)+', Choices: new PlanChoice[] { '+choices+' }, Unit: '+('Unit.'+plan['unit'] if plan.get('unit') else 'null')+')'
+
+
 def emit(data, module='generated_profiles', namespace='GeneratedDrivers'):
     # Reject both languages' keywords rather than emit source that fails later.
     reserved = set('Self self super crate mod type async await fn pub use namespace class new public internal static record struct abstract as base bool break byte case catch char checked const continue decimal default delegate do double else enum event explicit extern false finally fixed float for foreach goto if impl implicit in int interface is let lock long loop match move mut null object operator out override params private protected readonly ref return sbyte sealed short sizeof stackalloc string switch this throw trait true try typeof uint ulong unchecked unsafe unsized ushort using var virtual void volatile where while yield dyn union become box final macro priv typeof gen'.split())
@@ -147,18 +209,7 @@ def emit(data, module='generated_profiles', namespace='GeneratedDrivers'):
         rust += ['Profile::new('+quoted(profile['id'])+', '+rlist(profile['channels'])+', '+routputs+', vec![']
         cs += ['new ScpiProfile('+quoted(profile['id'])+', '+clist(profile['channels'])+', '+coutputs+', new Plan[] {']
         for plan in sorted(profile['plans'], key=lambda p:p['operation']):
-            rust += ['Plan { operation: CatalogOperation::'+plan['operation']+', steps: vec![']
-            cs += ['new Plan(CatalogOperation.'+plan['operation']+', new Step[] {']
-            for step in plan['steps']:
-                when = 'Some('+quoted(step['when'])+'.into())' if step.get('when') is not None else 'None'
-                rust += ['Step { command: '+quoted(step['command'])+'.into(), response: ResponseRole::'+step['response']+', when: '+when+' },']
-                cs += ['new Step('+quoted(step['command'])+', ResponseRole.'+step['response']+', '+(quoted(step['when']) if step.get('when') is not None else 'null')+'),']
-            rust += ['], tokens: BTreeMap::from(['];cs += ['}, new Dictionary<string, IReadOnlyDictionary<string, string>> {']
-            for key, mapping in sorted(plan.get('tokens', {}).items()):
-                rust += ['('+quoted(key)+'.into(), BTreeMap::from(['+', '.join('('+quoted(k)+'.into(), '+quoted(v)+'.into())' for k,v in sorted(mapping.items()))+'])),']
-                cs += ['['+quoted(key)+'] = new Dictionary<string, string> { '+', '.join('['+quoted(k)+'] = '+quoted(v) for k,v in sorted(mapping.items()))+' },']
-            rust += [']), defaults: BTreeMap::from(['+', '.join('('+quoted(k)+'.into(), '+quoted(v)+'.into())' for k,v in sorted(plan.get('defaults', {}).items()))+']) },']
-            cs += ['}, new Dictionary<string, string> { '+', '.join('['+quoted(k)+'] = '+quoted(v) for k,v in sorted(plan.get('defaults', {}).items()))+' }),']
+            rust += [emit_rust_plan(plan)+','];cs += [emit_cs_plan(plan)+',']
         rust += ['])?,'];cs += ['}),']
     rust += [']) }']
     cs += ['};']
@@ -174,7 +225,10 @@ def emit(data, module='generated_profiles', namespace='GeneratedDrivers'):
         for index, profile in enumerate(sorted(data['profiles'], key=lambda p:p['id'])):
             scheme=profile.get('scheme','scpi');rrules=[];crules=[]
             for rule in profile.get('rules',[]):
-                if rule.get('family',False):
+                if 'vendorId' in rule:
+                    rrules.append('instrument_api::MatchRule::ExactProduct { scheme: '+quoted(scheme)+'.into(), vendor_id: '+str(rule['vendorId'])+', product_id: '+str(rule['productId'])+' }')
+                    crules.append('new InstrumentComponents.Drivers.ExactProductRule('+quoted(scheme)+', '+str(rule['vendorId'])+', '+str(rule['productId'])+')')
+                elif rule.get('family',False):
                     rrules.append('instrument_api::MatchRule::Family { scheme: '+quoted(scheme)+'.into(), manufacturer: '+quoted(rule['manufacturer'])+'.into(), model_pattern: '+quoted(rule['model'])+'.into() }')
                     crules.append('new InstrumentComponents.Drivers.FamilyRule('+quoted(scheme)+', '+quoted(rule['manufacturer'])+', '+quoted(rule['model'])+')')
                 else:

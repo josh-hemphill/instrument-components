@@ -21,7 +21,9 @@
     "Watt",
     "Dbm",
     "Count",
-    "Unknown"
+    "Unknown",
+    "Kelvin",
+    "Temperature"
   ],
   "enums": {
     "waveform": {
@@ -159,8 +161,8 @@
         }
       ],
       "result": "quantity",
-      "unit": "Celsius",
-      "setsUnit": "Celsius"
+      "unit": "Temperature",
+      "setsUnit": "Temperature"
     },
     {
       "id": "DmmConfigureVoltageDc",

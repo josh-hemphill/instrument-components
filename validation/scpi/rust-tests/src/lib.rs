@@ -6,6 +6,21 @@ use instrument_testkit::*;
 use std::{collections::BTreeSet, sync::Arc};
 include!("../../generated/profiles.rs");
 include!("../../generated/cases.rs");
+include!("../../choice-generated/profiles.rs");
+include!("../../choice-generated/cases.rs");
+fn fixture_examples() -> Vec<(Profile, CatalogCase)> {
+    let base = generated_profiles::profiles().unwrap().remove(0);
+    let choice = choice_profiles::profiles().unwrap().remove(0);
+    generated_cases::cases()
+        .into_iter()
+        .map(|c| (base.clone(), c))
+        .chain(
+            choice_cases::cases()
+                .into_iter()
+                .map(|c| (choice.clone(), c)),
+        )
+        .collect()
+}
 fn candidate() -> Candidate {
     Candidate {
         endpoint: Endpoint {
@@ -23,10 +38,9 @@ fn selection() -> Selection {
 }
 #[test]
 fn shared_sync_scpi_catalogue_values_traffic_errors_and_cleanup() {
-    let profile = generated_profiles::profiles().unwrap().remove(0);
     let cases = generated_cases::cases();
     assert_eq!(cases.len(), 139);
-    for case in cases {
+    for (profile, case) in fixture_examples() {
         assert!(!case.calls.is_empty(), "scenario must establish an outcome");
         let script = Script::new(case.script.clone());
         let registry = DriverRegistry::new([Arc::new(ScpiFactory::new(
@@ -70,9 +84,8 @@ fn shared_sync_scpi_catalogue_values_traffic_errors_and_cleanup() {
 #[cfg(feature = "async")]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn shared_native_and_both_worker_frontends_match_sync() {
-    let profile = generated_profiles::profiles().unwrap().remove(0);
     for mode in 0..3 {
-        for case in generated_cases::cases() {
+        for (profile, case) in fixture_examples() {
             assert!(!case.calls.is_empty(), "scenario must establish an outcome");
             let script = Script::new(case.script.clone());
             let factory: Arc<dyn DriverFactory> = if mode == 0 {
@@ -311,11 +324,7 @@ fn shared_semantic_token_domains_and_shutdown_profiles_validate_before_open() {
         let profile = Profile::new(
             "synthetic.tokens",
             Some(vec![1]),
-            Some(if shutdown {
-                vec![Output::FunctionGenerator]
-            } else {
-                vec![]
-            }),
+            if shutdown { Some(vec![Output::FunctionGenerator]) } else { None },
             plans,
         );
         assert_eq!(
@@ -824,4 +833,191 @@ async fn protocol_neutral_catalog_only_native_and_worker_providers_support_check
         );
         assert_eq!(counts.closes.load(std::sync::atomic::Ordering::SeqCst), 1);
     }
+}
+
+#[test]
+fn shared_invalid_presence_choices_fail_before_open_and_snapshot_plans_are_rebound() {
+    let data: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../../spec/driver-choice-invalid-cases.json"
+    ))
+    .unwrap();
+    let profile = choice_profiles::profiles().unwrap().remove(0);
+    for row in data["cases"].as_array().unwrap() {
+        let mut plan = profile
+            .plans()
+            .find(|p| p.operation == CatalogOperation::DmmMeasureVoltageDc)
+            .unwrap()
+            .clone();
+        match row["mutation"].as_str().unwrap() {
+            "overlap" => {
+                let mut c = plan.choices[0].clone();
+                c.presence.clear();
+                plan.choices.push(c);
+            }
+            "unknown" => {
+                plan.choices[0].presence.insert("unknown".into(), true);
+            }
+            "nonoptional" => {
+                plan.operation = CatalogOperation::DcPowerSupplySetVoltage;
+                plan.choices[0].presence =
+                    std::collections::BTreeMap::from([("channel".into(), true)]);
+            }
+            "ignored" => plan.choices[1].steps[0].command = ":READ?".into(),
+            "absent" => plan.choices[0].steps[0].command = ":READ? {range}".into(),
+            "no-value" => plan.choices[1].steps = vec![Step::write(":WRITE {range}")],
+            "two-values" => {
+                let step = plan.choices[1].steps[0].clone();
+                plan.choices[1].steps.push(step);
+            }
+            "unit" => plan.choices[1].unit = Some(Unit::Kelvin),
+            "excessive" => plan.choices = vec![plan.choices[0].clone(); 17],
+            _ => panic!("unknown mutation"),
+        }
+        assert_eq!(
+            Profile::new("synthetic.invalid", Some(vec![1]), Some(vec![]), vec![plan])
+                .unwrap_err()
+                .kind,
+            ErrorKind::DriverContractViolation,
+            "{}",
+            row["id"]
+        );
+    }
+    let mut plan = profile
+        .plans()
+        .find(|p| p.operation == CatalogOperation::DmmMeasureVoltageDc)
+        .unwrap()
+        .clone();
+    plan.choices.truncate(1);
+    let restricted = Profile::new("synthetic.restricted", None, Some(vec![]), vec![plan]).unwrap();
+    let script = Script::new(vec![ScriptStep::Close(Ok(()))]);
+    let handle = open_profile(restricted, &script, ConnectionOwnership::Owned);
+    assert_eq!(
+        handle
+            .invoke(CatalogRequest::DmmMeasureVoltageDc { range: Some(2.5) })
+            .unwrap_err()
+            .kind,
+        ErrorKind::UnsupportedOperation
+    );
+    handle.close(false).unwrap();
+    script.assert_complete().unwrap();
+}
+
+#[test]
+fn temperature_unknown_is_distinct_from_unconfigured_after_failure_reset_and_recovery() {
+    let profile = choice_profiles::profiles().unwrap().remove(0);
+    let script = Script::new(vec![
+        ScriptStep::Query(
+            ":CHOICE:DmmMeasureTemperature? NO_RANGE".into(),
+            Ok("bad".into()),
+        ),
+        ScriptStep::Recover(Ok(())),
+        ScriptStep::Query(
+            ":CHOICE:DmmMeasureTemperature? NO_RANGE".into(),
+            Ok("21".into()),
+        ),
+        ScriptStep::Query(":TEST:DmmRead?".into(), Ok("22".into())),
+        ScriptStep::Query(
+            ":CHOICE:DmmMeasureTemperature? NO_RANGE".into(),
+            Ok("bad".into()),
+        ),
+        ScriptStep::Recover(Ok(())),
+        ScriptStep::Query(
+            ":CHOICE:DmmMeasureTemperature? RANGE 2.5".into(),
+            Ok("294.15".into()),
+        ),
+        ScriptStep::Query(":TEST:DmmFetch?".into(), Ok("295.15".into())),
+        ScriptStep::Write(":TEST:Reset".into()),
+        ScriptStep::Close(Ok(())),
+    ]);
+    let handle = open_profile(profile, &script, ConnectionOwnership::Owned);
+    assert_eq!(
+        handle
+            .invoke(CatalogRequest::DmmMeasureTemperature { range: None })
+            .unwrap_err()
+            .kind,
+        ErrorKind::Parse
+    );
+    handle.recover().unwrap();
+    assert_eq!(
+        handle.invoke(CatalogRequest::DmmRead).unwrap_err().kind,
+        ErrorKind::InvalidArgument
+    );
+    assert_eq!(
+        handle
+            .invoke(CatalogRequest::DmmMeasureTemperature { range: None })
+            .unwrap()
+            .into_quantity()
+            .unwrap()
+            .unit,
+        Unit::Unknown
+    );
+    assert_eq!(
+        handle
+            .invoke(CatalogRequest::DmmRead)
+            .unwrap()
+            .into_quantity()
+            .unwrap()
+            .unit,
+        Unit::Unknown
+    );
+    assert_eq!(
+        handle
+            .invoke(CatalogRequest::DmmMeasureTemperature { range: None })
+            .unwrap_err()
+            .kind,
+        ErrorKind::Parse
+    );
+    handle.recover().unwrap();
+    assert_eq!(
+        handle.invoke(CatalogRequest::DmmFetch).unwrap_err().kind,
+        ErrorKind::InvalidArgument
+    );
+    assert_eq!(
+        handle
+            .invoke(CatalogRequest::DmmMeasureTemperature { range: Some(2.5) })
+            .unwrap()
+            .into_quantity()
+            .unwrap()
+            .unit,
+        Unit::Kelvin
+    );
+    assert_eq!(
+        handle
+            .invoke(CatalogRequest::DmmFetch)
+            .unwrap()
+            .into_quantity()
+            .unwrap()
+            .unit,
+        Unit::Kelvin
+    );
+    handle.invoke(CatalogRequest::Reset).unwrap();
+    assert_eq!(
+        handle.invoke(CatalogRequest::DmmRead).unwrap_err().kind,
+        ErrorKind::InvalidArgument
+    );
+    handle.close(false).unwrap();
+    script.assert_complete().unwrap();
+}
+
+#[test]
+fn inventory_binding_is_frozen_before_open_and_shutdown_attempts_sparse_outputs() {
+    let original = generated_profiles::profiles().unwrap().remove(0);
+    let unknown = original.bind_inventory(&InventoryBinding { channels: Some(vec![1, 3]), outputs: None }, Some(vec![])).unwrap();
+    for operation in [CatalogOperation::Shutdown, CatalogOperation::DcPowerSupplyChannelCount] {
+        assert!(!unknown.operations().contains(&Operation::Catalog(operation)));
+    }
+    assert!(original.bind_inventory(&InventoryBinding { channels: Some(vec![1, 3]), outputs: Some(vec![]) }, Some(vec![])).is_err());
+    assert!(original.bind_inventory(&InventoryBinding { channels: Some(vec![1]), outputs: Some(vec![Output::DcPowerSupply(3), Output::FunctionGenerator]) }, Some(vec![])).is_err());
+    let mut binding = InventoryBinding { channels: Some(vec![1, 3]), outputs: Some(vec![Output::DcPowerSupply(1), Output::DcPowerSupply(3), Output::FunctionGenerator]) };
+    let bound = original.bind_inventory(&binding, Some(vec![Step::write(":STOP")])).unwrap();
+    binding.channels.as_mut().unwrap().clear(); binding.outputs.as_mut().unwrap().clear();
+    assert_eq!(original.channel_ids(), Some([1, 2].as_slice()));
+    let script = Script::new([
+        ScriptStep::WriteFailure(":TEST:DcPowerSupplyOutputEnable 1,OFF".into(), DriverError::new(ErrorKind::Transport,"first output failed")),
+        ScriptStep::Write(":TEST:DcPowerSupplyOutputEnable 3,OFF".into()), ScriptStep::Write(":TEST:FunctionGeneratorOutputEnable OFF".into()), ScriptStep::Write(":STOP".into()), ScriptStep::Close(Ok(()))]);
+    let handle = open_profile(bound, &script, ConnectionOwnership::Owned);
+    assert_eq!(handle.invoke(CatalogRequest::DcPowerSupplyChannelCount).unwrap(), CatalogReply::Count(2));
+    assert_eq!(handle.invoke(CatalogRequest::DcPowerSupplySetVoltage { channel: 2, volts: 1.0 }).unwrap_err().kind, ErrorKind::InvalidArgument);
+    assert_eq!(handle.close(true).unwrap_err().kind, ErrorKind::Shutdown);
+    script.assert_complete().unwrap();
 }

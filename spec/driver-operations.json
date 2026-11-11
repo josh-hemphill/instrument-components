@@ -21,7 +21,9 @@
     "Watt",
     "Dbm",
     "Count",
-    "Unknown"
+    "Unknown",
+    "Kelvin",
+    "Temperature"
   ],
   "enums": {
     "waveform": {
@@ -194,13 +196,13 @@
         }
       ],
       "result": "quantity",
-      "unit": "Celsius",
+      "unit": "Temperature",
       "source": {
         "path": "crates/instrument/src/classes/dmm.rs",
         "symbol": "measure_temperature",
         "line": 106
       },
-      "setsUnit": "Celsius"
+      "setsUnit": "Temperature"
     },
     {
       "id": "DmmConfigureVoltageDc",

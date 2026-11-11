@@ -7,6 +7,13 @@ pub enum Output {
     DcPowerSupply(u32),
     FunctionGenerator,
 }
+/// Application-supplied supported channels and complete output inventory.
+/// None means unknown; an empty output list is an explicit outputless device.
+#[derive(Debug, Clone)]
+pub struct InventoryBinding {
+    pub channels: Option<Vec<u32>>,
+    pub outputs: Option<Vec<Output>>,
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ResponseRole {
@@ -43,6 +50,30 @@ pub struct Plan {
     pub steps: Vec<Step>,
     pub tokens: BTreeMap<String, BTreeMap<String, String>>,
     pub defaults: BTreeMap<String, String>,
+    /// Physical result-unit declaration for a dimension with source-dependent units.
+    pub unit: Option<Unit>,
+    pub choices: Vec<PlanChoice>,
+}
+/// A finite, nonrecursive optional-argument presence branch. All wire data is supplied.
+#[derive(Debug, Clone)]
+pub struct PlanChoice {
+    pub presence: BTreeMap<String, bool>,
+    pub steps: Vec<Step>,
+    pub tokens: BTreeMap<String, BTreeMap<String, String>>,
+    pub defaults: BTreeMap<String, String>,
+    pub unit: Option<Unit>,
+}
+impl PlanChoice {
+    pub fn flat_plan(&self, operation: CatalogOperation) -> Plan {
+        Plan {
+            operation,
+            steps: self.steps.clone(),
+            tokens: self.tokens.clone(),
+            defaults: self.defaults.clone(),
+            unit: self.unit,
+            choices: Vec::new(),
+        }
+    }
 }
 impl Plan {
     pub fn new(operation: CatalogOperation, steps: Vec<Step>) -> Self {
@@ -51,6 +82,8 @@ impl Plan {
             steps,
             tokens: BTreeMap::new(),
             defaults: BTreeMap::new(),
+            unit: None,
+            choices: Vec::new(),
         }
     }
 }
@@ -149,6 +182,28 @@ impl Profile {
             let metadata = plan.operation.metadata();
             if indexed.contains_key(&plan.operation) || plan.steps.len() > 32 {
                 return Err(invalid("duplicate operation or excessive plan length"));
+            }
+            if !plan.choices.is_empty() {
+                if !plan.steps.is_empty()
+                    || !plan.tokens.is_empty()
+                    || !plan.defaults.is_empty()
+                    || plan.unit.is_some()
+                {
+                    return Err(invalid("choice plans cannot also contain a flat plan"));
+                }
+                validate_choices(id, &channels, &outputs, &plan)?;
+                indexed.insert(plan.operation, plan);
+                continue;
+            }
+            if let Some(unit) = plan.unit {
+                if metadata.result != ReplyKind::Quantity
+                    || !physical_unit_matches(metadata.unit, unit)
+                    || matches!(metadata.unit, Unit::ConfiguredDmm | Unit::ConfiguredPower)
+                {
+                    return Err(invalid(
+                        "result unit declaration violates operation dimension",
+                    ));
+                }
             }
             let parameters: BTreeMap<_, _> = metadata
                 .parameters
@@ -274,12 +329,6 @@ impl Profile {
             if shutdown && outputs.is_none() {
                 return Err(invalid("shutdown requires complete output inventory"));
             }
-            if shutdown && outputs.as_ref().is_some_and(|o| !o.is_empty()) && !plan.steps.is_empty()
-            {
-                return Err(invalid(
-                    "output shutdown is derived from individual output-disable plans",
-                ));
-            }
             if local && !plan.steps.is_empty() {
                 return Err(invalid("channel-count metadata must perform no IO"));
             }
@@ -315,6 +364,28 @@ impl Profile {
             indexed.insert(plan.operation, plan);
         }
         if let Some(outputs) = &outputs {
+            if indexed.values().any(|p| {
+                p.operation.metadata().kind == "DcPowerSupply"
+                    && p.operation
+                        .metadata()
+                        .parameters
+                        .iter()
+                        .any(|a| a.kind == ParameterKind::Channel)
+            }) && !outputs
+                .iter()
+                .any(|o| matches!(o, Output::DcPowerSupply(_)))
+            {
+                return Err(invalid(
+                    "PSU channel operations contradict complete output inventory",
+                ));
+            }
+            if indexed.contains_key(&CatalogOperation::FunctionGeneratorOutputEnable)
+                && !outputs.contains(&Output::FunctionGenerator)
+            {
+                return Err(invalid(
+                    "generator output operation contradicts complete inventory",
+                ));
+            }
             if indexed.contains_key(&CatalogOperation::Shutdown) {
                 for output in outputs {
                     let op = match output {
@@ -364,9 +435,152 @@ impl Profile {
     pub fn output_channel_ids(&self) -> Option<&[Output]> {
         self.outputs.as_deref()
     }
+    /// Immutable snapshots; callers rebind by constructing and validating a new Profile.
+    pub fn plans(&self) -> impl Iterator<Item = &Plan> {
+        self.plans.values()
+    }
+    /// Reconstruct an immutable, validated profile before opening any IO.
+    /// Shutdown actions are explicit driver-owned stop/open-all actions, not Reset.
+    pub fn bind_inventory(
+        &self,
+        binding: &InventoryBinding,
+        shutdown_steps: Option<Vec<Step>>,
+    ) -> Result<Self> {
+        let mut plans: Vec<_> = self
+            .plans()
+            .filter(|p| {
+                !matches!(
+                    p.operation,
+                    CatalogOperation::Shutdown | CatalogOperation::DcPowerSupplyChannelCount
+                )
+            })
+            .cloned()
+            .collect();
+        let psu = plans
+            .iter()
+            .any(|p| p.operation.metadata().kind == "DcPowerSupply");
+        if psu && binding.outputs.as_ref().is_some_and(Vec::is_empty) {
+            return Err(invalid(
+                "PSU capabilities cannot declare zero physical outputs",
+            ));
+        }
+        if binding.outputs.is_some() && psu {
+            plans.push(Plan::new(
+                CatalogOperation::DcPowerSupplyChannelCount,
+                Vec::new(),
+            ));
+        }
+        if binding.outputs.is_some() {
+            if let Some(steps) = shutdown_steps {
+                plans.push(Plan::new(CatalogOperation::Shutdown, steps));
+            }
+        }
+        Self::new(
+            &self.id,
+            binding.channels.clone(),
+            binding.outputs.clone(),
+            plans,
+        )
+    }
     pub fn operations(&self) -> BTreeSet<Operation> {
         self.plans.keys().map(|o| Operation::Catalog(*o)).collect()
     }
+}
+fn validate_choices(
+    id: &str,
+    channels: &Option<Vec<u32>>,
+    outputs: &Option<Vec<Output>>,
+    root: &Plan,
+) -> Result<()> {
+    let metadata = root.operation.metadata();
+    let optional: Vec<_> = metadata
+        .parameters
+        .iter()
+        .filter(|p| p.kind == ParameterKind::OptionalNumber)
+        .map(|p| p.name)
+        .collect();
+    if optional.is_empty() || optional.len() > 8 || root.choices.len() > 16 {
+        return Err(invalid("invalid or excessive optional plan choices"));
+    }
+    for choice in &root.choices {
+        if choice
+            .presence
+            .keys()
+            .any(|key| !optional.contains(&key.as_str()))
+        {
+            return Err(invalid("presence key must name an optional argument"));
+        }
+        Profile::new(
+            id,
+            channels.clone(),
+            outputs.clone(),
+            vec![choice.flat_plan(root.operation)],
+        )?;
+    }
+    for bits in 0..(1usize << optional.len()) {
+        let mask: BTreeMap<_, _> = optional
+            .iter()
+            .enumerate()
+            .map(|(i, n)| (*n, bits & (1 << i) != 0))
+            .collect();
+        let matched: Vec<_> = root
+            .choices
+            .iter()
+            .filter(|c| c.presence.iter().all(|(n, v)| mask[n.as_str()] == *v))
+            .collect();
+        if matched.len() > 1 {
+            return Err(invalid("overlapping optional plan choices"));
+        }
+        if let Some(choice) = matched.first() {
+            let mut used = BTreeSet::new();
+            for step in &choice.steps {
+                if step.when.as_ref().is_some_and(|name| !mask[name.as_str()]) {
+                    continue;
+                }
+                for name in placeholders(&step.command)? {
+                    if mask.get(name.as_str()) == Some(&false)
+                        && !choice.defaults.contains_key(&name)
+                    {
+                        return Err(invalid(
+                            "absent optional placeholder has no explicit default",
+                        ));
+                    }
+                    used.insert(name);
+                }
+            }
+            if metadata.parameters.iter().any(|p| {
+                (p.kind != ParameterKind::OptionalNumber || mask[p.name]) && !used.contains(p.name)
+            }) {
+                return Err(invalid(
+                    "selected choice ignores a required or supplied argument",
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+fn selected_plan(root: &Plan, args: &BTreeMap<&str, Argument>) -> Result<Plan> {
+    if root.choices.is_empty() {
+        return Ok(root.clone());
+    }
+    let choice = root
+        .choices
+        .iter()
+        .find(|c| {
+            c.presence.iter().all(|(name, present)| {
+                matches!(
+                    args.get(name.as_str()),
+                    Some(Argument::OptionalNumber(Some(_)))
+                ) == *present
+            })
+        })
+        .ok_or_else(|| {
+            fail(
+                ErrorKind::UnsupportedOperation,
+                "optional argument combination is not supported",
+            )
+        })?;
+    Ok(choice.flat_plan(root.operation))
 }
 #[derive(Debug, Clone)]
 pub(crate) struct Prepared {
@@ -398,6 +612,8 @@ impl Engine {
             .plans
             .get(&request.operation())
             .ok_or_else(|| fail(ErrorKind::UnsupportedOperation, "operation not in profile"))?;
+        let args: BTreeMap<_, _> = request.arguments().into_iter().collect();
+        let plan = selected_plan(plan, &args)?;
         if request.operation() == CatalogOperation::Shutdown
             && self.profile.outputs.as_ref().is_some_and(|o| !o.is_empty())
         {
@@ -414,6 +630,8 @@ impl Engine {
                 };
                 steps.extend(self.prepare(&disable)?.steps);
             }
+            // Explicit class-specific stop/open-all actions follow every output disable.
+            steps.extend(plan.steps.clone());
             return Ok(Prepared {
                 steps,
                 unit: Unit::Unknown,
@@ -422,6 +640,7 @@ impl Engine {
         }
         let (kind, unit) = request.result_kind();
         let unit = match unit {
+            Unit::Temperature => plan.unit.unwrap_or(Unit::Unknown),
             Unit::ConfiguredDmm => self.dmm.ok_or_else(|| {
                 fail(
                     ErrorKind::InvalidArgument,
@@ -436,7 +655,6 @@ impl Engine {
             })?,
             u => u,
         };
-        let args: BTreeMap<_, _> = request.arguments().into_iter().collect();
         let mut used = BTreeSet::new();
         let mut steps = Vec::new();
         for step in &plan.steps {
@@ -596,6 +814,11 @@ impl Engine {
             self.invalidate();
         }
         if let Some(unit) = request.configured_unit() {
+            let unit = if unit == Unit::Temperature {
+                prepared.unit
+            } else {
+                unit
+            };
             if unit == Unit::Watt || unit == Unit::Dbm {
                 self.power = Some(unit);
             } else {

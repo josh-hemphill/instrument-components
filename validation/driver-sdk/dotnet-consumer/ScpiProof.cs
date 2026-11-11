@@ -10,10 +10,15 @@ internal static class ScpiProof
     internal static async Task Run()
     {
         GeneratedProfiles.Create(); var cases = GeneratedCases.Create();
-        for (var mode=0;mode<4;mode++) foreach(var test in cases)
+        var groups=new (IReadOnlyList<CatalogCase> Cases,Func<Script,IDriverFactory> Factory)[] {
+            (cases,s=>GeneratedProfiles.CombinedFactories(s,s).Single()),
+            (GeneratedChoice.GeneratedCases.Create(),s=>GeneratedChoice.GeneratedProfiles.CombinedFactories(s,s).Single())
+        };
+        foreach(var group in groups)
+        for (var mode=0;mode<4;mode++) foreach(var test in group.Cases)
         {
             if(test.Calls.Count==0)throw new InvalidOperationException("Scenario must establish an outcome");
-            var script = new Script(test.Script); IDriverFactory factory = GeneratedProfiles.CombinedFactories(script,script).Single();
+            var script = new Script(test.Script); IDriverFactory factory = group.Factory(script);
             var registry = new DriverRegistry([factory]); var candidate = new DeviceCandidate(new("scpi","fixture"),new DeviceIdentity("Synthetic","All")); var selection=new DriverSelection(AllowStandardScpi:true);
             var sync = mode==0 ? registry.Open(candidate,selection) : null; var native = mode==1 ? await registry.OpenNativeAsync(candidate,selection) : null; var worker=mode>=2 ? await registry.OpenWorkerAsync(candidate,selection):null;
             for(var i=0;i<test.Calls.Count;i++)
@@ -37,7 +42,7 @@ internal static class ScpiProof
             else{await using var h=await registry.OpenWorkerAsync(candidate);if(mode==2)await TypedAsync(h);else Typed(h);await h.CloseAsync();script.AssertThreadAffinity();}
             script.AssertComplete();
         }
-        Console.WriteLine($"PASS SCPI packages: {cases.Count} shared cases x 4 frontends, all eight typed classes, exact traffic, units, errors, cleanup");
+        Console.WriteLine($"PASS SCPI packages: {groups.Sum(g=>g.Cases.Count)} shared cases x 4 frontends, all eight typed classes, exact traffic, units, errors, cleanup");
     }
     private static void Require(bool condition){if(!condition)throw new InvalidOperationException("Typed view value/unit/shape mismatch");}
     private static void Typed(ICatalogExecutor e) {

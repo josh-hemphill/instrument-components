@@ -99,12 +99,23 @@ def main():
     run('installed-tool-generate-cases', generate_cases, extra=tool_env)
     run('installed-tool-generate-cases-check', generate_cases+['--check'], extra=tool_env)
 
+    for name,inp in [('choice-profiles',ROOT/'validation/scpi/choice-profiles.json'),('choice-cases',ROOT/'spec/driver-choice-cases.json')]:shutil.copy2(inp,work/(name+'.json'))
+    choice_generated=work/'choice-generated'
+    choice_commands=[('profiles','generate','choice-profiles','choice_profiles'),('cases','generate-tests','choice-cases','choice_cases')]
+    for label,subcommand,source,module in choice_commands:
+        command=[python,'-m','instrument_driver_tools.cli',subcommand,'--input',work/(source+'.json'),'--output-dir',choice_generated,'--module',module,'--namespace','GeneratedChoice']
+        if subcommand=='generate':command+=['--contract-major','1']
+        run('installed-choice-'+label,command,extra=tool_env);run('installed-choice-'+label+'-check',command+['--check'],extra=tool_env)
+
     registry = work/'cargo-registry'; registry.mkdir()
     run('vendor-ordinary-dependencies', ['cargo', 'vendor', '--locked', '--versioned-dirs', registry], ROOT)
+    # Development bootstrap source feed, separate from all production SDK packages.
+    with tarfile.open(work/'cargo-dependencies.tar.gz','w:gz') as archive:
+        for dependency in sorted(registry.iterdir()):archive.add(dependency,arcname=dependency.name)
     cargo_home = work/'cargo-home'; cargo_home.mkdir()
     (cargo_home/'config.toml').write_text('[source.crates-io]\nreplace-with="sdk"\n[source.sdk]\ndirectory='+json.dumps(str(registry))+'\n')
     cargo_env = dict(CARGO_HOME=str(cargo_home), CARGO_TARGET_DIR=str(work/'cargo-target'))
-    workspace = tomllib.loads((ROOT/'Cargo.toml').read_text())['workspace']['package']; inventory = []
+    workspace = tomllib.loads((ROOT/'Cargo.toml').read_text())['workspace']['package']; inventory = [dict(package='cargo-dependencies', archive=str(work/'cargo-dependencies.tar.gz'), sha256=hashlib.sha256((work/'cargo-dependencies.tar.gz').read_bytes()).hexdigest())]
     crate_sources = [ROOT/'crates'/n for n in ['instrument-api', 'instrument-runtime', 'instrument-scpi', 'instrument-testkit']]+[ROOT/'validation/driver-sdk/rust-provider']
     for source in crate_sources:
         manifest = (source/'Cargo.toml').read_text()
@@ -132,6 +143,7 @@ def main():
         consumer = work/('rust-'+label+'-consumer'); shutil.copytree(source, consumer, ignore=IGNORE)
         if label == 'scpi':
             for f in ['profiles.rs', 'cases.rs']: shutil.copy2(generated/f, consumer/'src'/f)
+            for original,target in [('profiles.rs','choice_profiles.rs'),('cases.rs','choice_cases.rs')]:shutil.copy2(choice_generated/original,consumer/'src'/target)
         for feature in ['', 'async']:
             command = ['cargo', 'run', '--offline', '--release']+(['--features', feature] if feature else [])
             run('rust-'+label+'-'+(feature or 'default'), command, consumer, cargo_env)
@@ -175,6 +187,7 @@ def main():
     project=aot/'AotConsumer.csproj'
     project.write_text(project.read_text().replace('<TargetFramework>net8.0</TargetFramework>', '<TargetFramework>'+args.framework+'</TargetFramework>'))
     for f in ['GeneratedProfiles.cs','GeneratedCases.cs']:shutil.copy2(generated/f,aot/f)
+    for f in ['GeneratedProfiles.cs','GeneratedCases.cs']:shutil.copy2(choice_generated/f,aot/('Choice'+f))
     config=aot/'NuGet.Config'
     config.write_text(f'<configuration><packageSources><clear/><add key="local" value="{feed}"/><add key="nuget" value="https://api.nuget.org/v3/index.json"/></packageSources><packageSourceMapping><packageSource key="local"><package pattern="InstrumentComponents.*"/></packageSource><packageSource key="nuget"><package pattern="Microsoft.*"/><package pattern="runtime.*"/><package pattern="System.*"/></packageSource></packageSourceMapping></configuration>\n')
     nuget_env=dict(NUGET_PACKAGES=str(work/'fresh-nuget-cache'))

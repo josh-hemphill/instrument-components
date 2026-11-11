@@ -4,6 +4,33 @@ use instrument_testkit::*;
 use std::{collections::BTreeSet, sync::Arc};
 include!("profiles.rs");
 include!("cases.rs");
+include!("choice_profiles.rs");
+include!("choice_cases.rs");
+fn examples() -> Vec<(bool, CatalogCase)> {
+    generated_cases::cases()
+        .into_iter()
+        .map(|c| (false, c))
+        .chain(choice_cases::cases().into_iter().map(|c| (true, c)))
+        .collect()
+}
+fn factories(
+    choice: bool,
+    connector: Arc<dyn instrument_scpi::Connector>,
+) -> Result<Vec<Arc<dyn DriverFactory>>> {
+    if choice {
+        choice_profiles::sync_factories(connector)
+    } else {
+        generated_profiles::sync_factories(connector)
+    }
+}
+#[cfg(feature = "async")]
+fn combined(choice: bool, script: &Script) -> Result<Vec<Arc<dyn DriverFactory>>> {
+    if choice {
+        choice_profiles::combined_factories(Arc::new(script.clone()), Arc::new(script.clone()))
+    } else {
+        generated_profiles::combined_factories(Arc::new(script.clone()), Arc::new(script.clone()))
+    }
+}
 fn candidate() -> Candidate {
     Candidate {
         endpoint: Endpoint {
@@ -37,15 +64,13 @@ fn check(actual: Result<CatalogReply>, example: &CatalogCase, last: bool) -> Res
 }
 fn main() -> Result<()> {
     generated_profiles::profiles()?;
-    for example in generated_cases::cases() {
+    for (choice, example) in examples() {
         assert!(
             !example.calls.is_empty(),
             "scenario must establish an outcome"
         );
         let script = Script::new(example.script.clone());
-        let registry = DriverRegistry::new(generated_profiles::sync_factories(Arc::new(
-            script.clone(),
-        ))?)?;
+        let registry = DriverRegistry::new(factories(choice, Arc::new(script.clone()))?)?;
         let h = registry.open(
             &candidate(),
             &selection(),
@@ -92,17 +117,13 @@ fn main() -> Result<()> {
 #[cfg(feature = "async")]
 async fn asynchronous() -> Result<()> {
     for mode in 0..3 {
-        for example in generated_cases::cases() {
+        for (choice, example) in examples() {
             assert!(
                 !example.calls.is_empty(),
                 "scenario must establish an outcome"
             );
             let script = Script::new(example.script.clone());
-            let factory: Arc<dyn DriverFactory> = generated_profiles::combined_factories(
-                Arc::new(script.clone()),
-                Arc::new(script.clone()),
-            )?
-            .remove(0);
+            let factory: Arc<dyn DriverFactory> = combined(choice, &script)?.remove(0);
             let registry = DriverRegistry::new([factory])?;
             let native = if mode == 0 {
                 Some(

@@ -290,3 +290,55 @@ classes and old artifacts; publish previews after both native platform gates.
 The old facade/core artifacts still bundle current device support. No real device
 package or hardware support is established by synthetic conformance. See the
 [exact delivery sequence and inputs](device-package-delivery.md).
+
+### Explicit argument choices and physical inventories
+
+A profile may supply up to sixteen nonrecursive `choices` for an operation with
+optional numeric arguments. Each choice declares a `presence` predicate and its
+own steps, tokens, defaults and optional physical result unit. Predicates must be
+disjoint. Every selected branch must consume all required and present arguments;
+an absent placeholder needs an explicit default. An uncovered combination returns
+`UnsupportedOperation` before IO. These are supplied wire plans, with no generic
+command fallback in the interpreter. The CLI and both language constructors
+validate the same constraints. `validation/scpi/choice-profiles.json` and the
+shared choice/invalid-case files exercise this contract through all four frontends.
+
+Channel IDs describe supported request addresses. They do not establish the
+complete physical output inventory. `InventoryBinding` reconstructs a validated,
+immutable profile before a factory opens any IO. Unknown outputs (`null`/`None`)
+disable metadata channel count and checked shutdown. An explicit empty output
+set describes outputless classes; it contradicts PSU or generator output
+capabilities. A complete output list enables channel count for supplies and
+checked shutdown only when every declared output can be disabled. Supply
+requests outside that declared list fail before IO, even if their channel occurs
+in the broader supported-channel hints. Binding snapshots never mutate an
+already-created profile or an open handle.
+
+Shutdown first attempts every declared output disable, then every explicit
+literal shutdown step, collecting failures. Driver-owned stop, open-all and
+continuous-sweep-off actions can coexist with output disables. Core shutdown
+never implies reset. An application requiring reset invokes it separately and
+handles its result separately.
+
+Temperature has a result dimension independent of its physical unit. Without an
+explicit unit declaration a temperature measurement returns `Unknown`, and that
+unit propagates to subsequent DMM Read/Fetch. Explicit Celsius or Kelvin bindings
+are possible when the caller has evidence for those units. Reset, failed IO and
+successful recovery after a fault invalidate configured unit state. Unknown
+physical units remain distinct from an unconfigured function. No temperature
+configuration command is inferred by the SDK.
+
+### Development bootstrap before registry publication
+
+`driver-sdk.yml` can produce release-form SDK archives and the tool wheel from an
+explicit source repository and commit. The ordinary Cargo dependency archive is
+separate from the SDK and driver packages. `instrument-driver prepare-feeds
+--artifacts <downloaded-artifact> --output <empty-directory>` verifies every
+required archive against `packages.json` before preparing fresh local Cargo and
+NuGet feeds. The result records `pinned-sdk-artifact-bootstrap` and exact hashes.
+The caller must obtain the artifact from its pinned trusted workflow execution;
+checksums alone do not authenticate an untrusted producer. These checks establish
+package composition and native execution, not public-registry availability.
+Production device manifests still declare exact versioned registry dependencies;
+no sibling paths, copied SDK binaries or main-repository checkout enter their
+consumer builds. Registry publication remains a separate release gate.

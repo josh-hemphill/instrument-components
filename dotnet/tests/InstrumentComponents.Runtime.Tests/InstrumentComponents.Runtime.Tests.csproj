@@ -19,4 +19,9 @@
     <Compile Include="../../../validation/scpi/generated/GeneratedCases.cs" Link="GeneratedCases.cs" />
   </ItemGroup>
   <ItemGroup><None Include="../../../spec/driver-profile-cases.json" Link="driver-profile-cases.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
+  <ItemGroup>
+    <Compile Include="../../../validation/scpi/choice-generated/GeneratedProfiles.cs" Link="ChoiceProfiles.cs" />
+    <Compile Include="../../../validation/scpi/choice-generated/GeneratedCases.cs" Link="ChoiceCases.cs" />
+    <None Include="../../../spec/driver-choice-invalid-cases.json" Link="driver-choice-invalid-cases.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

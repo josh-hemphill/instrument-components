@@ -13,6 +13,9 @@ pub enum Unit {
     Ampere,
     Ohm,
     Celsius,
+    Kelvin,
+    /// Result dimension, never a physical unit returned in a Quantity.
+    Temperature,
     Hertz,
     Second,
     Watt,
@@ -78,6 +81,17 @@ fn contract() -> DriverError {
         "provider reply kind/unit/value violates operation contract",
     )
 }
+pub fn physical_unit_matches(expected: Unit, actual: Unit) -> bool {
+    match expected {
+        Unit::Temperature => matches!(actual, Unit::Celsius | Unit::Kelvin | Unit::Unknown),
+        Unit::ConfiguredDmm => matches!(
+            actual,
+            Unit::Volt | Unit::Ampere | Unit::Ohm | Unit::Celsius | Unit::Kelvin | Unit::Unknown
+        ),
+        Unit::ConfiguredPower => matches!(actual, Unit::Watt | Unit::Dbm),
+        _ => actual == expected,
+    }
+}
 fn validate_number(value: Option<f64>, constraint: &str) -> Result<()> {
     if let Some(v) = value {
         if !v.is_finite()
@@ -104,13 +118,7 @@ fn validate_symbol(value: &str) -> Result<()> {
 impl CatalogReply {
     pub fn validate(&self, request: &CatalogRequest) -> Result<()> {
         let (kind, expected) = request.result_kind();
-        let unit_ok = |u| match expected {
-            Unit::ConfiguredDmm => {
-                matches!(u, Unit::Volt | Unit::Ampere | Unit::Ohm | Unit::Celsius)
-            }
-            Unit::ConfiguredPower => matches!(u, Unit::Watt | Unit::Dbm),
-            _ => u == expected,
-        };
+        let unit_ok = |u| physical_unit_matches(expected, u);
         let valid = match (self, kind) {
             (Self::Unit, ReplyKind::Unit)
             | (Self::Boolean(_), ReplyKind::Boolean)

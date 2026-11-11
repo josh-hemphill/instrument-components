@@ -8,11 +8,20 @@ namespace InstrumentComponents.Scpi;
 
 public enum OutputKind { DcPowerSupply, FunctionGenerator }
 public sealed record Output(OutputKind Kind, uint? Channel = null);
+/// <summary>Null is unknown; an empty output set explicitly declares outputlessness.</summary>
+public sealed record InventoryBinding(IReadOnlyList<uint>? Channels, IReadOnlyList<Output>? Outputs);
 public enum ResponseRole { Write, Value, Completion, Preamble }
 public sealed record Step(string Command, ResponseRole Response = ResponseRole.Write, string? When = null);
 public sealed record Plan(CatalogOperation Operation, IReadOnlyList<Step> Steps,
     IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? Tokens = null,
-    IReadOnlyDictionary<string, string>? Defaults = null);
+    IReadOnlyDictionary<string, string>? Defaults = null,
+    IReadOnlyList<PlanChoice>? Choices = null, Unit? Unit = null);
+public sealed record PlanChoice(IReadOnlyDictionary<string,bool> Presence, IReadOnlyList<Step> Steps,
+    IReadOnlyDictionary<string,IReadOnlyDictionary<string,string>>? Tokens = null,
+    IReadOnlyDictionary<string,string>? Defaults = null, Unit? Unit = null)
+{
+    public Plan FlatPlan(CatalogOperation operation) => new(operation,Steps,Tokens,Defaults,Unit:Unit);
+}
 public sealed class ScpiProfile
 {
     public string Id { get; }
@@ -22,6 +31,16 @@ public sealed class ScpiProfile
     internal IReadOnlyList<Output>? Outputs { get; }
     internal FrozenDictionary<CatalogOperation, Plan> Plans { get; }
     public IReadOnlySet<Operation> Operations { get; }
+    public IReadOnlyList<Plan> OperationPlans => Array.AsReadOnly(Plans.Values.ToArray());
+    public ScpiProfile BindInventory(InventoryBinding binding,IReadOnlyList<Step>? shutdownSteps)
+    {
+        var plans=OperationPlans.Where(p=>p.Operation is not (CatalogOperation.Shutdown or CatalogOperation.DcPowerSupplyChannelCount)).ToList();
+        var psu=plans.Any(p=>p.Operation.Describe().Kind=="DcPowerSupply");
+        if(psu && binding.Outputs is {Count:0})throw Invalid("PSU capabilities cannot declare zero physical outputs");
+        if(binding.Outputs is not null && psu)plans.Add(new(CatalogOperation.DcPowerSupplyChannelCount,[]));
+        if(binding.Outputs is not null && shutdownSteps is not null)plans.Add(new(CatalogOperation.Shutdown,shutdownSteps));
+        return new ScpiProfile(Id,binding.Channels,binding.Outputs,plans);
+    }
     internal static DriverException Invalid(string message) => new(DriverErrorKind.DriverContractViolation, message);
     private static bool SafeToken(string s) => s.Length is > 0 and <= 128 && s.All(c => char.IsAsciiLetterOrDigit(c) || c is '_' or '-' or '.' or '+');
     public static IReadOnlySet<string> Placeholders(string template)
@@ -39,6 +58,40 @@ public sealed class ScpiProfile
         if (rest.Contains('}')) throw Invalid("Unmatched template brace");
         return names;
     }
+    private static IReadOnlyDictionary<string,IReadOnlyDictionary<string,string>> CopyTokens(IReadOnlyDictionary<string,IReadOnlyDictionary<string,string>>? input) =>
+        (input ?? new Dictionary<string,IReadOnlyDictionary<string,string>>()).ToFrozenDictionary(p=>p.Key,p=>(IReadOnlyDictionary<string,string>)p.Value.ToFrozenDictionary(StringComparer.Ordinal),StringComparer.Ordinal);
+    private static IReadOnlyDictionary<string,string> CopyDefaults(IReadOnlyDictionary<string,string>? input) =>
+        (input ?? new Dictionary<string,string>()).ToFrozenDictionary(StringComparer.Ordinal);
+    private static Plan Freeze(Plan plan) => plan with {
+        Steps=Array.AsReadOnly(plan.Steps.ToArray()),Tokens=CopyTokens(plan.Tokens),Defaults=CopyDefaults(plan.Defaults),
+        Choices=Array.AsReadOnly((plan.Choices ?? []).Select(c=>c with {
+            Presence=c.Presence.ToFrozenDictionary(StringComparer.Ordinal),Steps=Array.AsReadOnly(c.Steps.ToArray()),
+            Tokens=CopyTokens(c.Tokens),Defaults=CopyDefaults(c.Defaults)
+        }).ToArray())
+    };
+    private static void ValidateChoices(string id,IReadOnlyList<uint>? channels,IReadOnlyList<Output>? outputs,Plan root) {
+        var metadata=root.Operation.Describe();var optional=metadata.Parameters.Where(p=>p.Kind==ParameterKind.OptionalNumber).Select(p=>p.Name).ToArray();
+        if(optional.Length is 0 or >8 || root.Choices!.Count>16)throw Invalid("Invalid or excessive optional choices");
+        foreach(var choice in root.Choices) {
+            if(choice.Presence.Keys.Any(k=>!optional.Contains(k)))throw Invalid("Presence key must name optional argument");
+            _=new ScpiProfile(id,channels,outputs,[choice.FlatPlan(root.Operation)]);
+        }
+        for(var bits=0;bits<(1<<optional.Length);bits++) {
+            var mask=optional.Select((name,i)=>(name,present:(bits&(1<<i))!=0)).ToDictionary(p=>p.name,p=>p.present);
+            var matches=root.Choices.Where(c=>c.Presence.All(p=>mask[p.Key]==p.Value)).ToArray();
+            if(matches.Length>1)throw Invalid("Overlapping optional choices");
+            if(matches.Length==0)continue;
+            var selected=matches[0];var used=new HashSet<string>(StringComparer.Ordinal);
+            foreach(var step in selected.Steps) {
+                if(step.When is not null && !mask[step.When])continue;
+                foreach(var key in Placeholders(step.Command)) {
+                    if(mask.TryGetValue(key,out var present) && !present && !selected.Defaults!.ContainsKey(key))throw Invalid("Absent optional placeholder lacks explicit default");
+                    used.Add(key);
+                }
+            }
+            if(metadata.Parameters.Any(p=>(p.Kind!=ParameterKind.OptionalNumber || mask[p.Name]) && !used.Contains(p.Name)))throw Invalid("Choice ignores required or supplied argument");
+        }
+    }
     public ScpiProfile(string id, IEnumerable<uint>? channels, IEnumerable<Output>? outputs, IEnumerable<Plan> plans)
     {
         if (string.IsNullOrEmpty(id) || id.Length > 128 || !id.Contains('.') || id.Split('.').Any(string.IsNullOrEmpty) || id[0] is not (>= 'a' and <= 'z') || id.Any(c => !(c is >= 'a' and <= 'z' or >= '0' and <= '9' or '_' or '.' or '-'))) throw Invalid("Invalid profile id");
@@ -49,11 +102,15 @@ public sealed class ScpiProfile
         var indexed = new Dictionary<CatalogOperation, Plan>();
         foreach (var original in plans)
         {
-            var tokens = (original.Tokens ?? new Dictionary<string, IReadOnlyDictionary<string, string>>()).ToFrozenDictionary(p => p.Key, p => (IReadOnlyDictionary<string, string>)p.Value.ToFrozenDictionary(StringComparer.Ordinal), StringComparer.Ordinal);
-            var defaults = (original.Defaults ?? new Dictionary<string, string>()).ToFrozenDictionary(StringComparer.Ordinal);
-            var plan = original with { Steps = Array.AsReadOnly(original.Steps.ToArray()), Tokens = tokens, Defaults = defaults };
+            var plan = Freeze(original);
+            var tokens=plan.Tokens!;var defaults=plan.Defaults!;
             var metadata = plan.Operation.Describe(); var parameters = metadata.Parameters.ToDictionary(p => p.Name, p => p.Kind, StringComparer.Ordinal);
             if (indexed.ContainsKey(plan.Operation) || plan.Steps.Count > 32) throw Invalid("Duplicate operation or excessive plan length");
+            if (plan.Choices is { Count: > 0 }) {
+                if (plan.Steps.Count!=0 || tokens.Count!=0 || defaults.Count!=0 || plan.Unit is not null) throw Invalid("Choice plan also contains flat plan data");
+                ValidateChoices(id,Channels,Outputs,plan);indexed.Add(plan.Operation,plan);continue;
+            }
+            if (plan.Unit is { } declared && (metadata.Result!=ReplyKind.Quantity || !ContractValidation.PhysicalUnitMatches(metadata.Unit,declared) || metadata.Unit is Unit.ConfiguredDmm or Unit.ConfiguredPower)) throw Invalid("Result unit declaration violates operation dimension");
             var used = new HashSet<string>(StringComparer.Ordinal); var values = 0; var preambles = 0;
             foreach (var step in plan.Steps)
             {
@@ -87,7 +144,6 @@ public sealed class ScpiProfile
             var local = plan.Operation == CatalogOperation.DcPowerSupplyChannelCount; var shutdown = plan.Operation == CatalogOperation.Shutdown;
             if (local && Outputs is null) throw Invalid("Channel count requires known inventory");
             if (shutdown && Outputs is null) throw Invalid("Shutdown requires complete output inventory");
-            if (shutdown && Outputs!.Count > 0 && plan.Steps.Count > 0) throw Invalid("Output shutdown derives individual disable plans");
             if (local && plan.Steps.Count != 0) throw Invalid("Channel-count metadata must perform no IO");
             if (plan.Operation == CatalogOperation.SpectrumAnalyzerWaitOpc && !plan.Steps.Any(s => s.Response == ResponseRole.Completion)) throw Invalid("Completion requires explicit completion query");
             if (!local && !shutdown && plan.Steps.Count == 0) throw Invalid("Empty operation plan");
@@ -96,6 +152,10 @@ public sealed class ScpiProfile
             if (metadata.Result is ReplyKind.Unit or ReplyKind.Count && values != 0) throw Invalid("Unexpected value query");
             if (metadata.Result != ReplyKind.Trace && preambles != 0) throw Invalid("Unexpected preamble query");
             indexed.Add(plan.Operation, plan);
+        }
+        if(Outputs is not null) {
+            if(indexed.Values.Any(p=>p.Operation.Describe().Kind=="DcPowerSupply" && p.Operation.Describe().Parameters.Any(a=>a.Kind==ParameterKind.Channel)) && !Outputs.Any(o=>o.Kind==OutputKind.DcPowerSupply))throw Invalid("PSU channel operations contradict complete output inventory");
+            if(indexed.ContainsKey(CatalogOperation.FunctionGeneratorOutputEnable) && !Outputs.Contains(new Output(OutputKind.FunctionGenerator)))throw Invalid("Generator output operation contradicts complete inventory");
         }
         if (Outputs is not null && indexed.ContainsKey(CatalogOperation.Shutdown)) {
             foreach (var output in Outputs) if (!indexed.ContainsKey(output.Kind == OutputKind.DcPowerSupply ? CatalogOperation.DcPowerSupplyOutputEnable : CatalogOperation.FunctionGeneratorOutputEnable)) throw Invalid("Shutdown lacks a declared output's disable capability");
@@ -120,15 +180,22 @@ internal sealed class Engine(ScpiProfile profile)
     internal Prepared Prepare(CatalogRequest request)
     {
         request.Validate(); if (!Profile.Plans.TryGetValue(request.Operation, out var plan)) throw new DriverException(DriverErrorKind.UnsupportedOperation, "Operation not in profile");
+        if(plan.Choices is { Count: >0 }) {
+            var choiceArgs=request.Arguments;
+            var selected=plan.Choices.FirstOrDefault(c=>c.Presence.All(p=>(choiceArgs[p.Key].Kind==ArgumentKind.OptionalNumber && choiceArgs[p.Key].Number is not null)==p.Value))
+                ?? throw new DriverException(DriverErrorKind.UnsupportedOperation,"Optional argument combination unavailable");
+            plan=selected.FlatPlan(request.Operation);
+        }
         if (request.Operation == CatalogOperation.Shutdown && Profile.Outputs is { Count: > 0 })
         {
             var shutdownSteps = new List<Step>();
             foreach (var output in Profile.Outputs)
             { CatalogRequest disable = output.Kind == OutputKind.DcPowerSupply ? new DcPowerSupplyOutputEnableRequest(output.Channel!.Value, false) : new FunctionGeneratorOutputEnableRequest(false); shutdownSteps.AddRange(Prepare(disable).Steps); }
+            shutdownSteps.AddRange(plan.Steps);
             return new(shutdownSteps, ReplyKind.Unit, Unit.Unknown);
         }
         var (kind, unit) = request.Result;
-        unit = unit switch { Unit.ConfiguredDmm => _dmm ?? throw ContractValidation.Invalid("Configure DMM function before reading"), Unit.ConfiguredPower => _power ?? throw ContractValidation.Invalid("Configure power unit before reading"), _ => unit };
+        unit = unit switch { Unit.Temperature => plan.Unit ?? Unit.Unknown, Unit.ConfiguredDmm => _dmm ?? throw ContractValidation.Invalid("Configure DMM function before reading"), Unit.ConfiguredPower => _power ?? throw ContractValidation.Invalid("Configure power unit before reading"), _ => unit };
         var args = request.Arguments; var used = new HashSet<string>(StringComparer.Ordinal); var steps = new List<Step>();
         foreach (var step in plan.Steps)
         {
@@ -164,7 +231,7 @@ internal sealed class Engine(ScpiProfile profile)
         };
         reply.Validate(request);
         if (request.Operation == CatalogOperation.Reset) Invalidate();
-        if (request.ConfiguredUnit is { } unit) { if (unit is Unit.Watt or Unit.Dbm) _power = unit; else _dmm = unit; }
+        if (request.ConfiguredUnit is { } unit) { if(unit==Unit.Temperature)unit=prepared.Unit; if (unit is Unit.Watt or Unit.Dbm) _power = unit; else _dmm = unit; }
         return reply;
     }
     private static CatalogReply Numeric(string raw, Unit unit)

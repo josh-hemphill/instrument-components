@@ -96,8 +96,8 @@ public override CatalogOperation Operation => CatalogOperation.DmmMeasureTempera
 public override IReadOnlyDictionary<string, Argument> Arguments => new Dictionary<string, Argument> {
 ["range"] = Argument.Optional(Range),
 };
-public override (ReplyKind Kind, Unit Unit) Result => (ReplyKind.Quantity, global::InstrumentComponents.Drivers.Catalog.Unit.Celsius);
-public override Unit? ConfiguredUnit => global::InstrumentComponents.Drivers.Catalog.Unit.Celsius;
+public override (ReplyKind Kind, Unit Unit) Result => (ReplyKind.Quantity, global::InstrumentComponents.Drivers.Catalog.Unit.Temperature);
+public override Unit? ConfiguredUnit => global::InstrumentComponents.Drivers.Catalog.Unit.Temperature;
 private protected override void ValidateArguments() {
 ContractValidation.Number(Range, "positive");
 }
@@ -1089,7 +1089,7 @@ CatalogOperation.DmmMeasureCurrentAc => new("Dmm", [new("range", ParameterKind.O
 CatalogOperation.DmmMeasureResistance => new("Dmm", [new("range", ParameterKind.OptionalNumber, "positive")], ReplyKind.Quantity, global::InstrumentComponents.Drivers.Catalog.Unit.Ohm),
 CatalogOperation.DmmMeasureResistance2Wire => new("Dmm", [new("range", ParameterKind.OptionalNumber, "positive")], ReplyKind.Quantity, global::InstrumentComponents.Drivers.Catalog.Unit.Ohm),
 CatalogOperation.DmmMeasureResistance4Wire => new("Dmm", [new("range", ParameterKind.OptionalNumber, "positive")], ReplyKind.Quantity, global::InstrumentComponents.Drivers.Catalog.Unit.Ohm),
-CatalogOperation.DmmMeasureTemperature => new("Dmm", [new("range", ParameterKind.OptionalNumber, "positive")], ReplyKind.Quantity, global::InstrumentComponents.Drivers.Catalog.Unit.Celsius),
+CatalogOperation.DmmMeasureTemperature => new("Dmm", [new("range", ParameterKind.OptionalNumber, "positive")], ReplyKind.Quantity, global::InstrumentComponents.Drivers.Catalog.Unit.Temperature),
 CatalogOperation.DmmConfigureVoltageDc => new("Dmm", [new("range", ParameterKind.OptionalNumber, "positive"), new("resolution", ParameterKind.OptionalNumber, "positive")], ReplyKind.Unit, global::InstrumentComponents.Drivers.Catalog.Unit.Volt),
 CatalogOperation.DmmConfigureVoltageAc => new("Dmm", [new("range", ParameterKind.OptionalNumber, "positive"), new("resolution", ParameterKind.OptionalNumber, "positive")], ReplyKind.Unit, global::InstrumentComponents.Drivers.Catalog.Unit.Volt),
 CatalogOperation.DmmConfigureCurrentDc => new("Dmm", [new("range", ParameterKind.OptionalNumber, "positive"), new("resolution", ParameterKind.OptionalNumber, "positive")], ReplyKind.Unit, global::InstrumentComponents.Drivers.Catalog.Unit.Ampere),

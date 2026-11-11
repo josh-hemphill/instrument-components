@@ -1,7 +1,7 @@
 using InstrumentComponents.Drivers;
 namespace InstrumentComponents.Drivers.Catalog;
 
-public enum Unit { Volt, Ampere, Ohm, Celsius, Hertz, Second, Watt, Dbm, Count, Unknown, ConfiguredDmm, ConfiguredPower }
+public enum Unit { Volt, Ampere, Ohm, Celsius, Kelvin, Temperature, Hertz, Second, Watt, Dbm, Count, Unknown, ConfiguredDmm, ConfiguredPower }
 public enum ReplyKind { Unit, Quantity, Boolean, Count, Samples, Trace, Identity }
 public readonly record struct Quantity(double Value, Unit Unit, MeasurementStatus Status = MeasurementStatus.Valid);
 public sealed record Samples(IReadOnlyList<double> Values, Unit Unit, double? SampleIntervalS = null);
@@ -19,6 +19,12 @@ public readonly record struct Argument(ArgumentKind Kind, double? Number = null,
 public static class ContractValidation
 {
     public static DriverException Invalid(string message) => new(DriverErrorKind.InvalidArgument, message);
+    public static bool PhysicalUnitMatches(Unit expected, Unit actual) => expected switch {
+        Unit.Temperature => actual is Unit.Celsius or Unit.Kelvin or Unit.Unknown,
+        Unit.ConfiguredDmm => actual is Unit.Volt or Unit.Ampere or Unit.Ohm or Unit.Celsius or Unit.Kelvin or Unit.Unknown,
+        Unit.ConfiguredPower => actual is Unit.Watt or Unit.Dbm,
+        _ => actual == expected,
+    };
     public static void Number(double? value, string constraint)
     { if (value is { } v && (!double.IsFinite(v) || (constraint == "positive" && v <= 0) || (constraint == "nonnegative" && v < 0) || (constraint == "percent" && (v < 0 || v > 100)))) throw Invalid("Invalid numeric argument"); }
     public static void Symbol(string value)
@@ -37,7 +43,7 @@ public abstract record CatalogReply
     public void Validate(CatalogRequest request)
     {
         var (kind, expected) = request.Result;
-        bool UnitOk(Unit u) => expected switch { Unit.ConfiguredDmm => u is Unit.Volt or Unit.Ampere or Unit.Ohm or Unit.Celsius, Unit.ConfiguredPower => u is Unit.Watt or Unit.Dbm, _ => u == expected };
+        bool UnitOk(Unit u) => ContractValidation.PhysicalUnitMatches(expected,u);
         var valid = (this, kind) switch
         {
             (Empty, ReplyKind.Unit) or (State, ReplyKind.Boolean) or (Count, ReplyKind.Count) => true,

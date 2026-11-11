@@ -140,6 +140,34 @@ class ToolingTests(unittest.TestCase):
             except OSError:self.skipTest('Host cannot create symlinks')
             with contextlib.redirect_stderr(io.StringIO()),self.assertRaises(SystemExit):main(['generate','--input',str(inp),'--output-dir',str(out),'--contract-major','1'])
             self.assertEqual(victim.read_text(encoding='utf-8'),'keep');self.assertFalse((out/'GeneratedProfiles.cs').exists())
+    def test_shared_choice_grammar_rejects_invalid_branches_before_emission(self):
+        profiles=json.loads((ROOT/'validation/scpi/choice-profiles.json').read_text(encoding='utf-8'))
+        examples=json.loads((ROOT/'spec/driver-choice-invalid-cases.json').read_text(encoding='utf-8'))['cases']
+        for case in examples:
+            data=copy.deepcopy(profiles);profile=data['profiles'][0];plan=next(p for p in profile['plans'] if p['operation']=='DmmMeasureVoltageDc');profile['plans']=[plan]
+            mutation=case['mutation']
+            if mutation=='overlap':choice=copy.deepcopy(plan['choices'][0]);choice['presence']={};plan['choices'].append(choice)
+            elif mutation=='unknown':plan['choices'][0]['presence']['unknown']=True
+            elif mutation=='nonoptional':plan['operation']='DcPowerSupplySetVoltage';plan['choices'][0]['presence']={'channel':True}
+            elif mutation=='ignored':plan['choices'][1]['steps'][0]['command']=':READ?'
+            elif mutation=='absent':plan['choices'][0]['steps'][0]['command']=':READ? {range}'
+            elif mutation=='no-value':plan['choices'][1]['steps']=[{'command':':WRITE {range}','response':'Write'}]
+            elif mutation=='two-values':plan['choices'][1]['steps']*=2
+            elif mutation=='unit':plan['choices'][1]['unit']='Kelvin'
+            elif mutation=='excessive':plan['choices']=[plan['choices'][0]]*17
+            else:self.fail('Unknown mutation')
+            with self.subTest(id=case['id']),tempfile.TemporaryDirectory() as temp:
+                folder=Path(temp);inp=folder/'in.json';inp.write_text(json.dumps(data));out=folder/'out'
+                with contextlib.redirect_stderr(io.StringIO()),self.assertRaises(SystemExit):main(['generate','--input',str(inp),'--output-dir',str(out),'--contract-major','1'])
+                self.assertFalse(out.exists())
+    def test_choice_and_usb_profiles_emit_deterministically(self):
+        profiles=json.loads((ROOT/'validation/scpi/choice-profiles.json').read_text(encoding='utf-8'))
+        profiles['profiles'][0]['rules'].append({'vendorId':0x0957,'productId':0x0607})
+        validate(profiles);outputs=emit(profiles);self.assertIn('ExactProduct',outputs['profiles.rs']);self.assertIn('PlanChoice',outputs['GeneratedProfiles.cs'])
+        alternative=copy.deepcopy(profiles)
+        for plan in alternative['profiles'][0]['plans']:
+            for choice in plan.get('choices',[]):choice['presence']=dict(reversed(list(choice['presence'].items())))
+        self.assertEqual(outputs,emit(alternative))
     def test_preview_validator_distinguishes_legacy_version_and_rejects_stable_tags(self):
         command=[sys.executable,str(ROOT/'tools/validate-sdk-release.py')]
         self.assertEqual(subprocess.run(command+['--tag','driver-sdk-v0.2.0-alpha.1'],capture_output=True).returncode,0)
