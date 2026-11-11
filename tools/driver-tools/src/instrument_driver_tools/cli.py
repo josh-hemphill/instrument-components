@@ -67,9 +67,17 @@ def main(argv=None):
     feeds = sub.add_parser('prepare-feeds', help='Verify pinned SDK CI artifacts and prepare explicit development package feeds')
     feeds.add_argument('--artifacts', type=Path, required=True)
     feeds.add_argument('--output', type=Path, required=True)
+    proof = sub.add_parser('verify-package', help='Package an independent driver and execute generated and packed native consumers')
+    proof.add_argument('--repository', type=Path, required=True)
+    proof.add_argument('--feeds', type=Path, required=True)
+    proof.add_argument('--output', type=Path, required=True)
+    proof.add_argument('--framework', choices=['net8.0','net10.0'], required=True)
     args = parser.parse_args(argv)
     try:
-        if args.command == 'prepare-feeds':
+        if args.command == 'verify-package':
+            from .verify import verify
+            verify(args.repository,args.feeds,args.output,args.framework)
+        elif args.command == 'prepare-feeds':
             from .feeds import prepare
             print(json.dumps(prepare(args.artifacts,args.output),indent=2))
         elif args.command == 'inventory':
