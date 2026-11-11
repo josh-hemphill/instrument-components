@@ -1,0 +1,1909 @@
+{
+  "schemaVersion": 1,
+  "version": "0.2.0-alpha.1",
+  "verifiedAt": "2026-11-11T23:53:11.868678+00:00",
+  "hardwareValidated": false,
+  "publicRegistryValidated": true,
+  "newRustCrateFirstPublication": "restricted temporary publish-new token",
+  "newRustCrateOidcPublication": "configured and read back; first publication using OIDC remains pending next version",
+  "existingRootRustOidcPublication": "verified by successful facade release",
+  "nugetOidcPublication": "verified by successful SDK, facade, and five vendor releases",
+  "temporaryBootstrapSecrets": "verified absent in all six repositories",
+  "trustedPublisherPolicies": {
+    "rust": 12,
+    "nuget": 7,
+    "existingRootNugetScope": "preserved InstrumentComponent* scope"
+  },
+  "artifacts": [
+    {
+      "registry": "crates",
+      "package": "instrument-api",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha256": "1fe7e440626b42d9fafee84b7ec1418b3255624a84eb299a7f914ece4a44c0ea",
+      "sourceCommit": "9bbe1c62abb7f43fb84ff00a8e6f4ce7ca206089"
+    },
+    {
+      "registry": "crates",
+      "package": "instrument-runtime",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha256": "7126f35d4b723455740e5d17e60555f69ab02c9678b75c1ffd9c06809ba4c32d",
+      "sourceCommit": "9bbe1c62abb7f43fb84ff00a8e6f4ce7ca206089"
+    },
+    {
+      "registry": "crates",
+      "package": "instrument-scpi",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha256": "c26520b896d380deadae7ab194868b31d31f0827750b30019d2655e5b2bdd856",
+      "sourceCommit": "9bbe1c62abb7f43fb84ff00a8e6f4ce7ca206089"
+    },
+    {
+      "registry": "crates",
+      "package": "instrument-testkit",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha256": "59f773c89a5bc11c6a70cbcc826481bc06f4f3ff642db1b9cf4ec6dadbfbaea7",
+      "sourceCommit": "9bbe1c62abb7f43fb84ff00a8e6f4ce7ca206089"
+    },
+    {
+      "registry": "nuget",
+      "package": "InstrumentComponents.Abstractions",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha512": "ihcodtEuOWnKatHfD+TB1h+M076fX9hJSoN/yhjg1v078rM5RHDrgqF5lhfvV7ppDNeGvK0utPIWHc1tfnXozw==",
+      "sha256": "6d56820d1eb9d919a9d65963da872b6d03cfa7181311ed0f3069cd98a3f7df4a",
+      "sourceCommit": "9bbe1c62abb7f43fb84ff00a8e6f4ce7ca206089",
+      "dependencies": {}
+    },
+    {
+      "registry": "nuget",
+      "package": "InstrumentComponents.Runtime",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha512": "pNfB+p1ElpHeZRUhNW+cEW4RbR2VEQom30Vsce/FUsoWg1/YWtAfbw+y+qoFE9J/m/sVztima148S0w3WdPe7g==",
+      "sha256": "48a65f43c5766a60f87149413cd34cca99ab9d33a8db4c05e0a47add4a5e4e35",
+      "sourceCommit": "9bbe1c62abb7f43fb84ff00a8e6f4ce7ca206089",
+      "dependencies": {
+        "InstrumentComponents.Abstractions": "[0.2.0-alpha.1]"
+      }
+    },
+    {
+      "registry": "nuget",
+      "package": "InstrumentComponents.Scpi",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha512": "9q/TiZl+Q2rS2j6Rhtqsk33MFQsZk9pStSnbAJXFXkjos39yUgzu560zmh6iiynkmDAYmvAcNDCfkpXfDnZU1Q==",
+      "sha256": "e77354d4c71045949ba585335385548bb4e4b4b53b3264c239dc34a63ee56c7f",
+      "sourceCommit": "9bbe1c62abb7f43fb84ff00a8e6f4ce7ca206089",
+      "dependencies": {
+        "InstrumentComponents.Abstractions": "[0.2.0-alpha.1]"
+      }
+    },
+    {
+      "registry": "nuget",
+      "package": "InstrumentComponents.TestKit",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha512": "C4cAYOAvWJdb4mbQNyuc3WoYIKqG+FaM1Xum7hmcXXQSudsOKbj9j7DmJbKiZZ/nNU7fD5UVNM5oRE7pe2oc8A==",
+      "sha256": "aae087ca4625f66ab6c5eca54d90ed633fb31af4fa3efc2ed2364f8f3e62ea26",
+      "sourceCommit": "9bbe1c62abb7f43fb84ff00a8e6f4ce7ca206089",
+      "dependencies": {
+        "InstrumentComponents.Scpi": "[0.2.0-alpha.1]"
+      }
+    },
+    {
+      "registry": "crates",
+      "package": "instrument-core",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha256": "af4898cf92ffe8b6d240a0106d2637b003cfd5f51eff89688563107fb87d1715",
+      "sourceCommit": "9bbe1c62abb7f43fb84ff00a8e6f4ce7ca206089"
+    },
+    {
+      "registry": "crates",
+      "package": "instrument-visa",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha256": "2bf945e35bd4b00f93b5d6569c6e0d82777d18f92e7664224ec7752dbe70b48d",
+      "sourceCommit": "9bbe1c62abb7f43fb84ff00a8e6f4ce7ca206089"
+    },
+    {
+      "registry": "crates",
+      "package": "instrument-components",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha256": "0e6ec1ba28a1483815c5b3ea09a35a1cb24fa9cb947dda07a1ad60d72b73196e",
+      "sourceCommit": "9bbe1c62abb7f43fb84ff00a8e6f4ce7ca206089"
+    },
+    {
+      "registry": "nuget",
+      "package": "InstrumentComponents",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha512": "bCK8kMKTN7qxSH/QynPrYbBObwQ3W1AxJPPLeTAwDzfMOrrhpsDsWlqPju6X2O+Mm66wwWdHO09EXPRm09xuJA==",
+      "sha256": "e2488f535d1d002e78318902b19143b65c6a5c25b78c8cc2422670028e36ef77",
+      "sourceCommit": "9bbe1c62abb7f43fb84ff00a8e6f4ce7ca206089",
+      "dependencies": {
+        "InstrumentComponents.Runtime": "[0.2.0-alpha.1]"
+      }
+    },
+    {
+      "registry": "nuget",
+      "package": "InstrumentComponents.Visa",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha512": "8dBmy9KLP9Q5je25EjH/jZG/gnj1K1r9PeqeQBLWVuv5suRI0brnXiEgR4Ov8/yOx68OhqUoN/JKRJL4V6OjOQ==",
+      "sha256": "7bca2081ddb49a56a57c4e6444a4eb2db82737d153257728e6e931848fed6221",
+      "sourceCommit": "9bbe1c62abb7f43fb84ff00a8e6f4ce7ca206089",
+      "dependencies": {
+        "InstrumentComponents": "[0.2.0-alpha.1]",
+        "IviFoundation.Visa": "8.0.2"
+      }
+    },
+    {
+      "registry": "nuget",
+      "package": "InstrumentComponents.OpenTap",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha512": "0TDRfknVzKdznKS4WnBJLOIiletACJUeUOWHj8PRxbX/J6UFZVHJH9BBDryOUVtzOFZziJUwDTuc8BEva52Szw==",
+      "sha256": "d4e4a7defc5b4b782986f09eec230061e69ddf1bdc6f8e1fdb3610ccf09109f2",
+      "sourceCommit": "9bbe1c62abb7f43fb84ff00a8e6f4ce7ca206089",
+      "dependencies": {
+        "InstrumentComponents": "[0.2.0-alpha.1]",
+        "OpenTAP": "9.32.2"
+      }
+    },
+    {
+      "registry": "nuget",
+      "package": "InstrumentComponents.OpenTap.Visa",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha512": "IaBQKqqEM50asTKXRXzbqYcVkRCVMJqZn090LPN/rfwe29Ddz1+oeS4yZJlty6f87e7nuYE7kPKadDrJyzHL7g==",
+      "sha256": "ceaf0c7ec05a78999ee1ade6ac4ed8d0672791b93cbbe06cd420a7c6583c3da9",
+      "sourceCommit": "9bbe1c62abb7f43fb84ff00a8e6f4ce7ca206089",
+      "dependencies": {
+        "InstrumentComponents.OpenTap": "[0.2.0-alpha.1]",
+        "InstrumentComponents.Scpi": "[0.2.0-alpha.1]",
+        "InstrumentComponents.Visa": "[0.2.0-alpha.1]"
+      }
+    },
+    {
+      "registry": "crates",
+      "package": "instrument-driver-keysight",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha256": "51a5cada77091e9b3e5eb952d32afd221a09e870ba4ed94f4798e43db88c1700",
+      "sourceCommit": "61d2bc6564a0579211e2671994534cd457f343a7"
+    },
+    {
+      "registry": "nuget",
+      "package": "InstrumentComponents.Drivers.Keysight",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha512": "uHeTqtbHyFfn0wX/+Zpu1Aahmz5mvWXsvLXkOkKXkTvs8d5W/5BsekEqwub39L+ubzKNpKeklQiyg/IvHdsdbQ==",
+      "sha256": "f2bf57ed441bf46495063ea248c05d03869cac9ba03d1c73c54388038af8b5c0",
+      "sourceCommit": "61d2bc6564a0579211e2671994534cd457f343a7",
+      "dependencies": {
+        "InstrumentComponents.Scpi": "[0.2.0-alpha.1]"
+      }
+    },
+    {
+      "registry": "crates",
+      "package": "instrument-driver-keithley",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha256": "e2f3fcbe4795a398ff8ec61c6fab13b8a4bfa132d5cfa03fed324e1b4124e709",
+      "sourceCommit": "cf445cc1bdbdb20e190b637c6586d376913c0a14"
+    },
+    {
+      "registry": "nuget",
+      "package": "InstrumentComponents.Drivers.Keithley",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha512": "eoq4e8IdzgMtdBefmb0FfYjMwCyGebSf70kmKlsmRFr0cyLcQr43JwLHg8D5dC6JVMkPDhPUWKGp8/xqFuYSTg==",
+      "sha256": "5063a59447b3edef1d11137a7deb8f5a37de69b5ebad352e6243ae55364177d5",
+      "sourceCommit": "cf445cc1bdbdb20e190b637c6586d376913c0a14",
+      "dependencies": {
+        "InstrumentComponents.Scpi": "[0.2.0-alpha.1]"
+      }
+    },
+    {
+      "registry": "crates",
+      "package": "instrument-driver-rigol",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha256": "7ad01f7f3af3762c990aa4bdfef336fba0503d2f25e1ad756d9aefd9f75ce98e",
+      "sourceCommit": "3a9300ea7445f45271c7bbd06dddf61a55733390"
+    },
+    {
+      "registry": "nuget",
+      "package": "InstrumentComponents.Drivers.Rigol",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha512": "30aYfaBA+A8Teqf2FvghN5JlMYtwmRjB8WQQ5JxmQ5GeiT0j2arIKQMYDOotwHb44NArhZT5HPPzi6EMgeA+5w==",
+      "sha256": "f4a58dc5b76a9a764c2af76cd5c63c30f7a2cdee49cd5a4d9bed560bf4071f5b",
+      "sourceCommit": "3a9300ea7445f45271c7bbd06dddf61a55733390",
+      "dependencies": {
+        "InstrumentComponents.Scpi": "[0.2.0-alpha.1]"
+      }
+    },
+    {
+      "registry": "crates",
+      "package": "instrument-driver-siglent",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha256": "50df4b8e3cebabe3c47bbfc5e27e820198e53969480f502d7a15bb81c25141fc",
+      "sourceCommit": "9e5444c7deebf3d4703f68f4c66099e4e4b2a537"
+    },
+    {
+      "registry": "nuget",
+      "package": "InstrumentComponents.Drivers.Siglent",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha512": "m22tTe3VDMynAnFBkZXymYWp17ilqzklX/MbbkU58PLJ0X+sC3tnYVvysz+z5GsqdcgbsiizN9K+vfm9UwNBfw==",
+      "sha256": "1f3717d05f710a7c61a795e737f28d08f26c6e327ac4be7f97fbd05f937894fe",
+      "sourceCommit": "9e5444c7deebf3d4703f68f4c66099e4e4b2a537",
+      "dependencies": {
+        "InstrumentComponents.Scpi": "[0.2.0-alpha.1]"
+      }
+    },
+    {
+      "registry": "crates",
+      "package": "instrument-driver-tektronix",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha256": "bc6a1cfee7a50f66c8e0fabb504b142c89ea8882deeea2bda047378e4ce3fb2f",
+      "sourceCommit": "ec7f310be263a6190d00590a8e87ae59a7cf31fd"
+    },
+    {
+      "registry": "nuget",
+      "package": "InstrumentComponents.Drivers.Tektronix",
+      "version": "0.2.0-alpha.1",
+      "status": "VERIFIED",
+      "sha512": "YsbF1NClWSphNlAZLFqr/dF/CDVaIIVyeQ78pPf7e3ZWxGg6Ug80QJMSxxJMoMavSqLrv+ciNQTRvt251SGweA==",
+      "sha256": "d244a3fa93d86cb2b423508ab22fcae4356de67abd7769b4902d322f41d34105",
+      "sourceCommit": "ec7f310be263a6190d00590a8e87ae59a7cf31fd",
+      "dependencies": {
+        "InstrumentComponents.Scpi": "[0.2.0-alpha.1]"
+      }
+    }
+  ],
+  "githubAssets": [
+    {
+      "tag": "driver-sdk-v0.2.0-alpha.1",
+      "asset": "instrument_driver_tools-0.2.0a1-py3-none-any.whl",
+      "sha256": "5341a00f7ac7796d8811b459af4f2302b4e850568f4b7a4b87fb6e7598036f22",
+      "url": "https://github.com/josh-hemphill/instrument-components/releases/download/driver-sdk-v0.2.0-alpha.1/instrument_driver_tools-0.2.0a1-py3-none-any.whl"
+    },
+    {
+      "tag": "driver-sdk-v0.2.0-alpha.1",
+      "asset": "SHA256SUMS",
+      "sha256": "5946c2484434d9f99ca188488151882d5648301cc72efff471acbc4b53eb0658",
+      "url": "https://github.com/josh-hemphill/instrument-components/releases/download/driver-sdk-v0.2.0-alpha.1/SHA256SUMS"
+    },
+    {
+      "tag": "v0.2.0-alpha.1",
+      "asset": "InstrumentComponents.OpenTap.0.2.0-alpha.1.TapPackage",
+      "sha256": "d9d283a0e5dcd787aaa4250e1d752ba4489625f29ebb73e2f56aa5bd0683ea78",
+      "url": "https://github.com/josh-hemphill/instrument-components/releases/download/v0.2.0-alpha.1/InstrumentComponents.OpenTap.0.2.0-alpha.1.TapPackage"
+    }
+  ],
+  "runs": [
+    {
+      "stage": "sdk",
+      "repository": "josh-hemphill/instrument-components",
+      "tag": "driver-sdk-v0.2.0-alpha.1",
+      "sourceCommit": "9bbe1c62abb7f43fb84ff00a8e6f4ce7ca206089",
+      "runUrl": "https://github.com/josh-hemphill/instrument-components/actions/runs/43111552283",
+      "attempt": 1,
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "validate",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43111552283/job/130828589506"
+        },
+        {
+          "name": "conformance / SDK ubuntu-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43111552283/job/130828663361"
+        },
+        {
+          "name": "conformance / SDK windows-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43111552283/job/130828663367"
+        },
+        {
+          "name": "conformance / SDK windows-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43111552283/job/130828663384"
+        },
+        {
+          "name": "conformance / SDK ubuntu-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43111552283/job/130828663392"
+        },
+        {
+          "name": "tool-assets",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43111552283/job/130831026872"
+        },
+        {
+          "name": "nuget",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43111552283/job/130831027031"
+        },
+        {
+          "name": "crates",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43111552283/job/130831027077"
+        },
+        {
+          "name": "release",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43111552283/job/130831874693"
+        }
+      ]
+    },
+    {
+      "stage": "facade",
+      "repository": "josh-hemphill/instrument-components",
+      "tag": "v0.2.0-alpha.1",
+      "sourceCommit": "9bbe1c62abb7f43fb84ff00a8e6f4ce7ca206089",
+      "runUrl": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332",
+      "attempt": 1,
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "Validate release versions",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130839277787"
+        },
+        {
+          "name": "CI gate / Package instrument-core",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130839278007"
+        },
+        {
+          "name": "CI gate / Driver SDK and native package proofs / SDK ubuntu-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130839278121"
+        },
+        {
+          "name": "CI gate / Driver SDK and native package proofs / SDK windows-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130839278145"
+        },
+        {
+          "name": "CI gate / Driver SDK and native package proofs / SDK ubuntu-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130839278153"
+        },
+        {
+          "name": "CI gate / Driver SDK and native package proofs / SDK windows-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130839278302"
+        },
+        {
+          "name": ".NET gate / Shared data drift check",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130839278371"
+        },
+        {
+          "name": "CI gate / Tokio feature check",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130839278425"
+        },
+        {
+          "name": "CI gate / Rust 1.85 minimum",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130839278433"
+        },
+        {
+          "name": "CI gate / Test (windows-latest)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130839278567"
+        },
+        {
+          "name": "CI gate / Cross-compile check",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130839278710"
+        },
+        {
+          "name": "CI gate / Test (ubuntu-latest)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130839278907"
+        },
+        {
+          "name": "CI gate / Test (macos-latest)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130839278960"
+        },
+        {
+          "name": ".NET gate / Build VISA package (Windows)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130839663740"
+        },
+        {
+          "name": ".NET gate / Build VISA package (Linux)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130839663755"
+        },
+        {
+          "name": ".NET gate / OpenTAP package (net9.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130839663786"
+        },
+        {
+          "name": ".NET gate / .NET 10 compatibility (ubuntu-latest)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130839663791"
+        },
+        {
+          "name": ".NET gate / Build and test (mock)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130839663804"
+        },
+        {
+          "name": ".NET gate / .NET 10 compatibility (windows-latest)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130839663806"
+        },
+        {
+          "name": ".NET gate / OpenTAP package (net10.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130839663891"
+        },
+        {
+          "name": "Build OpenTAP release artifact",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130841867971"
+        },
+        {
+          "name": "Publish to NuGet",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130841867981"
+        },
+        {
+          "name": "Publish to crates.io",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130841867995"
+        },
+        {
+          "name": "GitHub Release",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components/actions/runs/43114626332/job/130842692689"
+        }
+      ]
+    },
+    {
+      "stage": "keithley",
+      "repository": "josh-hemphill/instrument-components-keithley",
+      "tag": "driver-v0.2.0-alpha.1",
+      "sourceCommit": "cf445cc1bdbdb20e190b637c6586d376913c0a14",
+      "runUrl": "https://github.com/josh-hemphill/instrument-components-keithley/actions/runs/43116683240",
+      "attempt": 1,
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "validate",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keithley/actions/runs/43116683240/job/130846368766"
+        },
+        {
+          "name": "conformance / sdk / SDK ubuntu-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keithley/actions/runs/43116683240/job/130846436975"
+        },
+        {
+          "name": "conformance / sdk / SDK ubuntu-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keithley/actions/runs/43116683240/job/130846437126"
+        },
+        {
+          "name": "conformance / sdk / SDK windows-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keithley/actions/runs/43116683240/job/130846437136"
+        },
+        {
+          "name": "conformance / sdk / SDK windows-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keithley/actions/runs/43116683240/job/130846437231"
+        },
+        {
+          "name": "conformance / package / Driver ubuntu-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keithley/actions/runs/43116683240/job/130848955623"
+        },
+        {
+          "name": "conformance / package / Driver ubuntu-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keithley/actions/runs/43116683240/job/130848955652"
+        },
+        {
+          "name": "conformance / package / Driver windows-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keithley/actions/runs/43116683240/job/130848955657"
+        },
+        {
+          "name": "conformance / package / Driver windows-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keithley/actions/runs/43116683240/job/130848955736"
+        },
+        {
+          "name": "nuget",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keithley/actions/runs/43116683240/job/130850617020"
+        },
+        {
+          "name": "crates",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keithley/actions/runs/43116683240/job/130850617101"
+        },
+        {
+          "name": "public-consumer (ubuntu-latest, net8.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keithley/actions/runs/43116683240/job/130851134259"
+        },
+        {
+          "name": "public-consumer (windows-latest, net10.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keithley/actions/runs/43116683240/job/130851134341"
+        },
+        {
+          "name": "public-consumer (windows-latest, net8.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keithley/actions/runs/43116683240/job/130851134380"
+        },
+        {
+          "name": "public-consumer (ubuntu-latest, net10.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keithley/actions/runs/43116683240/job/130851134402"
+        }
+      ]
+    },
+    {
+      "stage": "rigol",
+      "repository": "josh-hemphill/instrument-components-rigol",
+      "tag": "driver-v0.2.0-alpha.1",
+      "sourceCommit": "3a9300ea7445f45271c7bbd06dddf61a55733390",
+      "runUrl": "https://github.com/josh-hemphill/instrument-components-rigol/actions/runs/43116701256",
+      "attempt": 1,
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "validate",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-rigol/actions/runs/43116701256/job/130846430499"
+        },
+        {
+          "name": "conformance / sdk / SDK windows-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-rigol/actions/runs/43116701256/job/130846501396"
+        },
+        {
+          "name": "conformance / sdk / SDK ubuntu-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-rigol/actions/runs/43116701256/job/130846501452"
+        },
+        {
+          "name": "conformance / sdk / SDK ubuntu-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-rigol/actions/runs/43116701256/job/130846501470"
+        },
+        {
+          "name": "conformance / sdk / SDK windows-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-rigol/actions/runs/43116701256/job/130846501486"
+        },
+        {
+          "name": "conformance / package / Driver ubuntu-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-rigol/actions/runs/43116701256/job/130848885481"
+        },
+        {
+          "name": "conformance / package / Driver windows-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-rigol/actions/runs/43116701256/job/130848885496"
+        },
+        {
+          "name": "conformance / package / Driver ubuntu-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-rigol/actions/runs/43116701256/job/130848885568"
+        },
+        {
+          "name": "conformance / package / Driver windows-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-rigol/actions/runs/43116701256/job/130848885595"
+        },
+        {
+          "name": "nuget",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-rigol/actions/runs/43116701256/job/130850508279"
+        },
+        {
+          "name": "crates",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-rigol/actions/runs/43116701256/job/130850508519"
+        },
+        {
+          "name": "public-consumer (ubuntu-latest, net8.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-rigol/actions/runs/43116701256/job/130850948319"
+        },
+        {
+          "name": "public-consumer (windows-latest, net10.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-rigol/actions/runs/43116701256/job/130850948321"
+        },
+        {
+          "name": "public-consumer (ubuntu-latest, net10.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-rigol/actions/runs/43116701256/job/130850948356"
+        },
+        {
+          "name": "public-consumer (windows-latest, net8.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-rigol/actions/runs/43116701256/job/130850948613"
+        }
+      ]
+    },
+    {
+      "stage": "siglent",
+      "repository": "josh-hemphill/instrument-components-siglent",
+      "tag": "driver-v0.2.0-alpha.1",
+      "sourceCommit": "9e5444c7deebf3d4703f68f4c66099e4e4b2a537",
+      "runUrl": "https://github.com/josh-hemphill/instrument-components-siglent/actions/runs/43116721759",
+      "attempt": 2,
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "conformance / sdk / SDK ubuntu-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-siglent/actions/runs/43116721759/job/130854932593"
+        },
+        {
+          "name": "conformance / sdk / SDK ubuntu-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-siglent/actions/runs/43116721759/job/130854933323"
+        },
+        {
+          "name": "conformance / sdk / SDK windows-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-siglent/actions/runs/43116721759/job/130854933594"
+        },
+        {
+          "name": "conformance / sdk / SDK windows-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-siglent/actions/runs/43116721759/job/130854934137"
+        },
+        {
+          "name": "conformance / package / Driver ubuntu-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-siglent/actions/runs/43116721759/job/130854934268"
+        },
+        {
+          "name": "conformance / package / Driver ubuntu-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-siglent/actions/runs/43116721759/job/130854935344"
+        },
+        {
+          "name": "crates",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-siglent/actions/runs/43116721759/job/130854935827"
+        },
+        {
+          "name": "conformance / package / Driver windows-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-siglent/actions/runs/43116721759/job/130854935831"
+        },
+        {
+          "name": "conformance / package / Driver windows-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-siglent/actions/runs/43116721759/job/130854935854"
+        },
+        {
+          "name": "nuget",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-siglent/actions/runs/43116721759/job/130854937100"
+        },
+        {
+          "name": "public-consumer (ubuntu-latest, net10.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-siglent/actions/runs/43116721759/job/130854937240"
+        },
+        {
+          "name": "public-consumer (ubuntu-latest, net8.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-siglent/actions/runs/43116721759/job/130854937263"
+        },
+        {
+          "name": "public-consumer (windows-latest, net8.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-siglent/actions/runs/43116721759/job/130854937442"
+        },
+        {
+          "name": "public-consumer (windows-latest, net10.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-siglent/actions/runs/43116721759/job/130854938198"
+        },
+        {
+          "name": "validate",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-siglent/actions/runs/43116721759/job/130854991551"
+        }
+      ]
+    },
+    {
+      "stage": "tektronix",
+      "repository": "josh-hemphill/instrument-components-tektronix",
+      "tag": "driver-v0.2.0-alpha.1",
+      "sourceCommit": "ec7f310be263a6190d00590a8e87ae59a7cf31fd",
+      "runUrl": "https://github.com/josh-hemphill/instrument-components-tektronix/actions/runs/43116744689",
+      "attempt": 1,
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "validate",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-tektronix/actions/runs/43116744689/job/130846581878"
+        },
+        {
+          "name": "conformance / sdk / SDK ubuntu-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-tektronix/actions/runs/43116744689/job/130846666610"
+        },
+        {
+          "name": "conformance / sdk / SDK windows-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-tektronix/actions/runs/43116744689/job/130846666657"
+        },
+        {
+          "name": "conformance / sdk / SDK ubuntu-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-tektronix/actions/runs/43116744689/job/130846666705"
+        },
+        {
+          "name": "conformance / sdk / SDK windows-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-tektronix/actions/runs/43116744689/job/130846666785"
+        },
+        {
+          "name": "conformance / package / Driver windows-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-tektronix/actions/runs/43116744689/job/130848874741"
+        },
+        {
+          "name": "conformance / package / Driver ubuntu-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-tektronix/actions/runs/43116744689/job/130848874783"
+        },
+        {
+          "name": "conformance / package / Driver ubuntu-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-tektronix/actions/runs/43116744689/job/130848874831"
+        },
+        {
+          "name": "conformance / package / Driver windows-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-tektronix/actions/runs/43116744689/job/130848874846"
+        },
+        {
+          "name": "nuget",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-tektronix/actions/runs/43116744689/job/130850382608"
+        },
+        {
+          "name": "crates",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-tektronix/actions/runs/43116744689/job/130850382613"
+        },
+        {
+          "name": "public-consumer (ubuntu-latest, net8.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-tektronix/actions/runs/43116744689/job/130850841815"
+        },
+        {
+          "name": "public-consumer (windows-latest, net10.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-tektronix/actions/runs/43116744689/job/130850841850"
+        },
+        {
+          "name": "public-consumer (windows-latest, net8.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-tektronix/actions/runs/43116744689/job/130850841870"
+        },
+        {
+          "name": "public-consumer (ubuntu-latest, net10.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-tektronix/actions/runs/43116744689/job/130850842228"
+        }
+      ]
+    },
+    {
+      "stage": "keysight",
+      "repository": "josh-hemphill/instrument-components-keysight",
+      "tag": "driver-v0.2.0-alpha.1",
+      "sourceCommit": "61d2bc6564a0579211e2671994534cd457f343a7",
+      "runUrl": "https://github.com/josh-hemphill/instrument-components-keysight/actions/runs/43119557820",
+      "attempt": 1,
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "validate",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keysight/actions/runs/43119557820/job/130856227666"
+        },
+        {
+          "name": "conformance / sdk / SDK windows-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keysight/actions/runs/43119557820/job/130856285444"
+        },
+        {
+          "name": "conformance / sdk / SDK ubuntu-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keysight/actions/runs/43119557820/job/130856285449"
+        },
+        {
+          "name": "conformance / sdk / SDK windows-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keysight/actions/runs/43119557820/job/130856285537"
+        },
+        {
+          "name": "conformance / sdk / SDK ubuntu-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keysight/actions/runs/43119557820/job/130856285849"
+        },
+        {
+          "name": "conformance / package / Driver windows-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keysight/actions/runs/43119557820/job/130858609997"
+        },
+        {
+          "name": "conformance / package / Driver ubuntu-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keysight/actions/runs/43119557820/job/130858610005"
+        },
+        {
+          "name": "conformance / package / Driver windows-latest / net8.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keysight/actions/runs/43119557820/job/130858610088"
+        },
+        {
+          "name": "conformance / package / Driver ubuntu-latest / net10.0",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keysight/actions/runs/43119557820/job/130858610120"
+        },
+        {
+          "name": "crates",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keysight/actions/runs/43119557820/job/130861386934"
+        },
+        {
+          "name": "nuget",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keysight/actions/runs/43119557820/job/130861386962"
+        },
+        {
+          "name": "public-consumer (ubuntu-latest, net8.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keysight/actions/runs/43119557820/job/130861833448"
+        },
+        {
+          "name": "public-consumer (windows-latest, net8.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keysight/actions/runs/43119557820/job/130861833475"
+        },
+        {
+          "name": "public-consumer (windows-latest, net10.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keysight/actions/runs/43119557820/job/130861833485"
+        },
+        {
+          "name": "public-consumer (ubuntu-latest, net10.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keysight/actions/runs/43119557820/job/130861833495"
+        },
+        {
+          "name": "all-five-public / composition (windows-latest, net10.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keysight/actions/runs/43119557820/job/130865403527"
+        },
+        {
+          "name": "all-five-public / composition (ubuntu-latest, net8.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keysight/actions/runs/43119557820/job/130865403537"
+        },
+        {
+          "name": "all-five-public / composition (windows-latest, net8.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keysight/actions/runs/43119557820/job/130865403546"
+        },
+        {
+          "name": "all-five-public / composition (ubuntu-latest, net10.0)",
+          "conclusion": "success",
+          "url": "https://github.com/josh-hemphill/instrument-components-keysight/actions/runs/43119557820/job/130865403677"
+        },
+        {
+          "name": "all-five-public / sdk",
+          "conclusion": "skipped",
+          "url": "https://github.com/josh-hemphill/instrument-components-keysight/actions/runs/43119557820/job/130865405920"
+        }
+      ]
+    }
+  ],
+  "recovery": {
+    "repository": "josh-hemphill/instrument-components-siglent",
+    "runId": 43116721759,
+    "originalFailedJobId": 130851659871,
+    "job": "public-consumer (windows-latest, net8.0)",
+    "reason": "NuGet public flat-container index lookup returned HTTP 502",
+    "action": "Reran only the failed read-only consumer job; all publication jobs preserved",
+    "attempt": 2,
+    "conclusion": "success"
+  },
+  "limitations": [
+    "No physical hardware execution or validation.",
+    "Bench self-test stages the standards transport from source; it is separate from the public package-only composition gate.",
+    "Draft implementation PRs remain unmerged."
+  ],
+  "crateOwners": [
+    {
+      "crate": "instrument-api",
+      "owners": [
+        {
+          "login": "josh-hemphill",
+          "kind": "user"
+        }
+      ]
+    },
+    {
+      "crate": "instrument-runtime",
+      "owners": [
+        {
+          "login": "josh-hemphill",
+          "kind": "user"
+        }
+      ]
+    },
+    {
+      "crate": "instrument-scpi",
+      "owners": [
+        {
+          "login": "josh-hemphill",
+          "kind": "user"
+        }
+      ]
+    },
+    {
+      "crate": "instrument-testkit",
+      "owners": [
+        {
+          "login": "josh-hemphill",
+          "kind": "user"
+        }
+      ]
+    },
+    {
+      "crate": "instrument-core",
+      "owners": [
+        {
+          "login": "josh-hemphill",
+          "kind": "user"
+        }
+      ]
+    },
+    {
+      "crate": "instrument-visa",
+      "owners": [
+        {
+          "login": "josh-hemphill",
+          "kind": "user"
+        }
+      ]
+    },
+    {
+      "crate": "instrument-components",
+      "owners": [
+        {
+          "login": "josh-hemphill",
+          "kind": "user"
+        }
+      ]
+    },
+    {
+      "crate": "instrument-driver-keysight",
+      "owners": [
+        {
+          "login": "josh-hemphill",
+          "kind": "user"
+        }
+      ]
+    },
+    {
+      "crate": "instrument-driver-keithley",
+      "owners": [
+        {
+          "login": "josh-hemphill",
+          "kind": "user"
+        }
+      ]
+    },
+    {
+      "crate": "instrument-driver-rigol",
+      "owners": [
+        {
+          "login": "josh-hemphill",
+          "kind": "user"
+        }
+      ]
+    },
+    {
+      "crate": "instrument-driver-siglent",
+      "owners": [
+        {
+          "login": "josh-hemphill",
+          "kind": "user"
+        }
+      ]
+    },
+    {
+      "crate": "instrument-driver-tektronix",
+      "owners": [
+        {
+          "login": "josh-hemphill",
+          "kind": "user"
+        }
+      ]
+    }
+  ],
+  "temporaryTokenRevocation": "confirmed by account owner",
+  "publicComposition": [
+    {
+      "artifact": "composition-ubuntu-latest-net8.0",
+      "artifactId": 13902085001,
+      "artifactSha256": "78779e89df8422bb6c3fee278cacc72205c914ba07a4d6f12dca37469ebda34b",
+      "mode": "public-registry",
+      "rid": "linux-x64",
+      "framework": "net8.0",
+      "nativeBinarySha256": "e8ad1ea3002e870cbd607bccb375d79c1d6eb95317ecd28326c2e71e5a852c8f",
+      "publicPackages": [
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-api",
+          "version": "0.2.0-alpha.1",
+          "sha256": "1fe7e440626b42d9fafee84b7ec1418b3255624a84eb299a7f914ece4a44c0ea"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-components",
+          "version": "0.2.0-alpha.1",
+          "sha256": "0e6ec1ba28a1483815c5b3ea09a35a1cb24fa9cb947dda07a1ad60d72b73196e"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-driver-keithley",
+          "version": "0.2.0-alpha.1",
+          "sha256": "e2f3fcbe4795a398ff8ec61c6fab13b8a4bfa132d5cfa03fed324e1b4124e709"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-driver-keysight",
+          "version": "0.2.0-alpha.1",
+          "sha256": "51a5cada77091e9b3e5eb952d32afd221a09e870ba4ed94f4798e43db88c1700"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-driver-rigol",
+          "version": "0.2.0-alpha.1",
+          "sha256": "7ad01f7f3af3762c990aa4bdfef336fba0503d2f25e1ad756d9aefd9f75ce98e"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-driver-siglent",
+          "version": "0.2.0-alpha.1",
+          "sha256": "50df4b8e3cebabe3c47bbfc5e27e820198e53969480f502d7a15bb81c25141fc"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-driver-tektronix",
+          "version": "0.2.0-alpha.1",
+          "sha256": "bc6a1cfee7a50f66c8e0fabb504b142c89ea8882deeea2bda047378e4ce3fb2f"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-runtime",
+          "version": "0.2.0-alpha.1",
+          "sha256": "7126f35d4b723455740e5d17e60555f69ab02c9678b75c1ffd9c06809ba4c32d"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-scpi",
+          "version": "0.2.0-alpha.1",
+          "sha256": "c26520b896d380deadae7ab194868b31d31f0827750b30019d2655e5b2bdd856"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-testkit",
+          "version": "0.2.0-alpha.1",
+          "sha256": "59f773c89a5bc11c6a70cbcc826481bc06f4f3ff642db1b9cf4ec6dadbfbaea7"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents",
+          "version": "0.2.0-alpha.1",
+          "sha256": "e2488f535d1d002e78318902b19143b65c6a5c25b78c8cc2422670028e36ef77"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Abstractions",
+          "version": "0.2.0-alpha.1",
+          "sha256": "6d56820d1eb9d919a9d65963da872b6d03cfa7181311ed0f3069cd98a3f7df4a"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Drivers.Keithley",
+          "version": "0.2.0-alpha.1",
+          "sha256": "5063a59447b3edef1d11137a7deb8f5a37de69b5ebad352e6243ae55364177d5"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Drivers.Keysight",
+          "version": "0.2.0-alpha.1",
+          "sha256": "f2bf57ed441bf46495063ea248c05d03869cac9ba03d1c73c54388038af8b5c0"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Drivers.Rigol",
+          "version": "0.2.0-alpha.1",
+          "sha256": "f4a58dc5b76a9a764c2af76cd5c63c30f7a2cdee49cd5a4d9bed560bf4071f5b"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Drivers.Siglent",
+          "version": "0.2.0-alpha.1",
+          "sha256": "1f3717d05f710a7c61a795e737f28d08f26c6e327ac4be7f97fbd05f937894fe"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Drivers.Tektronix",
+          "version": "0.2.0-alpha.1",
+          "sha256": "d244a3fa93d86cb2b423508ab22fcae4356de67abd7769b4902d322f41d34105"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Runtime",
+          "version": "0.2.0-alpha.1",
+          "sha256": "48a65f43c5766a60f87149413cd34cca99ab9d33a8db4c05e0a47add4a5e4e35"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Scpi",
+          "version": "0.2.0-alpha.1",
+          "sha256": "e77354d4c71045949ba585335385548bb4e4b4b53b3264c239dc34a63ee56c7f"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.TestKit",
+          "version": "0.2.0-alpha.1",
+          "sha256": "aae087ca4625f66ab6c5eca54d90ed633fb31af4fa3efc2ed2364f8f3e62ea26"
+        }
+      ],
+      "phases": [
+        {
+          "name": "rust-default",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-default.log",
+          "sha256": "6ff2a4e427b5f388240239f64c92a036bb112c7b47543168d2f68425e75aa885"
+        },
+        {
+          "name": "rust-default-clippy",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-default-clippy.log",
+          "sha256": "698c116c968d60bc5937aa5849b0f3c16b27542c766fc08d251c21a273337137"
+        },
+        {
+          "name": "rust-default-metadata",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-default-metadata.log",
+          "sha256": "a509a4265aec9244bfc45372d3ce8d870d1d6ae75bc8dd9cff0203f3b694146a"
+        },
+        {
+          "name": "rust-async",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-async.log",
+          "sha256": "9883023c935a405552bb45d1e80e7feb61a58e8179ced2b387338e133af1d0ed"
+        },
+        {
+          "name": "rust-async-clippy",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-async-clippy.log",
+          "sha256": "24bad9f8a729410edbc8ca493f983127b504187a3e4ca9ab9f1528c445cc9fdd"
+        },
+        {
+          "name": "rust-async-metadata",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-async-metadata.log",
+          "sha256": "304d0510ca5b75de830e8aa2d02aeffcf4101dbafd56ad3546e41cdb906e87a8"
+        },
+        {
+          "name": "native-publish",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "native-publish.log",
+          "sha256": "274189fddfb2143e8359ff8eaee4b207f3893bde2d012072141f16bf999fb434"
+        },
+        {
+          "name": "native-dependencies",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "native-dependencies.log",
+          "sha256": "06d8cd5e633c9fdf895719bdf142592bdf470005cea7cc5cd93f6333c6cfabac"
+        },
+        {
+          "name": "native-execute",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "native-execute.log",
+          "sha256": "bf37ef60b39038e81f567901d9fbe897c936fafefd967d3330daef2b1716b9c5"
+        },
+        {
+          "name": "native-lifecycle-repeat",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "native-lifecycle-repeat.log",
+          "sha256": "bf37ef60b39038e81f567901d9fbe897c936fafefd967d3330daef2b1716b9c5"
+        },
+        {
+          "name": "native-runtime-isolation",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "native-runtime-isolation.log",
+          "sha256": "bf37ef60b39038e81f567901d9fbe897c936fafefd967d3330daef2b1716b9c5"
+        },
+        {
+          "name": "negative-native-warning",
+          "exitCode": 1,
+          "expectedFailure": true,
+          "log": "negative-native-warning.log",
+          "sha256": "57c5485f0da03ce9911c3df779b92d313a2ba644e54c63352578f5508d6d9762"
+        }
+      ],
+      "status": "VERIFIED"
+    },
+    {
+      "artifact": "composition-ubuntu-latest-net10.0",
+      "artifactId": 13901547751,
+      "artifactSha256": "4f606ceecdc3bc547712f7d3f5670392a03486b0ac6e6d0907e6a0a3a8817e21",
+      "mode": "public-registry",
+      "rid": "linux-x64",
+      "framework": "net10.0",
+      "nativeBinarySha256": "c972ba66495c45353ed300fa91f3baa67a44c614b10bc4c7fa98fc651b7caca6",
+      "publicPackages": [
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-api",
+          "version": "0.2.0-alpha.1",
+          "sha256": "1fe7e440626b42d9fafee84b7ec1418b3255624a84eb299a7f914ece4a44c0ea"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-components",
+          "version": "0.2.0-alpha.1",
+          "sha256": "0e6ec1ba28a1483815c5b3ea09a35a1cb24fa9cb947dda07a1ad60d72b73196e"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-driver-keithley",
+          "version": "0.2.0-alpha.1",
+          "sha256": "e2f3fcbe4795a398ff8ec61c6fab13b8a4bfa132d5cfa03fed324e1b4124e709"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-driver-keysight",
+          "version": "0.2.0-alpha.1",
+          "sha256": "51a5cada77091e9b3e5eb952d32afd221a09e870ba4ed94f4798e43db88c1700"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-driver-rigol",
+          "version": "0.2.0-alpha.1",
+          "sha256": "7ad01f7f3af3762c990aa4bdfef336fba0503d2f25e1ad756d9aefd9f75ce98e"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-driver-siglent",
+          "version": "0.2.0-alpha.1",
+          "sha256": "50df4b8e3cebabe3c47bbfc5e27e820198e53969480f502d7a15bb81c25141fc"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-driver-tektronix",
+          "version": "0.2.0-alpha.1",
+          "sha256": "bc6a1cfee7a50f66c8e0fabb504b142c89ea8882deeea2bda047378e4ce3fb2f"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-runtime",
+          "version": "0.2.0-alpha.1",
+          "sha256": "7126f35d4b723455740e5d17e60555f69ab02c9678b75c1ffd9c06809ba4c32d"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-scpi",
+          "version": "0.2.0-alpha.1",
+          "sha256": "c26520b896d380deadae7ab194868b31d31f0827750b30019d2655e5b2bdd856"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-testkit",
+          "version": "0.2.0-alpha.1",
+          "sha256": "59f773c89a5bc11c6a70cbcc826481bc06f4f3ff642db1b9cf4ec6dadbfbaea7"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents",
+          "version": "0.2.0-alpha.1",
+          "sha256": "e2488f535d1d002e78318902b19143b65c6a5c25b78c8cc2422670028e36ef77"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Abstractions",
+          "version": "0.2.0-alpha.1",
+          "sha256": "6d56820d1eb9d919a9d65963da872b6d03cfa7181311ed0f3069cd98a3f7df4a"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Drivers.Keithley",
+          "version": "0.2.0-alpha.1",
+          "sha256": "5063a59447b3edef1d11137a7deb8f5a37de69b5ebad352e6243ae55364177d5"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Drivers.Keysight",
+          "version": "0.2.0-alpha.1",
+          "sha256": "f2bf57ed441bf46495063ea248c05d03869cac9ba03d1c73c54388038af8b5c0"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Drivers.Rigol",
+          "version": "0.2.0-alpha.1",
+          "sha256": "f4a58dc5b76a9a764c2af76cd5c63c30f7a2cdee49cd5a4d9bed560bf4071f5b"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Drivers.Siglent",
+          "version": "0.2.0-alpha.1",
+          "sha256": "1f3717d05f710a7c61a795e737f28d08f26c6e327ac4be7f97fbd05f937894fe"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Drivers.Tektronix",
+          "version": "0.2.0-alpha.1",
+          "sha256": "d244a3fa93d86cb2b423508ab22fcae4356de67abd7769b4902d322f41d34105"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Runtime",
+          "version": "0.2.0-alpha.1",
+          "sha256": "48a65f43c5766a60f87149413cd34cca99ab9d33a8db4c05e0a47add4a5e4e35"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Scpi",
+          "version": "0.2.0-alpha.1",
+          "sha256": "e77354d4c71045949ba585335385548bb4e4b4b53b3264c239dc34a63ee56c7f"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.TestKit",
+          "version": "0.2.0-alpha.1",
+          "sha256": "aae087ca4625f66ab6c5eca54d90ed633fb31af4fa3efc2ed2364f8f3e62ea26"
+        }
+      ],
+      "phases": [
+        {
+          "name": "rust-default",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-default.log",
+          "sha256": "bad7b6a4e9125fc8edb6fb26d8990b86679e64dfb8e37adb336c04932c8eea6c"
+        },
+        {
+          "name": "rust-default-clippy",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-default-clippy.log",
+          "sha256": "2368e6bb97aebff5380fd1899823382fa1a27f0f9a694a7b1c96abed1c2554eb"
+        },
+        {
+          "name": "rust-default-metadata",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-default-metadata.log",
+          "sha256": "a509a4265aec9244bfc45372d3ce8d870d1d6ae75bc8dd9cff0203f3b694146a"
+        },
+        {
+          "name": "rust-async",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-async.log",
+          "sha256": "4bc9af001ebe4793bfe616133cdf628859c34711b7328b3ab8c664b4f78ff5b8"
+        },
+        {
+          "name": "rust-async-clippy",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-async-clippy.log",
+          "sha256": "9cc23186a9f6fbee0d411f1e40910c61db265ee89a9c07e0de725bef995cf9a1"
+        },
+        {
+          "name": "rust-async-metadata",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-async-metadata.log",
+          "sha256": "304d0510ca5b75de830e8aa2d02aeffcf4101dbafd56ad3546e41cdb906e87a8"
+        },
+        {
+          "name": "native-publish",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "native-publish.log",
+          "sha256": "e6570b0f51fb1fbd67d98cf50a1edc56c211b24c824d81234dcee9ec85fafe15"
+        },
+        {
+          "name": "native-dependencies",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "native-dependencies.log",
+          "sha256": "b9da31a9009e9c3f4a43b6616b41ce9cbaccf17ba7242c7d0f718dad02a8f80c"
+        },
+        {
+          "name": "native-execute",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "native-execute.log",
+          "sha256": "bf37ef60b39038e81f567901d9fbe897c936fafefd967d3330daef2b1716b9c5"
+        },
+        {
+          "name": "native-lifecycle-repeat",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "native-lifecycle-repeat.log",
+          "sha256": "bf37ef60b39038e81f567901d9fbe897c936fafefd967d3330daef2b1716b9c5"
+        },
+        {
+          "name": "native-runtime-isolation",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "native-runtime-isolation.log",
+          "sha256": "bf37ef60b39038e81f567901d9fbe897c936fafefd967d3330daef2b1716b9c5"
+        },
+        {
+          "name": "negative-native-warning",
+          "exitCode": 1,
+          "expectedFailure": true,
+          "log": "negative-native-warning.log",
+          "sha256": "7b4980a1440a045f49ef8bdc624a9e24b5c80e4c2552fa724f98dd772c4dcf2b"
+        }
+      ],
+      "status": "VERIFIED"
+    },
+    {
+      "artifact": "composition-windows-latest-net8.0",
+      "artifactId": 13901448340,
+      "artifactSha256": "9f000aa3c909d57f14261b61c977dafd0b73b3506bae8b6cb0f462fa9f69cd4f",
+      "mode": "public-registry",
+      "rid": "win-x64",
+      "framework": "net8.0",
+      "nativeBinarySha256": "b86e6e378d9d2b2013348b6df54bd2bff6e7c06765761de3d2dfdca2de5aeb90",
+      "publicPackages": [
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-api",
+          "version": "0.2.0-alpha.1",
+          "sha256": "1fe7e440626b42d9fafee84b7ec1418b3255624a84eb299a7f914ece4a44c0ea"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-components",
+          "version": "0.2.0-alpha.1",
+          "sha256": "0e6ec1ba28a1483815c5b3ea09a35a1cb24fa9cb947dda07a1ad60d72b73196e"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-driver-keithley",
+          "version": "0.2.0-alpha.1",
+          "sha256": "e2f3fcbe4795a398ff8ec61c6fab13b8a4bfa132d5cfa03fed324e1b4124e709"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-driver-keysight",
+          "version": "0.2.0-alpha.1",
+          "sha256": "51a5cada77091e9b3e5eb952d32afd221a09e870ba4ed94f4798e43db88c1700"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-driver-rigol",
+          "version": "0.2.0-alpha.1",
+          "sha256": "7ad01f7f3af3762c990aa4bdfef336fba0503d2f25e1ad756d9aefd9f75ce98e"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-driver-siglent",
+          "version": "0.2.0-alpha.1",
+          "sha256": "50df4b8e3cebabe3c47bbfc5e27e820198e53969480f502d7a15bb81c25141fc"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-driver-tektronix",
+          "version": "0.2.0-alpha.1",
+          "sha256": "bc6a1cfee7a50f66c8e0fabb504b142c89ea8882deeea2bda047378e4ce3fb2f"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-runtime",
+          "version": "0.2.0-alpha.1",
+          "sha256": "7126f35d4b723455740e5d17e60555f69ab02c9678b75c1ffd9c06809ba4c32d"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-scpi",
+          "version": "0.2.0-alpha.1",
+          "sha256": "c26520b896d380deadae7ab194868b31d31f0827750b30019d2655e5b2bdd856"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-testkit",
+          "version": "0.2.0-alpha.1",
+          "sha256": "59f773c89a5bc11c6a70cbcc826481bc06f4f3ff642db1b9cf4ec6dadbfbaea7"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents",
+          "version": "0.2.0-alpha.1",
+          "sha256": "e2488f535d1d002e78318902b19143b65c6a5c25b78c8cc2422670028e36ef77"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Abstractions",
+          "version": "0.2.0-alpha.1",
+          "sha256": "6d56820d1eb9d919a9d65963da872b6d03cfa7181311ed0f3069cd98a3f7df4a"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Drivers.Keithley",
+          "version": "0.2.0-alpha.1",
+          "sha256": "5063a59447b3edef1d11137a7deb8f5a37de69b5ebad352e6243ae55364177d5"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Drivers.Keysight",
+          "version": "0.2.0-alpha.1",
+          "sha256": "f2bf57ed441bf46495063ea248c05d03869cac9ba03d1c73c54388038af8b5c0"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Drivers.Rigol",
+          "version": "0.2.0-alpha.1",
+          "sha256": "f4a58dc5b76a9a764c2af76cd5c63c30f7a2cdee49cd5a4d9bed560bf4071f5b"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Drivers.Siglent",
+          "version": "0.2.0-alpha.1",
+          "sha256": "1f3717d05f710a7c61a795e737f28d08f26c6e327ac4be7f97fbd05f937894fe"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Drivers.Tektronix",
+          "version": "0.2.0-alpha.1",
+          "sha256": "d244a3fa93d86cb2b423508ab22fcae4356de67abd7769b4902d322f41d34105"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Runtime",
+          "version": "0.2.0-alpha.1",
+          "sha256": "48a65f43c5766a60f87149413cd34cca99ab9d33a8db4c05e0a47add4a5e4e35"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Scpi",
+          "version": "0.2.0-alpha.1",
+          "sha256": "e77354d4c71045949ba585335385548bb4e4b4b53b3264c239dc34a63ee56c7f"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.TestKit",
+          "version": "0.2.0-alpha.1",
+          "sha256": "aae087ca4625f66ab6c5eca54d90ed633fb31af4fa3efc2ed2364f8f3e62ea26"
+        }
+      ],
+      "phases": [
+        {
+          "name": "rust-default",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-default.log",
+          "sha256": "ff2aa081b440ba2fc858507e818edb3676d617059d2e3014905ddc9aa92e3633"
+        },
+        {
+          "name": "rust-default-clippy",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-default-clippy.log",
+          "sha256": "0f7cb4e0778061fcf864976cc6c643854886817c05dc07a6fe00e932c08fd177"
+        },
+        {
+          "name": "rust-default-metadata",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-default-metadata.log",
+          "sha256": "548dbeaa120e074c98f64663e4a7355a01e3dd9d44bcb23737f3e3da7bbd822b"
+        },
+        {
+          "name": "rust-async",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-async.log",
+          "sha256": "8f054b2135a4464f90d3027e428380b30f71f84c4d3c445ebe497325e65c68a1"
+        },
+        {
+          "name": "rust-async-clippy",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-async-clippy.log",
+          "sha256": "6766e0d15f4ea6009bc636f541aaf9b26040a39c2cc97a465f3303045cfefd80"
+        },
+        {
+          "name": "rust-async-metadata",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-async-metadata.log",
+          "sha256": "a434901ca4aa8e31b015a57517b882438ddf7a3bbff5ebe4b22cf6883ba7158f"
+        },
+        {
+          "name": "native-publish",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "native-publish.log",
+          "sha256": "0f354614ff180099529595825f18a896f540bc4ae0fd5927fddc62b80f407fcb"
+        },
+        {
+          "name": "native-execute",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "native-execute.log",
+          "sha256": "6521b6320750650eed9261992b37738a6c9b2409f3fb43bc9d551ad2113c6160"
+        },
+        {
+          "name": "native-lifecycle-repeat",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "native-lifecycle-repeat.log",
+          "sha256": "6521b6320750650eed9261992b37738a6c9b2409f3fb43bc9d551ad2113c6160"
+        },
+        {
+          "name": "negative-native-warning",
+          "exitCode": 1,
+          "expectedFailure": true,
+          "log": "negative-native-warning.log",
+          "sha256": "b38a455b927577e361f013e1e6989570e979ae139bac64196bea117e79c9ecf7"
+        }
+      ],
+      "status": "VERIFIED"
+    },
+    {
+      "artifact": "composition-windows-latest-net10.0",
+      "artifactId": 13900564510,
+      "artifactSha256": "8583f3712d6efd315770e26b01bcd9c612af8bf1f0835506e3a68191622d23bd",
+      "mode": "public-registry",
+      "rid": "win-x64",
+      "framework": "net10.0",
+      "nativeBinarySha256": "4ae991765cc12a4ac3a83512d9c5a43956fc5a8070d637fc68c5c04f5f03e43f",
+      "publicPackages": [
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-api",
+          "version": "0.2.0-alpha.1",
+          "sha256": "1fe7e440626b42d9fafee84b7ec1418b3255624a84eb299a7f914ece4a44c0ea"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-components",
+          "version": "0.2.0-alpha.1",
+          "sha256": "0e6ec1ba28a1483815c5b3ea09a35a1cb24fa9cb947dda07a1ad60d72b73196e"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-driver-keithley",
+          "version": "0.2.0-alpha.1",
+          "sha256": "e2f3fcbe4795a398ff8ec61c6fab13b8a4bfa132d5cfa03fed324e1b4124e709"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-driver-keysight",
+          "version": "0.2.0-alpha.1",
+          "sha256": "51a5cada77091e9b3e5eb952d32afd221a09e870ba4ed94f4798e43db88c1700"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-driver-rigol",
+          "version": "0.2.0-alpha.1",
+          "sha256": "7ad01f7f3af3762c990aa4bdfef336fba0503d2f25e1ad756d9aefd9f75ce98e"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-driver-siglent",
+          "version": "0.2.0-alpha.1",
+          "sha256": "50df4b8e3cebabe3c47bbfc5e27e820198e53969480f502d7a15bb81c25141fc"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-driver-tektronix",
+          "version": "0.2.0-alpha.1",
+          "sha256": "bc6a1cfee7a50f66c8e0fabb504b142c89ea8882deeea2bda047378e4ce3fb2f"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-runtime",
+          "version": "0.2.0-alpha.1",
+          "sha256": "7126f35d4b723455740e5d17e60555f69ab02c9678b75c1ffd9c06809ba4c32d"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-scpi",
+          "version": "0.2.0-alpha.1",
+          "sha256": "c26520b896d380deadae7ab194868b31d31f0827750b30019d2655e5b2bdd856"
+        },
+        {
+          "ecosystem": "Cargo",
+          "name": "instrument-testkit",
+          "version": "0.2.0-alpha.1",
+          "sha256": "59f773c89a5bc11c6a70cbcc826481bc06f4f3ff642db1b9cf4ec6dadbfbaea7"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents",
+          "version": "0.2.0-alpha.1",
+          "sha256": "e2488f535d1d002e78318902b19143b65c6a5c25b78c8cc2422670028e36ef77"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Abstractions",
+          "version": "0.2.0-alpha.1",
+          "sha256": "6d56820d1eb9d919a9d65963da872b6d03cfa7181311ed0f3069cd98a3f7df4a"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Drivers.Keithley",
+          "version": "0.2.0-alpha.1",
+          "sha256": "5063a59447b3edef1d11137a7deb8f5a37de69b5ebad352e6243ae55364177d5"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Drivers.Keysight",
+          "version": "0.2.0-alpha.1",
+          "sha256": "f2bf57ed441bf46495063ea248c05d03869cac9ba03d1c73c54388038af8b5c0"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Drivers.Rigol",
+          "version": "0.2.0-alpha.1",
+          "sha256": "f4a58dc5b76a9a764c2af76cd5c63c30f7a2cdee49cd5a4d9bed560bf4071f5b"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Drivers.Siglent",
+          "version": "0.2.0-alpha.1",
+          "sha256": "1f3717d05f710a7c61a795e737f28d08f26c6e327ac4be7f97fbd05f937894fe"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Drivers.Tektronix",
+          "version": "0.2.0-alpha.1",
+          "sha256": "d244a3fa93d86cb2b423508ab22fcae4356de67abd7769b4902d322f41d34105"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Runtime",
+          "version": "0.2.0-alpha.1",
+          "sha256": "48a65f43c5766a60f87149413cd34cca99ab9d33a8db4c05e0a47add4a5e4e35"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.Scpi",
+          "version": "0.2.0-alpha.1",
+          "sha256": "e77354d4c71045949ba585335385548bb4e4b4b53b3264c239dc34a63ee56c7f"
+        },
+        {
+          "ecosystem": "NuGet",
+          "name": "InstrumentComponents.TestKit",
+          "version": "0.2.0-alpha.1",
+          "sha256": "aae087ca4625f66ab6c5eca54d90ed633fb31af4fa3efc2ed2364f8f3e62ea26"
+        }
+      ],
+      "phases": [
+        {
+          "name": "rust-default",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-default.log",
+          "sha256": "c9a435d11e7ff9c7c95c375f5d615a84b98b2824ab0b075a588eda3f8caedd93"
+        },
+        {
+          "name": "rust-default-clippy",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-default-clippy.log",
+          "sha256": "4995243f38576e5b37a99906c3f1d97bc4f28e026bfc5228438481e544f6f2e3"
+        },
+        {
+          "name": "rust-default-metadata",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-default-metadata.log",
+          "sha256": "548dbeaa120e074c98f64663e4a7355a01e3dd9d44bcb23737f3e3da7bbd822b"
+        },
+        {
+          "name": "rust-async",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-async.log",
+          "sha256": "3757008aaf44788153fdd8119a8bb39a4599f447e06070a7fee07010c9647688"
+        },
+        {
+          "name": "rust-async-clippy",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-async-clippy.log",
+          "sha256": "02b4e176db88a05ccaa235b1e653420e27c00262d82800414ba7ea2ab60aea32"
+        },
+        {
+          "name": "rust-async-metadata",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "rust-async-metadata.log",
+          "sha256": "a434901ca4aa8e31b015a57517b882438ddf7a3bbff5ebe4b22cf6883ba7158f"
+        },
+        {
+          "name": "native-publish",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "native-publish.log",
+          "sha256": "e851b81f720c095c4f5592156f3c07dae5dc2c32b8f05c62e1f54cb1c32f8dc8"
+        },
+        {
+          "name": "native-execute",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "native-execute.log",
+          "sha256": "6521b6320750650eed9261992b37738a6c9b2409f3fb43bc9d551ad2113c6160"
+        },
+        {
+          "name": "native-lifecycle-repeat",
+          "exitCode": 0,
+          "expectedFailure": false,
+          "log": "native-lifecycle-repeat.log",
+          "sha256": "6521b6320750650eed9261992b37738a6c9b2409f3fb43bc9d551ad2113c6160"
+        },
+        {
+          "name": "negative-native-warning",
+          "exitCode": 1,
+          "expectedFailure": true,
+          "log": "negative-native-warning.log",
+          "sha256": "d4b689a240a0e0748d7f6a043fd7f7b2ffb963e49966f46a1e3271d119912a6f"
+        }
+      ],
+      "status": "VERIFIED"
+    }
+  ]
+}

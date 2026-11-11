@@ -5,7 +5,8 @@ async ({policy, apply}) => {
     const data = initialData;
     if (data.PackagePushScope !== 'package:push' || !Array.isArray(data.PackageOwners) || !Array.isArray(data.Policies)) throw Error('Unsupported policy-editor version; no policy changed');
     const owner = data.PackageOwners.find(p => p.Owner.toLowerCase() === policy.owner.toLowerCase());
-    if (!owner?.CanPushNew || !owner?.CanPushExisting) throw Error('Selected NuGet owner requires new-package and version-push permissions');
+    if (!owner) return {policy:policy.name,status:'OWNER_NOT_AVAILABLE',owner:policy.owner,availableOwners:data.PackageOwners.map(p=>p.Owner)};
+    if (owner.CanPushNew !== true || owner.CanPushExisting !== true) return {policy:policy.name,status:'OWNER_PERMISSIONS_REVIEW_REQUIRED',owner:owner.Owner,canPushNew:owner.CanPushNew===true,canPushExisting:owner.CanPushExisting===true};
     const expected = {
         Name: 'GitHubActions', RepositoryOwner: policy.repositoryOwner,
         RepositoryOwnerId: String(policy.repositoryOwnerId), Repository: policy.repository,

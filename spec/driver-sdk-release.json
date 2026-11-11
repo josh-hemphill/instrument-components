@@ -28,6 +28,6 @@
   "publicationRequiresHardwareEvidence": false,
   "hardwareValidated": false,
   "devicePackageCutoverComplete": true,
-  "previewPublished": false,
-  "publicRegistryValidated": false
+  "previewPublished": true,
+  "publicRegistryValidated": true
 }

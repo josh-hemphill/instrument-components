@@ -8,6 +8,7 @@ The **0.2.0-alpha.1 API is a breaking preview**. Source-derived external drivers
 - [Getting started](docs-site/docs/getting-started.md)
 - [Architecture and delivery](docs/device-driver-sdk.md)
 - [Device package delivery status](docs/device-package-delivery.md)
+- [Public alpha release evidence](spec/public-release-evidence.json)
 - [Publisher setup automation](tools/publisher-setup/README.md)
 
 Build without external device repositories:

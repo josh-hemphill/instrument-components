@@ -19,6 +19,12 @@ workflows. Keep this manifest and those filenames synchronized.
 Run on a machine with a visible desktop and Python 3.11 or newer. Use the NuGet
 account that owns the existing InstrumentComponents packages; the manifest
 currently names `josh-hemphill`. No NuGet API key is needed.
+The NuGet owner name may differ from the GitHub owner name. If it does, update
+`nugetAccount` and each NuGet policy's `owner` in the manifest to the confirmed
+NuGet owner; keep the GitHub repository owner fields as they are. The helper
+reports `OWNER_NOT_AVAILABLE` with the available NuGet owner names, or
+`OWNER_PERMISSIONS_REVIEW_REQUIRED` with the missing push permissions, and stops
+without creating policies. These statuses return exit code 2.
 
 ```sh
 python -m pip install playwright
@@ -39,13 +45,52 @@ and same-origin requests. The profile is deleted when the browser closes. It doe
 not export cookies or session credentials. You can select an existing Chromium
 installation with `--browser-executable /path/to/chromium`.
 
+On Linux, the helper also puts Chrome's configuration, cache, launcher data, and
+crash-report paths inside the temporary directory. This allows graphical login
+when the regular home configuration directories are read-only in a sandbox.
+It waits for Microsoft sign-in to return to NuGet before checking the policy
+editor, so the login page's content security policy is respected.
+
+If the graphical browser's GPU process crashes with the Linux graphics driver,
+use software rendering and X11 (requires a working X11/XWayland display):
+
+```sh
+python tools/publisher-setup/provision.py --service nuget --browser-executable /usr/bin/google-chrome --browser-arg=--disable-gpu --browser-arg=--ozone-platform=x11
+```
+
+These flags affect only this browser launch. Policy lookup failures include a
+fixed diagnostic reason in the progress report without exporting page contents
+or credentials.
+
+### Hardware security keys on Linux
+
+A browser launched inside a task sandbox may not see `/dev/hidraw*`, even when
+the host detects a USB YubiKey. FIDO/WebAuthn needs access to the key's HID device;
+a writable temporary browser profile does not supply that access. In this
+environment, the YubiKey FIDO device was readable and writable by the desktop
+user on the host but absent inside the task sandbox. This is a concrete blocker
+to hardware-key sign-in; an actual passkey sign-in outside the task sandbox is
+still needed to verify the complete flow.
+
+Use regular Chrome launched from the desktop for crates.io/GitHub sign-in with
+the YubiKey. For the crates.io helper, that browser is needed only to obtain the
+short-lived configuration token described below; the batch itself uses the
+token and does not automate GitHub sign-in. Keep the token out of chat, source
+files, and shell history. Do not copy the regular browser profile or export its
+cookies, change system-wide device permissions, or disable FIDO authentication
+to work around a task sandbox that hides hardware devices.
+
+References: [Yubico FIDO HID access rules](https://github.com/Yubico/libfido2/blob/main/udev/70-u2f.rules)
+and [GitHub passkey sign-in](https://docs.github.com/en/authentication/authenticating-with-a-passkey/signing-in-with-a-passkey).
+
 Existing matching policies are preserved. The account page currently supplies
 localized scope descriptions, so the helper may report
 `EXISTING_SCOPE_REVIEW_REQUIRED` instead of guessing that an existing policy is
 correct. Check that its owner, repository numeric IDs, workflow, enabled state,
 exact package subjects, and push scope match the plan. Broad existing policies
 are never silently accepted or narrowed. A newly created policy is checked
-against the requested identity and package set. Confirm activation on the account
+against the requested identity and package set, then read back after reloading
+the account page with the same policy ID. Confirm activation on the account
 page; creating a policy alone is not evidence of a successful OIDC publication.
 
 ## crates.io: temporary policy-configuration token
@@ -64,6 +109,18 @@ variable `CRATES_IO_TRUSTED_PUBLISHING_TOKEN` through your terminal's secret-inp
 facility or an environment secret. Do not paste it into chat, source files, or
 shell command history.
 
+Alternatively, run with `--prompt-token` in an interactive terminal. The helper
+reads the token with a hidden prompt and keeps it only in process memory:
+
+```sh
+python tools/publisher-setup/provision.py --service crates --apply --prompt-token --report crates-policy-report.json
+```
+
+For the initial three existing crates, select only `trusted-publishing`
+("Manage trusted publishing configurations") and restrict the token to the exact
+names `instrument-core`, `instrument-visa`, and `instrument-components`. Use a
+short expiration and revoke it after this batch. No publish permission is needed.
+
 ```sh
 python tools/publisher-setup/provision.py --service crates
 python tools/publisher-setup/provision.py --service crates --apply --report crates-policy-report.json
@@ -72,6 +129,8 @@ python tools/publisher-setup/provision.py --service crates --apply --report crat
 Revoke the temporary token after the batch. After the initial publications,
 rerun the batch with a configuration token scoped to the newly created names.
 Routine subsequent releases use GitHub OIDC, without a standing publish token.
+A newly created crate policy is read back and matched by policy ID, exact
+configuration, and numeric GitHub owner ID before it is reported as created.
 A publish-only token cannot configure trusted-publisher policies. The helper
 returns exit code 2 when first publication, authentication, or scope review is
 still required; otherwise failures return a nonzero code and stop the batch.
@@ -84,7 +143,7 @@ remain untouched.
 python -m unittest discover -s tools/publisher-setup -p 'test_*.py' -v
 ```
 
-The thirteen-test offline suite needs Node.js for its isolated NuGet account-page fixture. It
+The offline suite needs Node.js for its isolated NuGet account-page fixture. It
 checks exact scope, dry runs, repeated runs, existing/conflicting/disabled
 policies, origin restrictions, pagination, errors and returned policy identity.
 It performs no authentication, publication or registry writes.
@@ -115,6 +174,16 @@ One batch configures the initial secret, preserving any existing secret:
 python tools/publisher-setup/bootstrap-secrets.py
 python tools/publisher-setup/bootstrap-secrets.py --apply
 ```
+
+To enter the first-publication token without setting an environment variable,
+use the hidden prompt in an interactive terminal:
+
+```sh
+python tools/publisher-setup/bootstrap-secrets.py --apply --prompt-token
+```
+
+This prompt sends the token only on the GitHub CLI's standard input and does
+not export it into the environment or print it in reports.
 
 This creates no release tags and publishes nothing. Release the SDK preview
 first, then the facade/integration packages, then the five driver previews.

@@ -3,7 +3,7 @@
 The independently versioned SDK implements synchronous, native async and dedicated
 worker device composition in Rust and .NET. Its production packages are independent
 of `instrument-core` / `InstrumentComponents`, VISA and vendor implementations.
-Version `0.2.0-alpha.1` is a prepared preview, not a published stable contract.
+Version `0.2.0-alpha.1` is a published breaking alpha preview. Physical hardware validation remains unperformed.
 Internal Cargo and NuGet package dependencies pin that exact preview revision;
 package proofs inspect the real emitted dependency ranges without strengthening them.
 The facade and OpenTAP now use explicitly registered protocol-neutral handles. The old device-aware facade has been removed.
@@ -282,8 +282,9 @@ SDK deployment prerequisites remain the external repository's responsibility.
 Implemented in this checkout: independently versioned preview contracts/runtime,
 eight typed classes, standards-only explicit-profile SCPI interpreter, generator,
 schema, TestKit, all-mode synthetic tests, portable package/AOT proof and release
-assets. The release manifest is `spec/driver-sdk-release.json`; publication has
-not happened merely because pack/publish tooling exists.
+assets. The release manifest is `spec/driver-sdk-release.json`. The completed
+`0.2.0-alpha.1` public release and consumer execution are recorded in
+[`spec/public-release-evidence.json`](../spec/public-release-evidence.json).
 
 Implemented across five external repositories: all source model/USB hints, source-derived operation profiles, endpoint-specific inventory bindings and independently specified wire cases. The main facade/discovery/OpenTAP consume registered neutral handles; vendor tables, device exceptions and legacy device fixtures have moved out of main production sources and artifacts. See `spec/device-extraction-index.json` for ownership and disposition counts.
 

@@ -5,6 +5,7 @@ Crates.io supports a scoped configuration token. NuGet account policy management
 uses its authenticated UI session, retained only inside an ephemeral browser.
 """
 import argparse
+import getpass
 import json
 import os
 from pathlib import Path
@@ -111,35 +112,82 @@ def provision_crates(manifest,client,apply=False,progress=None):
         if status!=200 or not same_crate_policy(row,policy) or row.get('repository_owner_id')!=manifest['githubOwnerId']:
             record(dict(package=name,status='CREATION_VERIFICATION_REQUIRED',httpStatus=status))
             return results
-        record(dict(package=name,status='CREATED',policyId=created['github_config']['id']))
+        policy_id=row['id']
+        try:read_status,read_rows=client.policies(name)
+        except (OSError,ValueError):
+            record(dict(package=name,status='CREATION_VERIFICATION_REQUIRED',policyId=policy_id,verificationStatus='LOOKUP_FAILED'))
+            return results
+        if read_status!=200 or not any(r.get('id')==policy_id and same_crate_policy(r,policy) and r.get('repository_owner_id')==manifest['githubOwnerId'] for r in read_rows):
+            record(dict(package=name,status='CREATION_VERIFICATION_REQUIRED',policyId=policy_id,httpStatus=read_status))
+            return results
+        record(dict(package=name,status='CREATED',policyId=policy_id,verifiedAfterLookup=True))
     return results
 
-async def provision_nuget(manifest,apply,executable=None,progress=None):
+def nuget_error_reason(error):
+    # Only expose fixed diagnostics from our own helper, never arbitrary page
+    # content, response bodies, cookies, or credentials from browser exceptions.
+    message=str(error)
+    for reason in [
+        'NuGet account policy editor required',
+        'Unsupported policy-editor version; no policy changed',
+        'Selected NuGet owner requires new-package and version-push permissions',
+        'Policy name already has different repository/workflow criteria',
+        'Cross-origin policy endpoint refused',
+    ]:
+        if reason in message:return reason
+    if 'TypeError' in message:return 'Account-page data has unexpected field types'
+    if 'SyntaxError' in message:return 'Policy helper could not be evaluated'
+    return 'Unexpected browser or account-page error'
+
+async def provision_nuget(manifest,apply,executable=None,progress=None,browser_args=None):
     try:from playwright.async_api import async_playwright
     except ImportError:raise ValueError('Install optional browser dependency: python -m pip install playwright; python -m playwright install chromium')
     # No cookies/tokens are exported, logged, or committed. User signs in through
     # the normal visible Microsoft/NuGet login. The temporary browser closes after
     # the batch and its private profile directory is deleted.
     with tempfile.TemporaryDirectory(prefix='instrument-publisher-login-') as profile:
+        browser_env=dict(os.environ)
+        if sys.platform.startswith('linux'):
+            # --user-data-dir does not relocate Chrome's crash reporter or its
+            # launcher XDG files. Keep those writable and temporary as well.
+            for variable,folder in [('XDG_CONFIG_HOME','config'),('XDG_CACHE_HOME','cache'),('XDG_DATA_HOME','data'),('CHROME_CONFIG_HOME','chrome-config')]:
+                directory=Path(profile)/folder;directory.mkdir(mode=0o700)
+                browser_env[variable]=str(directory)
         async with async_playwright() as playwright:
-            context=await playwright.chromium.launch_persistent_context(profile,headless=False,executable_path=executable)
+            context=await playwright.chromium.launch_persistent_context(profile,headless=False,executable_path=executable,env=browser_env,args=browser_args or [])
             try:
                 page=await context.new_page();await page.goto('https://www.nuget.org/account/TrustedPublishing')
                 print('Complete NuGet sign-in in the visible browser. Waiting for the account policy editor; no packages will be published.',flush=True)
+                # Microsoft login pages prohibit the eval used by wait_for_function.
+                # Wait for the redirect back to NuGet before checking its globals.
+                await page.wait_for_url('https://www.nuget.org/account/TrustedPublishing',timeout=0)
                 await page.wait_for_function("location.origin==='https://www.nuget.org' && typeof initialData==='object' && Array.isArray(initialData.Policies) && typeof window.nuget?.addAjaxAntiForgeryToken==='function'",timeout=0)
                 results=[];script=(Path(__file__).parent/'nuget-policy.js').read_text(encoding='utf-8')
                 for policy in manifest['nuget']:
                     try:result=await page.evaluate(script,dict(policy=policy,apply=apply))
                     except Exception as error:
-                        results.append(dict(policy=policy['name'],status='CREATION_OUTCOME_UNKNOWN' if apply else 'LOOKUP_FAILED'))
+                        reason=nuget_error_reason(error)
+                        results.append(dict(policy=policy['name'],status='CREATION_OUTCOME_UNKNOWN' if apply else 'LOOKUP_FAILED',reason=reason))
                         if progress:progress(results)
-                        raise ValueError('Account-page request failed; inspect saved progress and the policy page before retrying') from error
+                        raise ValueError(reason+'; inspect saved progress and the policy page before retrying') from error
                     results.append(result)
                     if progress:progress(results)
                     print(json.dumps(result),flush=True)
-                    if result['status']=='CREATION_VERIFICATION_REQUIRED':return results
+                    if result['status'] in ['CREATION_VERIFICATION_REQUIRED','OWNER_NOT_AVAILABLE','OWNER_PERMISSIONS_REVIEW_REQUIRED']:return results
                     if result['status']=='CREATED':
-                        await page.reload();await page.wait_for_function("typeof initialData==='object' && Array.isArray(initialData.Policies)")
+                        try:
+                            await page.reload();await page.wait_for_function("typeof initialData==='object' && Array.isArray(initialData.Policies)")
+                            verification=await page.evaluate(script,dict(policy=policy,apply=False))
+                        except Exception as error:
+                            result.update(status='CREATION_VERIFICATION_REQUIRED',reason=nuget_error_reason(error))
+                            if progress:progress(results)
+                            return results
+                        if verification['status']!='ALREADY_CONFIGURED' or verification.get('policyId')!=result['policyId']:
+                            result.update(status='CREATION_VERIFICATION_REQUIRED',verificationStatus=verification['status'])
+                            if progress:progress(results)
+                            return results
+                        result['verifiedAfterReload']=True
+                        if progress:progress(results)
                 return results
             finally:await context.close()
 
@@ -149,8 +197,12 @@ def main():
     parser.add_argument('--service',choices=['plan','crates','nuget'],default='plan')
     parser.add_argument('--apply',action='store_true',help='Create missing policies; never replace or delete existing policies')
     parser.add_argument('--browser-executable')
+    parser.add_argument('--browser-arg',action='append',default=[],help='Additional browser flag; repeat as --browser-arg=--flag')
+    parser.add_argument('--prompt-token',action='store_true',help='For crates, prompt without echo if the configuration-token environment variable is unset')
     parser.add_argument('--report',type=Path,help='Save per-policy progress atomically, including partial/uncertain writes')
-    args=parser.parse_args();manifest=load(args.manifest)
+    args=parser.parse_args()
+    if args.prompt_token and args.service!='crates':parser.error('--prompt-token is only supported with --service crates')
+    manifest=load(args.manifest)
     if args.service=='plan':print(json.dumps(manifest,indent=2));return
     def progress(rows):
         document=dict(service=args.service,applied=args.apply,policies=rows)
@@ -161,13 +213,17 @@ def main():
             temporary.write_text(json.dumps(document,indent=2)+'\n',encoding='utf-8');temporary.replace(args.report)
     if args.service=='crates':
         token=os.environ.get(TOKEN_VARIABLE)
+        if not token and args.prompt_token:
+            if not sys.stdin.isatty():raise ValueError('--prompt-token requires an interactive terminal; no token was read')
+            token=getpass.getpass('Short-lived crates.io trusted-publishing configuration token (hidden): ')
+            if not token:raise ValueError('No configuration token supplied')
         if token and any(c.isspace() for c in token):raise ValueError('Invalid scoped configuration token')
         results=provision_crates(manifest,Crates(token),args.apply,progress)
     else:
         import asyncio
-        results=asyncio.run(provision_nuget(manifest,args.apply,args.browser_executable,progress))
+        results=asyncio.run(provision_nuget(manifest,args.apply,args.browser_executable,progress,browser_args=args.browser_arg))
     print(json.dumps(dict(service=args.service,applied=args.apply,policies=results),indent=2))
-    if any(r['status'] in ['AUTHENTICATION_REQUIRED','FIRST_PUBLICATION_REQUIRED','EXISTING_SCOPE_REVIEW_REQUIRED','EXISTING_IDENTITY_REVIEW_REQUIRED','CREATION_VERIFICATION_REQUIRED','CREATION_OUTCOME_UNKNOWN','LOOKUP_FAILED'] for r in results):sys.exit(2)
+    if any(r['status'] in ['AUTHENTICATION_REQUIRED','FIRST_PUBLICATION_REQUIRED','EXISTING_SCOPE_REVIEW_REQUIRED','EXISTING_IDENTITY_REVIEW_REQUIRED','CREATION_VERIFICATION_REQUIRED','CREATION_OUTCOME_UNKNOWN','LOOKUP_FAILED','OWNER_NOT_AVAILABLE','OWNER_PERMISSIONS_REVIEW_REQUIRED'] for r in results):sys.exit(2)
 
 if __name__=='__main__':
     try:main()
