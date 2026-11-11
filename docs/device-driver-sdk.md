@@ -348,3 +348,5 @@ The facade and OpenTAP now consume explicitly registered protocol-neutral handle
 SCPI factories now accept immutable endpoint-specific profiles under one canonical ID. They select the endpoint profile and reject missing required operations before connector IO. Supported channels and complete outputs remain distinct. External `ConnectionBinding` wrappers apply model-owned token and shutdown plans; the shared interpreter knows no model names.
 
 Publisher provisioning automation is in `tools/publisher-setup`. Policy setup, first publication, public-registry consumer validation, and physical evidence remain separate gates. The helper does not publish packages.
+
+Channel-bearing plans require a nonempty explicit supported-channel inventory; a known-empty set cannot advertise an operation with no valid request. Empty channel sets remain valid for non-channel DMM operations and metadata-only ChannelCount with a complete empty output inventory. This is checked consistently by the Python tool and Rust/C# constructors before connector IO.

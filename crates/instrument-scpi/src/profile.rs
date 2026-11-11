@@ -251,8 +251,12 @@ impl Profile {
                 {
                     return Err(invalid("required argument ignored by plan"));
                 }
-                if parameter.kind == ParameterKind::Channel && channels.is_none() {
-                    return Err(invalid("channel operations require explicit inventory"));
+                if parameter.kind == ParameterKind::Channel
+                    && channels.as_ref().is_none_or(Vec::is_empty)
+                {
+                    return Err(invalid(
+                        "channel operations require a nonempty explicit inventory",
+                    ));
                 }
             }
             for (name, map) in &plan.tokens {

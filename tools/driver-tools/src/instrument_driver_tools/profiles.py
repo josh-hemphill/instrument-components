@@ -95,8 +95,8 @@ def validate(data, schema_path=None):
             for key, typ in params.items():
                 if typ != 'optional_number' and key not in used:
                     raise ValueError('Required argument ignored by plan')
-                if typ == 'channel' and channels is None:
-                    raise ValueError('Channel operation requires explicit inventory')
+                if typ == 'channel' and not channels:
+                    raise ValueError('Channel operation requires a nonempty explicit inventory')
                 if typ in ('boolean', 'symbol', 'waveform', 'power_unit', 'sense_mode') and key not in tokens:
                     raise ValueError('Missing semantic token mapping')
             for key, mapping in tokens.items():

@@ -40,6 +40,19 @@ pub mod endpoint_proof {
     }
     fn setup() -> Result<(Profile, Profile, Connections)> {
         let original = super::generated_profiles::profiles()?.remove(0);
+        // A known-empty domain cannot advertise any channel-bearing operation.
+        let mut checked=0;
+        for plan in original.plans().filter(|p|p.operation.metadata().parameters.iter().any(|a|a.kind==ParameterKind::Channel)) {
+            let result=Profile::new("synthetic.empty-channels",Some(vec![]),None,vec![plan.clone()]);
+            assert_eq!(result.err().unwrap().kind,ErrorKind::DriverContractViolation);checked+=1;
+        }
+        assert!(checked>0);
+        assert_eq!(original.bind_inventory(&InventoryBinding{channels:Some(vec![]),outputs:None},Some(vec![])).err().unwrap().kind,ErrorKind::DriverContractViolation);
+        // Empty channel sets are valid when operations have no channel argument.
+        let dmm=original.plans().find(|p|p.operation==CatalogOperation::DmmMeasureVoltageDc).unwrap().clone();
+        Profile::new("synthetic.outputless-dmm",Some(vec![]),Some(vec![]),vec![dmm])?;
+        let count=original.plans().find(|p|p.operation==CatalogOperation::DcPowerSupplyChannelCount).unwrap().clone();
+        Profile::new("synthetic.empty-count",Some(vec![]),Some(vec![]),vec![count])?;
         let unknown = original.bind_inventory(
             &InventoryBinding {
                 channels: Some(vec![1]),

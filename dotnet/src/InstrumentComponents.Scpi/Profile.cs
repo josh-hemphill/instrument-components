@@ -126,7 +126,7 @@ public sealed class ScpiProfile
             foreach (var p in metadata.Parameters)
             {
                 if (p.Kind != ParameterKind.OptionalNumber && !used.Contains(p.Name)) throw Invalid("Required argument ignored by plan");
-                if (p.Kind == ParameterKind.Channel && Channels is null) throw Invalid("Channel operation requires explicit inventory");
+                if (p.Kind == ParameterKind.Channel && (Channels is null || Channels.Count == 0)) throw Invalid("Channel operation requires a nonempty explicit inventory");
                 if (p.Kind is ParameterKind.Boolean or ParameterKind.Symbol or ParameterKind.Waveform or ParameterKind.PowerUnit or ParameterKind.SenseMode && !tokens.ContainsKey(p.Name)) throw Invalid("Semantic arguments require wire token mapping");
             }
             foreach (var entry in tokens)

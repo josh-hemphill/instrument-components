@@ -10,6 +10,12 @@ internal static class EndpointProof
         for(var variant=0;variant<5;variant++){
             var mode=variant==4?1:variant;
             var source=GeneratedDrivers.GeneratedProfiles.Create().Single();
+            var channelPlans=source.OperationPlans.Where(p=>p.Operation.Describe().Parameters.Any(a=>a.Kind==ParameterKind.Channel)).ToArray();
+            Require(channelPlans.Length>0,"Missing empty-channel coverage");
+            foreach(var plan in channelPlans)ExpectInvalid(()=>new ScpiProfile("synthetic.empty-channels",[],null,[plan]));
+            ExpectInvalid(()=>source.BindInventory(new([],null),[]));
+            _=new ScpiProfile("synthetic.outputless-dmm",[],[],[source.OperationPlans.Single(p=>p.Operation==CatalogOperation.DmmMeasureVoltageDc)]);
+            _=new ScpiProfile("synthetic.empty-count",[],[],[source.OperationPlans.Single(p=>p.Operation==CatalogOperation.DcPowerSupplyChannelCount)]);
             var unknown=source.BindInventory(new([1],null),[]);
             var known=source.BindInventory(new([1,3],[new(OutputKind.DcPowerSupply,1),new(OutputKind.DcPowerSupply,3),new(OutputKind.FunctionGenerator)]),[]);
             var a=new Script([ScriptStep.Write(":TEST:DcPowerSupplyOutputEnable 1,OFF"),ScriptStep.Write(":TEST:DcPowerSupplyOutputEnable 3,OFF"),ScriptStep.Write(":TEST:FunctionGeneratorOutputEnable OFF"),ScriptStep.Close()]);

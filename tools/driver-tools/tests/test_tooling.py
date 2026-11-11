@@ -19,6 +19,16 @@ from instrument_driver_tools.profiles import validate,emit,catalogue
 class ToolingTests(unittest.TestCase):
     def setUp(self):
         self.profiles=json.loads((ROOT/'validation/scpi/profiles.json').read_text(encoding='utf-8'))
+    def test_known_empty_channels_reject_channel_plans_but_allow_outputless_operations(self):
+        operations={op['id']:op for op in catalogue()['operations']};source=self.profiles['profiles'][0];checked=0
+        for plan in source['plans']:
+            if not any(p['type']=='channel' for p in operations[plan['operation']]['parameters']):continue
+            data=copy.deepcopy(self.profiles);data['profiles'][0].update(channels=[],outputs=None,plans=[copy.deepcopy(plan)])
+            with self.assertRaisesRegex(ValueError,'nonempty explicit inventory'):validate(data)
+            checked+=1
+        self.assertGreater(checked,0)
+        for operation in ['DmmMeasureVoltageDc','DcPowerSupplyChannelCount']:
+            data=copy.deepcopy(self.profiles);data['profiles'][0].update(channels=[],outputs=[],plans=[copy.deepcopy(next(p for p in source['plans'] if p['operation']==operation))]);validate(data)
     def test_bundle_has_semantic_contract_without_private_source_paths(self):
         source=json.loads((ROOT/'spec/driver-operations.json').read_text(encoding='utf-8'))
         source['operations']=[{k:v for k,v in op.items() if k!='source'} for op in source['operations']]
