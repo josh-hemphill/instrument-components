@@ -1,7 +1,5 @@
 {
   "schemaVersion": 1,
-  "proposedOwner": "josh-hemphill",
-  "proposedVisibility": "public",
   "manufacturers": {
     "Keysight Technologies": "instrument-components-keysight",
     "Agilent Technologies": "instrument-components-keysight",
@@ -17,15 +15,15 @@
     "keysight_xseries": "instrument-components-keysight",
     "rigol_dsa": "instrument-components-rigol"
   },
-  "note": "Proposed external repo names; not created. Independently version family packages inside each vendor repo. Proprietary implementations require separate private repositories when introduced.",
+  "note": "All five repositories created and accessible; draft source-derived Rust/.NET package PRs open. Hardware evidence and public preview publication pending. Independent private proprietary packages can use the same public contracts.",
   "behaviorMigration": [
     {
-      "migration": "external Keysight package; explicit Internal/External only after transcripts/specification; no inferred hardware support",
+      "migration": "N6705 boolean sense remains unsupported; source has no validated ON/OFF mapping. No new Internal/External command is invented.",
       "sourceBehavior": "explicit unsupported; no write",
       "subject": "N6705 boolean sense"
     },
     {
-      "migration": "no silent fallback in new interpreter; real driver must explicitly implement and validate ranged support",
+      "migration": "External DMM6500 explicitly implements un-ranged compound plans and legacy generic ranged plans as source-derived behavior; no core fallback.",
       "sourceBehavior": "legacy generic fallback exists for ranged template mismatch",
       "subject": "DMM6500 ranged measure"
     },
@@ -39,5 +37,7 @@
       "sourceBehavior": "shared session output inventory/state",
       "subject": "PSU outputs and channel tracking"
     }
-  ]
+  ],
+  "owner": "josh-hemphill",
+  "visibility": "public"
 }

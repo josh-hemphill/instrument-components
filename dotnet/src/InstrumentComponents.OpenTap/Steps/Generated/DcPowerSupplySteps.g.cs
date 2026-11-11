@@ -133,7 +133,8 @@ public sealed class PsuReadCurrentStep : OptionalLimitStep<DcPowerSupplyInstrume
         if (!TryGetInstrument(out var instrument))
             return;
 
-        PublishScalar("Current", instrument.Supply.ReadCurrent(Channel), "A");
+        var quantity = instrument.Supply.ReadCurrent(Channel);
+        PublishScalar("Current", quantity, PhaseIResults.UnitSymbol(quantity.Unit));
     }
 }
 
@@ -153,7 +154,8 @@ public sealed class PsuReadVoltageStep : OptionalLimitStep<DcPowerSupplyInstrume
         if (!TryGetInstrument(out var instrument))
             return;
 
-        PublishScalar("Voltage", instrument.Supply.ReadVoltage(Channel), "V");
+        var quantity = instrument.Supply.ReadVoltage(Channel);
+        PublishScalar("Voltage", quantity, PhaseIResults.UnitSymbol(quantity.Unit));
     }
 }
 
@@ -171,6 +173,7 @@ public sealed class PsuSetCurrentLimitStep : InstrumentBoundStep<DcPowerSupplyIn
     {
         Rules.Add(() => Channel >= 1, "Channel must be at least 1.", nameof(Channel));
         Rules.Add(() => double.IsFinite(CurrentLimit), "Current limit must be a finite number.", nameof(CurrentLimit));
+        Rules.Add(() => (CurrentLimit >= 0), "Current limit violates the operation's nonnegative constraint.", nameof(CurrentLimit));
     }
 
     public override void Run()

@@ -14,7 +14,7 @@ public sealed partial class DriverRegistry
         if (!registration.Modes.Contains(ExecutionMode.NativeAsync)) throw Error(DriverErrorKind.UnsupportedExecutionMode, "Native async unavailable.");
         var requested = (required ?? []).ToFrozenSet();
         if (!requested.IsSubsetOf(registration.Descriptor.Operations)) throw Error(DriverErrorKind.UnsupportedOperation, "Required operation outside envelope.");
-        var backend = await registration.Factory.OpenNativeAsync(new(candidate, ownership), cancellationToken).ConfigureAwait(false);
+        var backend = await registration.Factory.OpenNativeAsync(new(candidate, ownership, requested), cancellationToken).ConfigureAwait(false);
         try
         {
             cancellationToken.ThrowIfCancellationRequested();

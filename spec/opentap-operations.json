@@ -7,30 +7,40 @@
       "stepTypeName": "IdentityQueryStep",
       "implementation": "handwritten",
       "kind": "utility",
-      "instrumentKind": "Scpi",
-      "instrumentType": "ScpiInstrument",
+      "instrumentKind": "Common",
+      "instrumentType": "DeviceInstrument",
       "displayName": "Identity Query",
-      "displayGroups": ["Instrument Components", "Identity"],
-      "description": "Query instrument *IDN?.",
+      "displayGroups": [
+        "Instrument Components",
+        "Identity"
+      ],
+      "description": "Query identity through the selected driver.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [],
-      "publish": { "mode": "identity" }
+      "publish": {
+        "mode": "identity"
+      }
     },
     {
       "id": "safe_shutdown",
       "stepTypeName": "SafeShutdownStep",
       "implementation": "handwritten",
       "kind": "utility",
-      "instrumentKind": "Scpi",
-      "instrumentType": "ScpiInstrument",
+      "instrumentKind": "Common",
+      "instrumentType": "DeviceInstrument",
       "displayName": "Safe Shutdown",
-      "displayGroups": ["Instrument Components", "Safety"],
-      "description": "Output off, then *RST.",
+      "displayGroups": [
+        "Instrument Components",
+        "Safety"
+      ],
+      "description": "Driver shutdown, then a separate reset.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [],
-      "publish": { "mode": "none" }
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "dmm_measure_voltage_dc",
@@ -41,17 +51,46 @@
       "instrumentType": "DmmInstrument",
       "accessor": "Dmm",
       "displayName": "DMM Measure Voltage DC",
-      "displayGroups": ["Instrument Components", "DMM"],
+      "displayGroups": [
+        "Instrument Components",
+        "DMM"
+      ],
       "description": "Acquire VDC samples.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel", "displayName": "Channel", "type": "string", "order": 2, "default": "VDC" },
-        { "name": "SampleCount", "displayName": "Sample Count", "type": "int", "order": 3, "default": 1 },
-        { "name": "IntervalMs", "displayName": "Interval Ms", "type": "int", "order": 4, "unit": "ms", "default": 0 }
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "string",
+          "order": 2,
+          "default": "VDC"
+        },
+        {
+          "name": "SampleCount",
+          "displayName": "Sample Count",
+          "type": "int",
+          "order": 3,
+          "default": 1
+        },
+        {
+          "name": "IntervalMs",
+          "displayName": "Interval Ms",
+          "type": "int",
+          "order": 4,
+          "unit": "ms",
+          "default": 0
+        }
       ],
-      "invoke": { "method": "MeasureVoltageDc", "returns": "double", "dialectKey": "measure_voltage_dc" },
-      "publish": { "mode": "sample", "unit": "V" }
+      "invoke": {
+        "method": "MeasureVoltageDc",
+        "returns": "double",
+        "operationId": "DmmMeasureVoltageDc"
+      },
+      "publish": {
+        "mode": "sample",
+        "unit": "V"
+      }
     },
     {
       "id": "dmm_measure_scalar",
@@ -62,18 +101,51 @@
       "instrumentType": "DmmInstrument",
       "accessor": "Dmm",
       "displayName": "DMM Measure Scalar",
-      "displayGroups": ["Instrument Components", "DMM"],
+      "displayGroups": [
+        "Instrument Components",
+        "DMM"
+      ],
       "description": "One VDC reading with optional limits.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "MetricName", "displayName": "Name", "type": "string", "order": 2, "default": "VDC" },
-        { "name": "Unit", "displayName": "Unit", "type": "string", "order": 3, "default": "V" },
-        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
-        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+        {
+          "name": "MetricName",
+          "displayName": "Name",
+          "type": "string",
+          "order": 2,
+          "default": "VDC"
+        },
+        {
+          "name": "Unit",
+          "displayName": "Unit",
+          "type": "string",
+          "order": 3,
+          "default": "V"
+        },
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
       ],
-      "invoke": { "method": "MeasureVoltageDc", "returns": "double", "dialectKey": "measure_voltage_dc" },
-      "publish": { "mode": "scalar", "unit": "V", "supportsLimits": true }
+      "invoke": {
+        "method": "MeasureVoltageDc",
+        "returns": "double",
+        "operationId": "DmmMeasureVoltageDc"
+      },
+      "publish": {
+        "mode": "scalar",
+        "unit": "V",
+        "supportsLimits": true
+      }
     },
     {
       "id": "psu_configure_output",
@@ -84,22 +156,89 @@
       "instrumentType": "DcPowerSupplyInstrument",
       "accessor": "Supply",
       "displayName": "PSU Configure Output",
-      "displayGroups": ["Instrument Components", "PSU"],
+      "displayGroups": [
+        "Instrument Components",
+        "PSU"
+      ],
       "description": "Set voltage, current limit, and output enable.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 },
-        { "name": "Voltage", "displayName": "Voltage", "type": "double", "order": 3, "unit": "V", "default": 0 },
-        { "name": "CurrentLimit", "displayName": "Current limit", "type": "double", "order": 4, "unit": "A", "default": 0 },
-        { "name": "OutputEnabled", "displayName": "Output enabled", "type": "bool", "order": 5, "default": true }
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        },
+        {
+          "name": "Voltage",
+          "displayName": "Voltage",
+          "type": "double",
+          "order": 3,
+          "unit": "V",
+          "default": 0
+        },
+        {
+          "name": "CurrentLimit",
+          "displayName": "Current limit",
+          "type": "double",
+          "order": 4,
+          "unit": "A",
+          "default": 0
+        },
+        {
+          "name": "OutputEnabled",
+          "displayName": "Output enabled",
+          "type": "bool",
+          "order": 5,
+          "default": true
+        }
       ],
       "composite": [
-        { "method": "SetVoltage", "returns": "void", "dialectKey": "set_voltage", "args": [{ "parameter": "Channel" }, { "parameter": "Voltage" }] },
-        { "method": "SetCurrentLimit", "returns": "void", "dialectKey": "set_current_limit", "args": [{ "parameter": "Channel" }, { "parameter": "CurrentLimit" }] },
-        { "method": "OutputEnable", "returns": "void", "dialectKey": "output_enable", "args": [{ "parameter": "Channel" }, { "parameter": "OutputEnabled" }] }
+        {
+          "method": "SetVoltage",
+          "returns": "void",
+          "args": [
+            {
+              "parameter": "Channel"
+            },
+            {
+              "parameter": "Voltage"
+            }
+          ],
+          "operationId": "DcPowerSupplySetVoltage"
+        },
+        {
+          "method": "SetCurrentLimit",
+          "returns": "void",
+          "args": [
+            {
+              "parameter": "Channel"
+            },
+            {
+              "parameter": "CurrentLimit"
+            }
+          ],
+          "operationId": "DcPowerSupplySetCurrentLimit"
+        },
+        {
+          "method": "OutputEnable",
+          "returns": "void",
+          "args": [
+            {
+              "parameter": "Channel"
+            },
+            {
+              "parameter": "OutputEnabled"
+            }
+          ],
+          "operationId": "DcPowerSupplyOutputEnable"
+        }
       ],
-      "publish": { "mode": "multiScalar" }
+      "publish": {
+        "mode": "multiScalar"
+      }
     },
     {
       "id": "psu_readback",
@@ -110,18 +249,47 @@
       "instrumentType": "DcPowerSupplyInstrument",
       "accessor": "Supply",
       "displayName": "PSU Readback",
-      "displayGroups": ["Instrument Components", "PSU"],
+      "displayGroups": [
+        "Instrument Components",
+        "PSU"
+      ],
       "description": "Read voltage and current.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 }
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        }
       ],
       "composite": [
-        { "method": "ReadVoltage", "returns": "double", "dialectKey": "read_voltage", "args": [{ "parameter": "Channel" }] },
-        { "method": "ReadCurrent", "returns": "double", "dialectKey": "read_current", "args": [{ "parameter": "Channel" }] }
+        {
+          "method": "ReadVoltage",
+          "returns": "double",
+          "args": [
+            {
+              "parameter": "Channel"
+            }
+          ],
+          "operationId": "DcPowerSupplyReadVoltage"
+        },
+        {
+          "method": "ReadCurrent",
+          "returns": "double",
+          "args": [
+            {
+              "parameter": "Channel"
+            }
+          ],
+          "operationId": "DcPowerSupplyReadCurrent"
+        }
       ],
-      "publish": { "mode": "sampleAndScalar" }
+      "publish": {
+        "mode": "sampleAndScalar"
+      }
     },
     {
       "id": "fgen_configure_output",
@@ -132,25 +300,109 @@
       "instrumentType": "FunctionGeneratorInstrument",
       "accessor": "Generator",
       "displayName": "FGen Configure Output",
-      "displayGroups": ["Instrument Components", "FGen"],
+      "displayGroups": [
+        "Instrument Components",
+        "FGen"
+      ],
       "description": "Set waveform and output.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Waveform", "displayName": "Waveform", "type": "enum", "enumType": "InstrumentComponents.Classes.Waveform", "order": 2, "default": "Sine" },
-        { "name": "FrequencyHz", "displayName": "Frequency (Hz)", "type": "double", "order": 3, "unit": "Hz", "default": 1000 },
-        { "name": "AmplitudeVpp", "displayName": "Amplitude (Vpp)", "type": "double", "order": 4, "unit": "V", "default": 1 },
-        { "name": "OffsetVolts", "displayName": "Offset (V)", "type": "double", "order": 5, "unit": "V", "default": 0 },
-        { "name": "OutputEnabled", "displayName": "Output enabled", "type": "bool", "order": 6, "default": true }
+        {
+          "name": "Waveform",
+          "displayName": "Waveform",
+          "type": "enum",
+          "enumType": "InstrumentComponents.Classes.Waveform",
+          "order": 2,
+          "default": "Sine"
+        },
+        {
+          "name": "FrequencyHz",
+          "displayName": "Frequency (Hz)",
+          "type": "double",
+          "order": 3,
+          "unit": "Hz",
+          "default": 1000
+        },
+        {
+          "name": "AmplitudeVpp",
+          "displayName": "Amplitude (Vpp)",
+          "type": "double",
+          "order": 4,
+          "unit": "V",
+          "default": 1
+        },
+        {
+          "name": "OffsetVolts",
+          "displayName": "Offset (V)",
+          "type": "double",
+          "order": 5,
+          "unit": "V",
+          "default": 0
+        },
+        {
+          "name": "OutputEnabled",
+          "displayName": "Output enabled",
+          "type": "bool",
+          "order": 6,
+          "default": true
+        }
       ],
       "composite": [
-        { "method": "SetWaveform", "returns": "void", "dialectKey": "set_waveform", "args": [{ "parameter": "Waveform" }] },
-        { "method": "SetFrequency", "returns": "void", "dialectKey": "set_frequency", "args": [{ "parameter": "FrequencyHz" }] },
-        { "method": "SetAmplitude", "returns": "void", "dialectKey": "set_amplitude", "args": [{ "parameter": "AmplitudeVpp" }] },
-        { "method": "SetOffset", "returns": "void", "dialectKey": "set_offset", "args": [{ "parameter": "OffsetVolts" }] },
-        { "method": "OutputEnable", "returns": "void", "dialectKey": "output_enable", "args": [{ "parameter": "OutputEnabled" }] }
+        {
+          "method": "SetWaveform",
+          "returns": "void",
+          "args": [
+            {
+              "parameter": "Waveform"
+            }
+          ],
+          "operationId": "FunctionGeneratorSetWaveform"
+        },
+        {
+          "method": "SetFrequency",
+          "returns": "void",
+          "args": [
+            {
+              "parameter": "FrequencyHz"
+            }
+          ],
+          "operationId": "FunctionGeneratorSetFrequency"
+        },
+        {
+          "method": "SetAmplitude",
+          "returns": "void",
+          "args": [
+            {
+              "parameter": "AmplitudeVpp"
+            }
+          ],
+          "operationId": "FunctionGeneratorSetAmplitude"
+        },
+        {
+          "method": "SetOffset",
+          "returns": "void",
+          "args": [
+            {
+              "parameter": "OffsetVolts"
+            }
+          ],
+          "operationId": "FunctionGeneratorSetOffset"
+        },
+        {
+          "method": "OutputEnable",
+          "returns": "void",
+          "args": [
+            {
+              "parameter": "OutputEnabled"
+            }
+          ],
+          "operationId": "FunctionGeneratorOutputEnable"
+        }
       ],
-      "publish": { "mode": "multiScalar" }
+      "publish": {
+        "mode": "multiScalar"
+      }
     },
     {
       "id": "scope_measure_vpp",
@@ -161,17 +413,49 @@
       "instrumentType": "OscilloscopeInstrument",
       "accessor": "Scope",
       "displayName": "Scope Measure Vpp",
-      "displayGroups": ["Instrument Components", "Scope"],
+      "displayGroups": [
+        "Instrument Components",
+        "Scope"
+      ],
       "description": "Peak-to-peak voltage.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 },
-        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
-        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        },
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
       ],
-      "invoke": { "method": "MeasureVpp", "returns": "double", "dialectKey": "measure_vpp", "args": [{ "parameter": "Channel" }] },
-      "publish": { "mode": "scalar", "unit": "V", "supportsLimits": true }
+      "invoke": {
+        "method": "MeasureVpp",
+        "returns": "double",
+        "args": [
+          {
+            "parameter": "Channel"
+          }
+        ],
+        "operationId": "OscilloscopeMeasureVpp"
+      },
+      "publish": {
+        "mode": "scalar",
+        "unit": "V",
+        "supportsLimits": true
+      }
     },
     {
       "id": "scope_measure_frequency",
@@ -182,17 +466,49 @@
       "instrumentType": "OscilloscopeInstrument",
       "accessor": "Scope",
       "displayName": "Scope Measure Frequency",
-      "displayGroups": ["Instrument Components", "Scope"],
+      "displayGroups": [
+        "Instrument Components",
+        "Scope"
+      ],
       "description": "Frequency measurement.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 },
-        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
-        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        },
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
       ],
-      "invoke": { "method": "MeasureFrequency", "returns": "double", "dialectKey": "measure_frequency", "args": [{ "parameter": "Channel" }] },
-      "publish": { "mode": "scalar", "unit": "Hz", "supportsLimits": true }
+      "invoke": {
+        "method": "MeasureFrequency",
+        "returns": "double",
+        "args": [
+          {
+            "parameter": "Channel"
+          }
+        ],
+        "operationId": "OscilloscopeMeasureFrequency"
+      },
+      "publish": {
+        "mode": "scalar",
+        "unit": "Hz",
+        "supportsLimits": true
+      }
     },
     {
       "id": "scope_capture_trace",
@@ -203,15 +519,36 @@
       "instrumentType": "OscilloscopeInstrument",
       "accessor": "Scope",
       "displayName": "Scope Capture Trace",
-      "displayGroups": ["Instrument Components", "Scope"],
+      "displayGroups": [
+        "Instrument Components",
+        "Scope"
+      ],
       "description": "ASCII voltage trace as Sample rows.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 }
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        }
       ],
-      "invoke": { "method": "CaptureVoltageTrace", "returns": "trace", "args": [{ "parameter": "Channel" }] },
-      "publish": { "mode": "sample", "unit": "V" }
+      "invoke": {
+        "method": "CaptureVoltageTrace",
+        "returns": "trace",
+        "args": [
+          {
+            "parameter": "Channel"
+          }
+        ],
+        "operationId": "OscilloscopeCaptureVoltageTrace"
+      },
+      "publish": {
+        "mode": "sample",
+        "unit": "V"
+      }
     },
     {
       "id": "switch_close_route",
@@ -222,16 +559,45 @@
       "instrumentType": "SwitchInstrument",
       "accessor": "Matrix",
       "displayName": "Switch Close Route",
-      "displayGroups": ["Instrument Components", "Switch"],
+      "displayGroups": [
+        "Instrument Components",
+        "Switch"
+      ],
       "description": "Close a matrix route.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel1", "displayName": "Channel 1", "type": "uint", "order": 2, "default": 1 },
-        { "name": "Channel2", "displayName": "Channel 2", "type": "uint", "order": 3, "default": 2 }
+        {
+          "name": "Channel1",
+          "displayName": "Channel 1",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        },
+        {
+          "name": "Channel2",
+          "displayName": "Channel 2",
+          "type": "uint",
+          "order": 3,
+          "default": 2
+        }
       ],
-      "invoke": { "method": "CloseRoute", "returns": "void", "dialectKey": "close_route", "args": [{ "parameter": "Channel1" }, { "parameter": "Channel2" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "CloseRoute",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Channel1"
+          },
+          {
+            "parameter": "Channel2"
+          }
+        ],
+        "operationId": "SwitchCloseRoute"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "switch_open_route",
@@ -242,16 +608,45 @@
       "instrumentType": "SwitchInstrument",
       "accessor": "Matrix",
       "displayName": "Switch Open Route",
-      "displayGroups": ["Instrument Components", "Switch"],
+      "displayGroups": [
+        "Instrument Components",
+        "Switch"
+      ],
       "description": "Open a matrix route.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel1", "displayName": "Channel 1", "type": "uint", "order": 2, "default": 1 },
-        { "name": "Channel2", "displayName": "Channel 2", "type": "uint", "order": 3, "default": 2 }
+        {
+          "name": "Channel1",
+          "displayName": "Channel 1",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        },
+        {
+          "name": "Channel2",
+          "displayName": "Channel 2",
+          "type": "uint",
+          "order": 3,
+          "default": 2
+        }
       ],
-      "invoke": { "method": "OpenRoute", "returns": "void", "dialectKey": "open_route", "args": [{ "parameter": "Channel1" }, { "parameter": "Channel2" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "OpenRoute",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Channel1"
+          },
+          {
+            "parameter": "Channel2"
+          }
+        ],
+        "operationId": "SwitchOpenRoute"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "switch_open_all",
@@ -262,13 +657,22 @@
       "instrumentType": "SwitchInstrument",
       "accessor": "Matrix",
       "displayName": "Switch Open All",
-      "displayGroups": ["Instrument Components", "Switch"],
+      "displayGroups": [
+        "Instrument Components",
+        "Switch"
+      ],
       "description": "Open all routes.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [],
-      "invoke": { "method": "OpenAll", "returns": "void", "dialectKey": "open_all" },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "OpenAll",
+        "returns": "void",
+        "operationId": "SwitchOpenAll"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "counter_measure_frequency",
@@ -279,16 +683,37 @@
       "instrumentType": "CounterInstrument",
       "accessor": "Counter",
       "displayName": "Counter Measure Frequency",
-      "displayGroups": ["Instrument Components", "Counter"],
+      "displayGroups": [
+        "Instrument Components",
+        "Counter"
+      ],
       "description": "Measure frequency.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
-        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
       ],
-      "invoke": { "method": "MeasureFrequency", "returns": "double", "dialectKey": "measure_frequency" },
-      "publish": { "mode": "scalar", "unit": "Hz", "supportsLimits": true }
+      "invoke": {
+        "method": "MeasureFrequency",
+        "returns": "double",
+        "operationId": "CounterMeasureFrequency"
+      },
+      "publish": {
+        "mode": "scalar",
+        "unit": "Hz",
+        "supportsLimits": true
+      }
     },
     {
       "id": "counter_measure_period",
@@ -299,16 +724,37 @@
       "instrumentType": "CounterInstrument",
       "accessor": "Counter",
       "displayName": "Counter Measure Period",
-      "displayGroups": ["Instrument Components", "Counter"],
+      "displayGroups": [
+        "Instrument Components",
+        "Counter"
+      ],
       "description": "Measure period.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
-        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
       ],
-      "invoke": { "method": "MeasurePeriod", "returns": "double", "dialectKey": "measure_period" },
-      "publish": { "mode": "scalar", "unit": "s", "supportsLimits": true }
+      "invoke": {
+        "method": "MeasurePeriod",
+        "returns": "double",
+        "operationId": "CounterMeasurePeriod"
+      },
+      "publish": {
+        "mode": "scalar",
+        "unit": "s",
+        "supportsLimits": true
+      }
     },
     {
       "id": "power_meter_read",
@@ -319,16 +765,36 @@
       "instrumentType": "PowerMeterInstrument",
       "accessor": "Meter",
       "displayName": "Power Meter Read",
-      "displayGroups": ["Instrument Components", "PowerMeter"],
+      "displayGroups": [
+        "Instrument Components",
+        "PowerMeter"
+      ],
       "description": "Read power.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
-        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
       ],
-      "invoke": { "method": "Read", "returns": "double", "dialectKey": "read" },
-      "publish": { "mode": "scalar", "supportsLimits": true }
+      "invoke": {
+        "method": "Read",
+        "returns": "double",
+        "operationId": "PowerMeterRead"
+      },
+      "publish": {
+        "mode": "scalar",
+        "supportsLimits": true
+      }
     },
     {
       "id": "specan_marker_peak",
@@ -339,17 +805,34 @@
       "instrumentType": "SpectrumAnalyzerInstrument",
       "accessor": "Analyzer",
       "displayName": "Spectrum Analyzer Marker Peak",
-      "displayGroups": ["Instrument Components", "SpecAn"],
+      "displayGroups": [
+        "Instrument Components",
+        "SpecAn"
+      ],
       "description": "Peak marker X/Y.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [],
       "composite": [
-        { "method": "MarkerPeak", "returns": "void", "dialectKey": "marker_peak" },
-        { "method": "MarkerX", "returns": "double", "dialectKey": "marker_x" },
-        { "method": "MarkerY", "returns": "double", "dialectKey": "marker_y" }
+        {
+          "method": "MarkerPeak",
+          "returns": "void",
+          "operationId": "SpectrumAnalyzerMarkerPeak"
+        },
+        {
+          "method": "MarkerX",
+          "returns": "double",
+          "operationId": "SpectrumAnalyzerMarkerX"
+        },
+        {
+          "method": "MarkerY",
+          "returns": "double",
+          "operationId": "SpectrumAnalyzerMarkerY"
+        }
       ],
-      "publish": { "mode": "multiScalar" }
+      "publish": {
+        "mode": "multiScalar"
+      }
     },
     {
       "id": "dmm_measure_voltage_ac",
@@ -360,17 +843,51 @@
       "instrumentType": "DmmInstrument",
       "accessor": "Dmm",
       "displayName": "Measure AC Voltage",
-      "displayGroups": ["Instrument Components", "DMM", "Measure"],
+      "displayGroups": [
+        "Instrument Components",
+        "DMM",
+        "Measure"
+      ],
       "description": "Measure AC voltage using the selected DMM.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Range", "displayName": "Range", "type": "nullableDouble", "order": 2, "unit": "V" },
-        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
-        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+        {
+          "name": "Range",
+          "displayName": "Range",
+          "type": "nullableDouble",
+          "order": 2,
+          "unit": "V"
+        },
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
       ],
-      "invoke": { "method": "MeasureVoltageAc", "returns": "double", "dialectKey": "measure_voltage_ac", "args": [{ "parameter": "Range" }] },
-      "publish": { "mode": "scalar", "name": "Voltage AC", "unit": "V", "supportsLimits": true }
+      "invoke": {
+        "method": "MeasureVoltageAc",
+        "returns": "double",
+        "args": [
+          {
+            "parameter": "Range"
+          }
+        ],
+        "operationId": "DmmMeasureVoltageAc"
+      },
+      "publish": {
+        "mode": "scalar",
+        "name": "Voltage AC",
+        "unit": "V",
+        "supportsLimits": true
+      }
     },
     {
       "id": "dmm_measure_current_dc",
@@ -381,17 +898,51 @@
       "instrumentType": "DmmInstrument",
       "accessor": "Dmm",
       "displayName": "Measure DC Current",
-      "displayGroups": ["Instrument Components", "DMM", "Measure"],
+      "displayGroups": [
+        "Instrument Components",
+        "DMM",
+        "Measure"
+      ],
       "description": "Measure DC current using the selected DMM.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Range", "displayName": "Range", "type": "nullableDouble", "order": 2, "unit": "A" },
-        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
-        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+        {
+          "name": "Range",
+          "displayName": "Range",
+          "type": "nullableDouble",
+          "order": 2,
+          "unit": "A"
+        },
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
       ],
-      "invoke": { "method": "MeasureCurrentDc", "returns": "double", "dialectKey": "measure_current_dc", "args": [{ "parameter": "Range" }] },
-      "publish": { "mode": "scalar", "name": "Current DC", "unit": "A", "supportsLimits": true }
+      "invoke": {
+        "method": "MeasureCurrentDc",
+        "returns": "double",
+        "args": [
+          {
+            "parameter": "Range"
+          }
+        ],
+        "operationId": "DmmMeasureCurrentDc"
+      },
+      "publish": {
+        "mode": "scalar",
+        "name": "Current DC",
+        "unit": "A",
+        "supportsLimits": true
+      }
     },
     {
       "id": "dmm_measure_current_ac",
@@ -402,17 +953,51 @@
       "instrumentType": "DmmInstrument",
       "accessor": "Dmm",
       "displayName": "Measure AC Current",
-      "displayGroups": ["Instrument Components", "DMM", "Measure"],
+      "displayGroups": [
+        "Instrument Components",
+        "DMM",
+        "Measure"
+      ],
       "description": "Measure AC current using the selected DMM.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Range", "displayName": "Range", "type": "nullableDouble", "order": 2, "unit": "A" },
-        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
-        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+        {
+          "name": "Range",
+          "displayName": "Range",
+          "type": "nullableDouble",
+          "order": 2,
+          "unit": "A"
+        },
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
       ],
-      "invoke": { "method": "MeasureCurrentAc", "returns": "double", "dialectKey": "measure_current_ac", "args": [{ "parameter": "Range" }] },
-      "publish": { "mode": "scalar", "name": "Current AC", "unit": "A", "supportsLimits": true }
+      "invoke": {
+        "method": "MeasureCurrentAc",
+        "returns": "double",
+        "args": [
+          {
+            "parameter": "Range"
+          }
+        ],
+        "operationId": "DmmMeasureCurrentAc"
+      },
+      "publish": {
+        "mode": "scalar",
+        "name": "Current AC",
+        "unit": "A",
+        "supportsLimits": true
+      }
     },
     {
       "id": "dmm_measure_resistance_2w",
@@ -423,17 +1008,51 @@
       "instrumentType": "DmmInstrument",
       "accessor": "Dmm",
       "displayName": "Measure 2-Wire Resistance",
-      "displayGroups": ["Instrument Components", "DMM", "Measure"],
+      "displayGroups": [
+        "Instrument Components",
+        "DMM",
+        "Measure"
+      ],
       "description": "Measure two-wire resistance using the selected DMM.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Range", "displayName": "Range", "type": "nullableDouble", "order": 2, "unit": "Ohm" },
-        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
-        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+        {
+          "name": "Range",
+          "displayName": "Range",
+          "type": "nullableDouble",
+          "order": 2,
+          "unit": "Ohm"
+        },
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
       ],
-      "invoke": { "method": "MeasureResistance2Wire", "returns": "double", "dialectKey": "measure_resistance_2w", "args": [{ "parameter": "Range" }] },
-      "publish": { "mode": "scalar", "name": "Resistance", "unit": "Ohm", "supportsLimits": true }
+      "invoke": {
+        "method": "MeasureResistance2Wire",
+        "returns": "double",
+        "args": [
+          {
+            "parameter": "Range"
+          }
+        ],
+        "operationId": "DmmMeasureResistance2Wire"
+      },
+      "publish": {
+        "mode": "scalar",
+        "name": "Resistance",
+        "unit": "Ohm",
+        "supportsLimits": true
+      }
     },
     {
       "id": "dmm_configure_voltage_dc",
@@ -444,16 +1063,46 @@
       "instrumentType": "DmmInstrument",
       "accessor": "Dmm",
       "displayName": "Configure DC Voltage",
-      "displayGroups": ["Instrument Components", "DMM", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "DMM",
+        "Configure"
+      ],
       "description": "Configure DC voltage range and resolution.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Range", "displayName": "Range", "type": "nullableDouble", "order": 2, "unit": "V" },
-        { "name": "Resolution", "displayName": "Resolution", "type": "nullableDouble", "order": 3, "unit": "V" }
+        {
+          "name": "Range",
+          "displayName": "Range",
+          "type": "nullableDouble",
+          "order": 2,
+          "unit": "V"
+        },
+        {
+          "name": "Resolution",
+          "displayName": "Resolution",
+          "type": "nullableDouble",
+          "order": 3,
+          "unit": "V"
+        }
       ],
-      "invoke": { "method": "ConfigureVoltageDc", "returns": "void", "dialectKey": "configure_voltage_dc", "args": [{ "parameter": "Range" }, { "parameter": "Resolution" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "ConfigureVoltageDc",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Range"
+          },
+          {
+            "parameter": "Resolution"
+          }
+        ],
+        "operationId": "DmmConfigureVoltageDc"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "dmm_initiate",
@@ -464,13 +1113,23 @@
       "instrumentType": "DmmInstrument",
       "accessor": "Dmm",
       "displayName": "Initiate",
-      "displayGroups": ["Instrument Components", "DMM", "Acquire"],
+      "displayGroups": [
+        "Instrument Components",
+        "DMM",
+        "Acquire"
+      ],
       "description": "Start a DMM acquisition (INIT).",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [],
-      "invoke": { "method": "Initiate", "returns": "void", "dialectKey": "initiate" },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "Initiate",
+        "returns": "void",
+        "operationId": "DmmInitiate"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "dmm_fetch",
@@ -481,16 +1140,38 @@
       "instrumentType": "DmmInstrument",
       "accessor": "Dmm",
       "displayName": "Fetch",
-      "displayGroups": ["Instrument Components", "DMM", "Acquire"],
+      "displayGroups": [
+        "Instrument Components",
+        "DMM",
+        "Acquire"
+      ],
       "description": "Fetch the last DMM reading (FETC?).",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
-        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
       ],
-      "invoke": { "method": "Fetch", "returns": "double", "dialectKey": "fetch" },
-      "publish": { "mode": "scalar", "name": "Fetch", "unitFrom": "MeasurementUnit", "supportsLimits": true }
+      "invoke": {
+        "method": "Fetch",
+        "returns": "double",
+        "operationId": "DmmFetch"
+      },
+      "publish": {
+        "mode": "scalar",
+        "name": "Fetch",
+        "supportsLimits": true
+      }
     },
     {
       "id": "dmm_read",
@@ -501,16 +1182,38 @@
       "instrumentType": "DmmInstrument",
       "accessor": "Dmm",
       "displayName": "Read",
-      "displayGroups": ["Instrument Components", "DMM", "Acquire"],
+      "displayGroups": [
+        "Instrument Components",
+        "DMM",
+        "Acquire"
+      ],
       "description": "Read a DMM measurement (READ?).",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
-        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
       ],
-      "invoke": { "method": "Read", "returns": "double", "dialectKey": "read" },
-      "publish": { "mode": "scalar", "name": "Read", "unitFrom": "MeasurementUnit", "supportsLimits": true }
+      "invoke": {
+        "method": "Read",
+        "returns": "double",
+        "operationId": "DmmRead"
+      },
+      "publish": {
+        "mode": "scalar",
+        "name": "Read",
+        "supportsLimits": true
+      }
     },
     {
       "id": "dmm_software_trigger",
@@ -521,13 +1224,23 @@
       "instrumentType": "DmmInstrument",
       "accessor": "Dmm",
       "displayName": "Software Trigger",
-      "displayGroups": ["Instrument Components", "DMM", "Acquire"],
+      "displayGroups": [
+        "Instrument Components",
+        "DMM",
+        "Acquire"
+      ],
       "description": "Issue a DMM software trigger.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [],
-      "invoke": { "method": "SoftwareTrigger", "returns": "void", "dialectKey": "software_trigger" },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SoftwareTrigger",
+        "returns": "void",
+        "operationId": "DmmSoftwareTrigger"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "dmm_measure_resistance_4w",
@@ -538,17 +1251,51 @@
       "instrumentType": "DmmInstrument",
       "accessor": "Dmm",
       "displayName": "Measure 4-Wire Resistance",
-      "displayGroups": ["Instrument Components", "DMM", "Measure"],
+      "displayGroups": [
+        "Instrument Components",
+        "DMM",
+        "Measure"
+      ],
       "description": "Measure four-wire resistance using the selected DMM.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Range", "displayName": "Range", "type": "nullableDouble", "order": 2, "unit": "Ohm" },
-        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
-        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+        {
+          "name": "Range",
+          "displayName": "Range",
+          "type": "nullableDouble",
+          "order": 2,
+          "unit": "Ohm"
+        },
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
       ],
-      "invoke": { "method": "MeasureResistance4Wire", "returns": "double", "dialectKey": "measure_resistance_4w", "args": [{ "parameter": "Range" }] },
-      "publish": { "mode": "scalar", "name": "Resistance 4W", "unit": "Ohm", "supportsLimits": true }
+      "invoke": {
+        "method": "MeasureResistance4Wire",
+        "returns": "double",
+        "args": [
+          {
+            "parameter": "Range"
+          }
+        ],
+        "operationId": "DmmMeasureResistance4Wire"
+      },
+      "publish": {
+        "mode": "scalar",
+        "name": "Resistance 4W",
+        "unit": "Ohm",
+        "supportsLimits": true
+      }
     },
     {
       "id": "dmm_measure_temperature",
@@ -559,17 +1306,50 @@
       "instrumentType": "DmmInstrument",
       "accessor": "Dmm",
       "displayName": "Measure Temperature",
-      "displayGroups": ["Instrument Components", "DMM", "Measure"],
+      "displayGroups": [
+        "Instrument Components",
+        "DMM",
+        "Measure"
+      ],
       "description": "Measure temperature using the selected DMM.",
       "capability": "extension",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Range", "displayName": "Range", "type": "nullableDouble", "order": 2 },
-        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
-        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+        {
+          "name": "Range",
+          "displayName": "Range",
+          "type": "nullableDouble",
+          "order": 2
+        },
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
       ],
-      "invoke": { "method": "MeasureTemperature", "returns": "double", "dialectKey": "measure_temperature", "args": [{ "parameter": "Range" }] },
-      "publish": { "mode": "scalar", "name": "Temperature", "unit": "C", "supportsLimits": true }
+      "invoke": {
+        "method": "MeasureTemperature",
+        "returns": "double",
+        "args": [
+          {
+            "parameter": "Range"
+          }
+        ],
+        "operationId": "DmmMeasureTemperature"
+      },
+      "publish": {
+        "mode": "scalar",
+        "name": "Temperature",
+        "unit": "Unknown",
+        "supportsLimits": true
+      }
     },
     {
       "id": "dmm_configure_voltage_ac",
@@ -580,16 +1360,46 @@
       "instrumentType": "DmmInstrument",
       "accessor": "Dmm",
       "displayName": "Configure AC Voltage",
-      "displayGroups": ["Instrument Components", "DMM", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "DMM",
+        "Configure"
+      ],
       "description": "Configure AC voltage range and resolution.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Range", "displayName": "Range", "type": "nullableDouble", "order": 2, "unit": "V" },
-        { "name": "Resolution", "displayName": "Resolution", "type": "nullableDouble", "order": 3, "unit": "V" }
+        {
+          "name": "Range",
+          "displayName": "Range",
+          "type": "nullableDouble",
+          "order": 2,
+          "unit": "V"
+        },
+        {
+          "name": "Resolution",
+          "displayName": "Resolution",
+          "type": "nullableDouble",
+          "order": 3,
+          "unit": "V"
+        }
       ],
-      "invoke": { "method": "ConfigureVoltageAc", "returns": "void", "args": [{ "parameter": "Range" }, { "parameter": "Resolution" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "ConfigureVoltageAc",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Range"
+          },
+          {
+            "parameter": "Resolution"
+          }
+        ],
+        "operationId": "DmmConfigureVoltageAc"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "dmm_configure_current_dc",
@@ -600,16 +1410,46 @@
       "instrumentType": "DmmInstrument",
       "accessor": "Dmm",
       "displayName": "Configure DC Current",
-      "displayGroups": ["Instrument Components", "DMM", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "DMM",
+        "Configure"
+      ],
       "description": "Configure DC current range and resolution.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Range", "displayName": "Range", "type": "nullableDouble", "order": 2, "unit": "A" },
-        { "name": "Resolution", "displayName": "Resolution", "type": "nullableDouble", "order": 3, "unit": "A" }
+        {
+          "name": "Range",
+          "displayName": "Range",
+          "type": "nullableDouble",
+          "order": 2,
+          "unit": "A"
+        },
+        {
+          "name": "Resolution",
+          "displayName": "Resolution",
+          "type": "nullableDouble",
+          "order": 3,
+          "unit": "A"
+        }
       ],
-      "invoke": { "method": "ConfigureCurrentDc", "returns": "void", "args": [{ "parameter": "Range" }, { "parameter": "Resolution" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "ConfigureCurrentDc",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Range"
+          },
+          {
+            "parameter": "Resolution"
+          }
+        ],
+        "operationId": "DmmConfigureCurrentDc"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "dmm_configure_current_ac",
@@ -620,16 +1460,46 @@
       "instrumentType": "DmmInstrument",
       "accessor": "Dmm",
       "displayName": "Configure AC Current",
-      "displayGroups": ["Instrument Components", "DMM", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "DMM",
+        "Configure"
+      ],
       "description": "Configure AC current range and resolution.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Range", "displayName": "Range", "type": "nullableDouble", "order": 2, "unit": "A" },
-        { "name": "Resolution", "displayName": "Resolution", "type": "nullableDouble", "order": 3, "unit": "A" }
+        {
+          "name": "Range",
+          "displayName": "Range",
+          "type": "nullableDouble",
+          "order": 2,
+          "unit": "A"
+        },
+        {
+          "name": "Resolution",
+          "displayName": "Resolution",
+          "type": "nullableDouble",
+          "order": 3,
+          "unit": "A"
+        }
       ],
-      "invoke": { "method": "ConfigureCurrentAc", "returns": "void", "args": [{ "parameter": "Range" }, { "parameter": "Resolution" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "ConfigureCurrentAc",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Range"
+          },
+          {
+            "parameter": "Resolution"
+          }
+        ],
+        "operationId": "DmmConfigureCurrentAc"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "dmm_configure_resistance",
@@ -640,16 +1510,46 @@
       "instrumentType": "DmmInstrument",
       "accessor": "Dmm",
       "displayName": "Configure Resistance",
-      "displayGroups": ["Instrument Components", "DMM", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "DMM",
+        "Configure"
+      ],
       "description": "Configure two-wire resistance range and resolution.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Range", "displayName": "Range", "type": "nullableDouble", "order": 2, "unit": "Ohm" },
-        { "name": "Resolution", "displayName": "Resolution", "type": "nullableDouble", "order": 3, "unit": "Ohm" }
+        {
+          "name": "Range",
+          "displayName": "Range",
+          "type": "nullableDouble",
+          "order": 2,
+          "unit": "Ohm"
+        },
+        {
+          "name": "Resolution",
+          "displayName": "Resolution",
+          "type": "nullableDouble",
+          "order": 3,
+          "unit": "Ohm"
+        }
       ],
-      "invoke": { "method": "ConfigureResistance", "returns": "void", "args": [{ "parameter": "Range" }, { "parameter": "Resolution" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "ConfigureResistance",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Range"
+          },
+          {
+            "parameter": "Resolution"
+          }
+        ],
+        "operationId": "DmmConfigureResistance"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "dmm_configure_resistance_4w",
@@ -660,16 +1560,46 @@
       "instrumentType": "DmmInstrument",
       "accessor": "Dmm",
       "displayName": "Configure 4-Wire Resistance",
-      "displayGroups": ["Instrument Components", "DMM", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "DMM",
+        "Configure"
+      ],
       "description": "Configure four-wire resistance range and resolution.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Range", "displayName": "Range", "type": "nullableDouble", "order": 2, "unit": "Ohm" },
-        { "name": "Resolution", "displayName": "Resolution", "type": "nullableDouble", "order": 3, "unit": "Ohm" }
+        {
+          "name": "Range",
+          "displayName": "Range",
+          "type": "nullableDouble",
+          "order": 2,
+          "unit": "Ohm"
+        },
+        {
+          "name": "Resolution",
+          "displayName": "Resolution",
+          "type": "nullableDouble",
+          "order": 3,
+          "unit": "Ohm"
+        }
       ],
-      "invoke": { "method": "ConfigureResistance4Wire", "returns": "void", "args": [{ "parameter": "Range" }, { "parameter": "Resolution" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "ConfigureResistance4Wire",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Range"
+          },
+          {
+            "parameter": "Resolution"
+          }
+        ],
+        "operationId": "DmmConfigureResistance4Wire"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "psu_set_voltage",
@@ -680,16 +1610,46 @@
       "instrumentType": "DcPowerSupplyInstrument",
       "accessor": "Supply",
       "displayName": "Set Voltage",
-      "displayGroups": ["Instrument Components", "PSU", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "PSU",
+        "Configure"
+      ],
       "description": "Set the output voltage of one PSU channel.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 },
-        { "name": "Voltage", "displayName": "Voltage", "type": "double", "order": 3, "unit": "V" }
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        },
+        {
+          "name": "Voltage",
+          "displayName": "Voltage",
+          "type": "double",
+          "order": 3,
+          "unit": "V"
+        }
       ],
-      "invoke": { "method": "SetVoltage", "returns": "void", "dialectKey": "set_voltage", "args": [{ "parameter": "Channel" }, { "parameter": "Voltage" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SetVoltage",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Channel"
+          },
+          {
+            "parameter": "Voltage"
+          }
+        ],
+        "operationId": "DcPowerSupplySetVoltage"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "psu_set_current_limit",
@@ -700,16 +1660,46 @@
       "instrumentType": "DcPowerSupplyInstrument",
       "accessor": "Supply",
       "displayName": "Set Current Limit",
-      "displayGroups": ["Instrument Components", "PSU", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "PSU",
+        "Configure"
+      ],
       "description": "Set the current limit of one PSU channel.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 },
-        { "name": "CurrentLimit", "displayName": "Current limit", "type": "double", "order": 3, "unit": "A" }
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        },
+        {
+          "name": "CurrentLimit",
+          "displayName": "Current limit",
+          "type": "double",
+          "order": 3,
+          "unit": "A"
+        }
       ],
-      "invoke": { "method": "SetCurrentLimit", "returns": "void", "dialectKey": "set_current_limit", "args": [{ "parameter": "Channel" }, { "parameter": "CurrentLimit" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SetCurrentLimit",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Channel"
+          },
+          {
+            "parameter": "CurrentLimit"
+          }
+        ],
+        "operationId": "DcPowerSupplySetCurrentLimit"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "psu_output_enable",
@@ -720,16 +1710,46 @@
       "instrumentType": "DcPowerSupplyInstrument",
       "accessor": "Supply",
       "displayName": "Output Enable",
-      "displayGroups": ["Instrument Components", "PSU", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "PSU",
+        "Configure"
+      ],
       "description": "Enable or disable one PSU output.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 },
-        { "name": "OutputEnabled", "displayName": "Output enabled", "type": "bool", "order": 3, "default": true }
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        },
+        {
+          "name": "OutputEnabled",
+          "displayName": "Output enabled",
+          "type": "bool",
+          "order": 3,
+          "default": true
+        }
       ],
-      "invoke": { "method": "OutputEnable", "returns": "void", "dialectKey": "output_enable", "args": [{ "parameter": "Channel" }, { "parameter": "OutputEnabled" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "OutputEnable",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Channel"
+          },
+          {
+            "parameter": "OutputEnabled"
+          }
+        ],
+        "operationId": "DcPowerSupplyOutputEnable"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "psu_output_state_query",
@@ -740,17 +1760,51 @@
       "instrumentType": "DcPowerSupplyInstrument",
       "accessor": "Supply",
       "displayName": "Query Output State",
-      "displayGroups": ["Instrument Components", "PSU", "Measure"],
+      "displayGroups": [
+        "Instrument Components",
+        "PSU",
+        "Measure"
+      ],
       "description": "Query whether one PSU output is enabled.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 },
-        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
-        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        },
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
       ],
-      "invoke": { "method": "OutputStateQuery", "returns": "bool", "dialectKey": "output_state_query", "args": [{ "parameter": "Channel" }] },
-      "publish": { "mode": "scalar", "name": "Output State", "unit": "", "supportsLimits": true }
+      "invoke": {
+        "method": "OutputStateQuery",
+        "returns": "bool",
+        "args": [
+          {
+            "parameter": "Channel"
+          }
+        ],
+        "operationId": "DcPowerSupplyOutputStateQuery"
+      },
+      "publish": {
+        "mode": "scalar",
+        "name": "Output State",
+        "unit": "",
+        "supportsLimits": true
+      }
     },
     {
       "id": "psu_ovp_level",
@@ -761,16 +1815,46 @@
       "instrumentType": "DcPowerSupplyInstrument",
       "accessor": "Supply",
       "displayName": "Set OVP Level",
-      "displayGroups": ["Instrument Components", "PSU", "Protect"],
+      "displayGroups": [
+        "Instrument Components",
+        "PSU",
+        "Protect"
+      ],
       "description": "Set over-voltage protection level.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 },
-        { "name": "Voltage", "displayName": "Voltage", "type": "double", "order": 3, "unit": "V" }
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        },
+        {
+          "name": "Voltage",
+          "displayName": "Voltage",
+          "type": "double",
+          "order": 3,
+          "unit": "V"
+        }
       ],
-      "invoke": { "method": "OvpLevel", "returns": "void", "dialectKey": "ovp_level", "args": [{ "parameter": "Channel" }, { "parameter": "Voltage" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "OvpLevel",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Channel"
+          },
+          {
+            "parameter": "Voltage"
+          }
+        ],
+        "operationId": "DcPowerSupplyOvpLevel"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "psu_ovp_enable",
@@ -781,16 +1865,46 @@
       "instrumentType": "DcPowerSupplyInstrument",
       "accessor": "Supply",
       "displayName": "Enable OVP",
-      "displayGroups": ["Instrument Components", "PSU", "Protect"],
+      "displayGroups": [
+        "Instrument Components",
+        "PSU",
+        "Protect"
+      ],
       "description": "Enable or disable over-voltage protection.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 },
-        { "name": "OvpEnabled", "displayName": "OVP enabled", "type": "bool", "order": 3, "default": true }
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        },
+        {
+          "name": "OvpEnabled",
+          "displayName": "OVP enabled",
+          "type": "bool",
+          "order": 3,
+          "default": true
+        }
       ],
-      "invoke": { "method": "OvpEnable", "returns": "void", "dialectKey": "ovp_enable", "args": [{ "parameter": "Channel" }, { "parameter": "OvpEnabled" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "OvpEnable",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Channel"
+          },
+          {
+            "parameter": "OvpEnabled"
+          }
+        ],
+        "operationId": "DcPowerSupplyOvpEnable"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "psu_ovp_query",
@@ -801,17 +1915,51 @@
       "instrumentType": "DcPowerSupplyInstrument",
       "accessor": "Supply",
       "displayName": "Query OVP",
-      "displayGroups": ["Instrument Components", "PSU", "Protect"],
+      "displayGroups": [
+        "Instrument Components",
+        "PSU",
+        "Protect"
+      ],
       "description": "Query whether over-voltage protection is enabled.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 },
-        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
-        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        },
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
       ],
-      "invoke": { "method": "OvpQuery", "returns": "bool", "dialectKey": "ovp_query", "args": [{ "parameter": "Channel" }] },
-      "publish": { "mode": "scalar", "name": "OVP", "unit": "", "supportsLimits": true }
+      "invoke": {
+        "method": "OvpQuery",
+        "returns": "bool",
+        "args": [
+          {
+            "parameter": "Channel"
+          }
+        ],
+        "operationId": "DcPowerSupplyOvpQuery"
+      },
+      "publish": {
+        "mode": "scalar",
+        "name": "OVP",
+        "unit": "",
+        "supportsLimits": true
+      }
     },
     {
       "id": "psu_read_voltage",
@@ -822,17 +1970,51 @@
       "instrumentType": "DcPowerSupplyInstrument",
       "accessor": "Supply",
       "displayName": "Read Voltage",
-      "displayGroups": ["Instrument Components", "PSU", "Measure"],
+      "displayGroups": [
+        "Instrument Components",
+        "PSU",
+        "Measure"
+      ],
       "description": "Read back one PSU channel voltage.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 },
-        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
-        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        },
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
       ],
-      "invoke": { "method": "ReadVoltage", "returns": "double", "dialectKey": "read_voltage", "args": [{ "parameter": "Channel" }] },
-      "publish": { "mode": "scalar", "name": "Voltage", "unit": "V", "supportsLimits": true }
+      "invoke": {
+        "method": "ReadVoltage",
+        "returns": "double",
+        "args": [
+          {
+            "parameter": "Channel"
+          }
+        ],
+        "operationId": "DcPowerSupplyReadVoltage"
+      },
+      "publish": {
+        "mode": "scalar",
+        "name": "Voltage",
+        "unit": "V",
+        "supportsLimits": true
+      }
     },
     {
       "id": "psu_read_current",
@@ -843,17 +2025,51 @@
       "instrumentType": "DcPowerSupplyInstrument",
       "accessor": "Supply",
       "displayName": "Read Current",
-      "displayGroups": ["Instrument Components", "PSU", "Measure"],
+      "displayGroups": [
+        "Instrument Components",
+        "PSU",
+        "Measure"
+      ],
       "description": "Read back one PSU channel current.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 },
-        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
-        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        },
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
       ],
-      "invoke": { "method": "ReadCurrent", "returns": "double", "dialectKey": "read_current", "args": [{ "parameter": "Channel" }] },
-      "publish": { "mode": "scalar", "name": "Current", "unit": "A", "supportsLimits": true }
+      "invoke": {
+        "method": "ReadCurrent",
+        "returns": "double",
+        "args": [
+          {
+            "parameter": "Channel"
+          }
+        ],
+        "operationId": "DcPowerSupplyReadCurrent"
+      },
+      "publish": {
+        "mode": "scalar",
+        "name": "Current",
+        "unit": "A",
+        "supportsLimits": true
+      }
     },
     {
       "id": "fgen_set_duty_cycle",
@@ -864,15 +2080,37 @@
       "instrumentType": "FunctionGeneratorInstrument",
       "accessor": "Generator",
       "displayName": "Set Duty Cycle",
-      "displayGroups": ["Instrument Components", "FGen", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "FGen",
+        "Configure"
+      ],
       "description": "Set square/pulse duty cycle.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Percent", "displayName": "Duty cycle", "type": "double", "order": 2, "unit": "%", "default": 50 }
+        {
+          "name": "Percent",
+          "displayName": "Duty cycle",
+          "type": "double",
+          "order": 2,
+          "unit": "%",
+          "default": 50
+        }
       ],
-      "invoke": { "method": "SetDutyCycle", "returns": "void", "dialectKey": "set_duty_cycle", "args": [{ "parameter": "Percent" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SetDutyCycle",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Percent"
+          }
+        ],
+        "operationId": "FunctionGeneratorSetDutyCycle"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "fgen_set_load",
@@ -883,15 +2121,37 @@
       "instrumentType": "FunctionGeneratorInstrument",
       "accessor": "Generator",
       "displayName": "Set Load",
-      "displayGroups": ["Instrument Components", "FGen", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "FGen",
+        "Configure"
+      ],
       "description": "Set the generator output load.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Ohms", "displayName": "Load", "type": "double", "order": 2, "unit": "Ohm", "default": 50 }
+        {
+          "name": "Ohms",
+          "displayName": "Load",
+          "type": "double",
+          "order": 2,
+          "unit": "Ohm",
+          "default": 50
+        }
       ],
-      "invoke": { "method": "SetLoad", "returns": "void", "dialectKey": "set_load", "args": [{ "parameter": "Ohms" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SetLoad",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Ohms"
+          }
+        ],
+        "operationId": "FunctionGeneratorSetLoad"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "fgen_set_burst_count",
@@ -902,15 +2162,36 @@
       "instrumentType": "FunctionGeneratorInstrument",
       "accessor": "Generator",
       "displayName": "Set Burst Count",
-      "displayGroups": ["Instrument Components", "FGen", "Burst"],
+      "displayGroups": [
+        "Instrument Components",
+        "FGen",
+        "Burst"
+      ],
       "description": "Set the number of burst cycles.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "BurstCount", "displayName": "Burst count", "type": "uint", "order": 2, "default": 1 }
+        {
+          "name": "BurstCount",
+          "displayName": "Burst count",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        }
       ],
-      "invoke": { "method": "SetBurstCount", "returns": "void", "dialectKey": "burst_count", "args": [{ "parameter": "BurstCount" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SetBurstCount",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "BurstCount"
+          }
+        ],
+        "operationId": "FunctionGeneratorSetBurstCount"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "fgen_set_burst_state",
@@ -921,15 +2202,36 @@
       "instrumentType": "FunctionGeneratorInstrument",
       "accessor": "Generator",
       "displayName": "Set Burst State",
-      "displayGroups": ["Instrument Components", "FGen", "Burst"],
+      "displayGroups": [
+        "Instrument Components",
+        "FGen",
+        "Burst"
+      ],
       "description": "Enable or disable burst mode.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "BurstEnabled", "displayName": "Burst enabled", "type": "bool", "order": 2, "default": true }
+        {
+          "name": "BurstEnabled",
+          "displayName": "Burst enabled",
+          "type": "bool",
+          "order": 2,
+          "default": true
+        }
       ],
-      "invoke": { "method": "SetBurstState", "returns": "void", "dialectKey": "burst_state", "args": [{ "parameter": "BurstEnabled" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SetBurstState",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "BurstEnabled"
+          }
+        ],
+        "operationId": "FunctionGeneratorSetBurstState"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "fgen_set_burst_trigger",
@@ -940,15 +2242,36 @@
       "instrumentType": "FunctionGeneratorInstrument",
       "accessor": "Generator",
       "displayName": "Set Burst Trigger",
-      "displayGroups": ["Instrument Components", "FGen", "Burst"],
+      "displayGroups": [
+        "Instrument Components",
+        "FGen",
+        "Burst"
+      ],
       "description": "Set the burst trigger source (IMM, EXT, or BUS).",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Source", "displayName": "Source", "type": "string", "order": 2, "default": "IMM" }
+        {
+          "name": "Source",
+          "displayName": "Source",
+          "type": "string",
+          "order": 2,
+          "default": "IMM"
+        }
       ],
-      "invoke": { "method": "SetBurstTriggerSource", "returns": "void", "dialectKey": "burst_trigger", "args": [{ "parameter": "Source" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SetBurstTriggerSource",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Source"
+          }
+        ],
+        "operationId": "FunctionGeneratorSetBurstTriggerSource"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "scope_set_timebase_scale",
@@ -959,15 +2282,37 @@
       "instrumentType": "OscilloscopeInstrument",
       "accessor": "Scope",
       "displayName": "Set Timebase Scale",
-      "displayGroups": ["Instrument Components", "Scope", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "Scope",
+        "Configure"
+      ],
       "description": "Set seconds per division.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "SecondsPerDiv", "displayName": "Seconds / div", "type": "double", "order": 2, "unit": "s", "default": 0.001 }
+        {
+          "name": "SecondsPerDiv",
+          "displayName": "Seconds / div",
+          "type": "double",
+          "order": 2,
+          "unit": "s",
+          "default": 0.001
+        }
       ],
-      "invoke": { "method": "SetTimebaseScale", "returns": "void", "dialectKey": "set_timebase_scale", "args": [{ "parameter": "SecondsPerDiv" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SetTimebaseScale",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "SecondsPerDiv"
+          }
+        ],
+        "operationId": "OscilloscopeSetTimebaseScale"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "scope_set_channel_scale",
@@ -978,16 +2323,47 @@
       "instrumentType": "OscilloscopeInstrument",
       "accessor": "Scope",
       "displayName": "Set Channel Scale",
-      "displayGroups": ["Instrument Components", "Scope", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "Scope",
+        "Configure"
+      ],
       "description": "Set volts per division for one channel.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 },
-        { "name": "VoltsPerDiv", "displayName": "Volts / div", "type": "double", "order": 3, "unit": "V", "default": 1 }
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        },
+        {
+          "name": "VoltsPerDiv",
+          "displayName": "Volts / div",
+          "type": "double",
+          "order": 3,
+          "unit": "V",
+          "default": 1
+        }
       ],
-      "invoke": { "method": "SetChannelScale", "returns": "void", "dialectKey": "set_channel_scale", "args": [{ "parameter": "Channel" }, { "parameter": "VoltsPerDiv" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SetChannelScale",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Channel"
+          },
+          {
+            "parameter": "VoltsPerDiv"
+          }
+        ],
+        "operationId": "OscilloscopeSetChannelScale"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "scope_set_channel_display",
@@ -998,16 +2374,46 @@
       "instrumentType": "OscilloscopeInstrument",
       "accessor": "Scope",
       "displayName": "Set Channel Display",
-      "displayGroups": ["Instrument Components", "Scope", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "Scope",
+        "Configure"
+      ],
       "description": "Enable or disable a scope channel.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 },
-        { "name": "DisplayEnabled", "displayName": "Display enabled", "type": "bool", "order": 3, "default": true }
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        },
+        {
+          "name": "DisplayEnabled",
+          "displayName": "Display enabled",
+          "type": "bool",
+          "order": 3,
+          "default": true
+        }
       ],
-      "invoke": { "method": "SetChannelDisplay", "returns": "void", "dialectKey": "channel_display", "args": [{ "parameter": "Channel" }, { "parameter": "DisplayEnabled" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SetChannelDisplay",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Channel"
+          },
+          {
+            "parameter": "DisplayEnabled"
+          }
+        ],
+        "operationId": "OscilloscopeSetChannelDisplay"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "scope_set_channel_coupling",
@@ -1018,16 +2424,46 @@
       "instrumentType": "OscilloscopeInstrument",
       "accessor": "Scope",
       "displayName": "Set Channel Coupling",
-      "displayGroups": ["Instrument Components", "Scope", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "Scope",
+        "Configure"
+      ],
       "description": "Set AC/DC/GND coupling for one channel.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 },
-        { "name": "Coupling", "displayName": "Coupling", "type": "string", "order": 3, "default": "DC" }
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        },
+        {
+          "name": "Coupling",
+          "displayName": "Coupling",
+          "type": "string",
+          "order": 3,
+          "default": "DC"
+        }
       ],
-      "invoke": { "method": "SetChannelCoupling", "returns": "void", "dialectKey": "channel_coupling", "args": [{ "parameter": "Channel" }, { "parameter": "Coupling" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SetChannelCoupling",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Channel"
+          },
+          {
+            "parameter": "Coupling"
+          }
+        ],
+        "operationId": "OscilloscopeSetChannelCoupling"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "scope_set_trigger_source",
@@ -1038,15 +2474,36 @@
       "instrumentType": "OscilloscopeInstrument",
       "accessor": "Scope",
       "displayName": "Set Trigger Source",
-      "displayGroups": ["Instrument Components", "Scope", "Trigger"],
+      "displayGroups": [
+        "Instrument Components",
+        "Scope",
+        "Trigger"
+      ],
       "description": "Set the edge trigger source.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Source", "displayName": "Source", "type": "string", "order": 2, "default": "CHAN1" }
+        {
+          "name": "Source",
+          "displayName": "Source",
+          "type": "string",
+          "order": 2,
+          "default": "CHAN1"
+        }
       ],
-      "invoke": { "method": "SetTriggerSource", "returns": "void", "dialectKey": "trigger_source", "args": [{ "parameter": "Source" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SetTriggerSource",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Source"
+          }
+        ],
+        "operationId": "OscilloscopeSetTriggerSource"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "scope_set_trigger_level",
@@ -1057,15 +2514,36 @@
       "instrumentType": "OscilloscopeInstrument",
       "accessor": "Scope",
       "displayName": "Set Trigger Level",
-      "displayGroups": ["Instrument Components", "Scope", "Trigger"],
+      "displayGroups": [
+        "Instrument Components",
+        "Scope",
+        "Trigger"
+      ],
       "description": "Set the edge trigger level.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Volts", "displayName": "Level", "type": "double", "order": 2, "unit": "V" }
+        {
+          "name": "Volts",
+          "displayName": "Level",
+          "type": "double",
+          "order": 2,
+          "unit": "V"
+        }
       ],
-      "invoke": { "method": "SetTriggerLevel", "returns": "void", "dialectKey": "trigger_level", "args": [{ "parameter": "Volts" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SetTriggerLevel",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Volts"
+          }
+        ],
+        "operationId": "OscilloscopeSetTriggerLevel"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "scope_set_trigger_slope",
@@ -1076,15 +2554,36 @@
       "instrumentType": "OscilloscopeInstrument",
       "accessor": "Scope",
       "displayName": "Set Trigger Slope",
-      "displayGroups": ["Instrument Components", "Scope", "Trigger"],
+      "displayGroups": [
+        "Instrument Components",
+        "Scope",
+        "Trigger"
+      ],
       "description": "Set the edge trigger slope.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Slope", "displayName": "Slope", "type": "string", "order": 2, "default": "POS" }
+        {
+          "name": "Slope",
+          "displayName": "Slope",
+          "type": "string",
+          "order": 2,
+          "default": "POS"
+        }
       ],
-      "invoke": { "method": "SetTriggerSlope", "returns": "void", "dialectKey": "trigger_slope", "args": [{ "parameter": "Slope" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SetTriggerSlope",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Slope"
+          }
+        ],
+        "operationId": "OscilloscopeSetTriggerSlope"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "scope_run",
@@ -1095,13 +2594,23 @@
       "instrumentType": "OscilloscopeInstrument",
       "accessor": "Scope",
       "displayName": "Run",
-      "displayGroups": ["Instrument Components", "Scope", "Acquire"],
+      "displayGroups": [
+        "Instrument Components",
+        "Scope",
+        "Acquire"
+      ],
       "description": "Start continuous acquisition.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [],
-      "invoke": { "method": "Run", "returns": "void", "dialectKey": "run" },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "Run",
+        "returns": "void",
+        "operationId": "OscilloscopeRun"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "scope_stop",
@@ -1112,13 +2621,23 @@
       "instrumentType": "OscilloscopeInstrument",
       "accessor": "Scope",
       "displayName": "Stop",
-      "displayGroups": ["Instrument Components", "Scope", "Acquire"],
+      "displayGroups": [
+        "Instrument Components",
+        "Scope",
+        "Acquire"
+      ],
       "description": "Stop acquisition.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [],
-      "invoke": { "method": "Stop", "returns": "void", "dialectKey": "stop" },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "Stop",
+        "returns": "void",
+        "operationId": "OscilloscopeStop"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "scope_single",
@@ -1129,13 +2648,23 @@
       "instrumentType": "OscilloscopeInstrument",
       "accessor": "Scope",
       "displayName": "Single",
-      "displayGroups": ["Instrument Components", "Scope", "Acquire"],
+      "displayGroups": [
+        "Instrument Components",
+        "Scope",
+        "Acquire"
+      ],
       "description": "Acquire a single trace.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [],
-      "invoke": { "method": "Single", "returns": "void", "dialectKey": "single" },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "Single",
+        "returns": "void",
+        "operationId": "OscilloscopeSingle"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "switch_is_closed",
@@ -1146,18 +2675,61 @@
       "instrumentType": "SwitchInstrument",
       "accessor": "Matrix",
       "displayName": "Is Closed",
-      "displayGroups": ["Instrument Components", "Switch", "Route"],
+      "displayGroups": [
+        "Instrument Components",
+        "Switch",
+        "Route"
+      ],
       "description": "Query whether a matrix route is closed.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel1", "displayName": "Channel 1", "type": "uint", "order": 2, "default": 1 },
-        { "name": "Channel2", "displayName": "Channel 2", "type": "uint", "order": 3, "default": 2 },
-        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
-        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+        {
+          "name": "Channel1",
+          "displayName": "Channel 1",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        },
+        {
+          "name": "Channel2",
+          "displayName": "Channel 2",
+          "type": "uint",
+          "order": 3,
+          "default": 2
+        },
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
       ],
-      "invoke": { "method": "IsClosed", "returns": "bool", "dialectKey": "is_closed", "args": [{ "parameter": "Channel1" }, { "parameter": "Channel2" }] },
-      "publish": { "mode": "scalar", "name": "Closed", "unit": "", "supportsLimits": true }
+      "invoke": {
+        "method": "IsClosed",
+        "returns": "bool",
+        "args": [
+          {
+            "parameter": "Channel1"
+          },
+          {
+            "parameter": "Channel2"
+          }
+        ],
+        "operationId": "SwitchIsClosed"
+      },
+      "publish": {
+        "mode": "scalar",
+        "name": "Closed",
+        "unit": "",
+        "supportsLimits": true
+      }
     },
     {
       "id": "counter_set_gate_time",
@@ -1168,15 +2740,37 @@
       "instrumentType": "CounterInstrument",
       "accessor": "Counter",
       "displayName": "Set Gate Time",
-      "displayGroups": ["Instrument Components", "Counter", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "Counter",
+        "Configure"
+      ],
       "description": "Set the counter gate / aperture time.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Seconds", "displayName": "Gate time", "type": "double", "order": 2, "unit": "s", "default": 0.1 }
+        {
+          "name": "Seconds",
+          "displayName": "Gate time",
+          "type": "double",
+          "order": 2,
+          "unit": "s",
+          "default": 0.1
+        }
       ],
-      "invoke": { "method": "SetGateTime", "returns": "void", "dialectKey": "gate_time", "args": [{ "parameter": "Seconds" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SetGateTime",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Seconds"
+          }
+        ],
+        "operationId": "CounterSetGateTime"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "counter_select_channel",
@@ -1187,15 +2781,36 @@
       "instrumentType": "CounterInstrument",
       "accessor": "Counter",
       "displayName": "Select Channel",
-      "displayGroups": ["Instrument Components", "Counter", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "Counter",
+        "Configure"
+      ],
       "description": "Select the counter input channel.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Channel", "displayName": "Channel", "type": "uint", "order": 2, "default": 1 }
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        }
       ],
-      "invoke": { "method": "SelectChannel", "returns": "void", "dialectKey": "channel_select", "args": [{ "parameter": "Channel" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SelectChannel",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Channel"
+          }
+        ],
+        "operationId": "CounterSelectChannel"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "counter_reset_totalize",
@@ -1206,13 +2821,23 @@
       "instrumentType": "CounterInstrument",
       "accessor": "Counter",
       "displayName": "Reset Totalize",
-      "displayGroups": ["Instrument Components", "Counter", "Totalize"],
+      "displayGroups": [
+        "Instrument Components",
+        "Counter",
+        "Totalize"
+      ],
       "description": "Reset the totalize count.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [],
-      "invoke": { "method": "ResetTotalize", "returns": "void", "dialectKey": "reset_totalize" },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "ResetTotalize",
+        "returns": "void",
+        "operationId": "CounterResetTotalize"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "counter_read_totalize",
@@ -1223,16 +2848,39 @@
       "instrumentType": "CounterInstrument",
       "accessor": "Counter",
       "displayName": "Read Totalize",
-      "displayGroups": ["Instrument Components", "Counter", "Totalize"],
+      "displayGroups": [
+        "Instrument Components",
+        "Counter",
+        "Totalize"
+      ],
       "description": "Read the totalize count.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
-        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
       ],
-      "invoke": { "method": "ReadTotalize", "returns": "double", "dialectKey": "read_totalize" },
-      "publish": { "mode": "scalar", "name": "Totalize", "unit": "", "supportsLimits": true }
+      "invoke": {
+        "method": "ReadTotalize",
+        "returns": "double",
+        "operationId": "CounterReadTotalize"
+      },
+      "publish": {
+        "mode": "scalar",
+        "name": "Totalize",
+        "unit": "",
+        "supportsLimits": true
+      }
     },
     {
       "id": "pwrmeter_configure_measurement",
@@ -1243,19 +2891,77 @@
       "instrumentType": "PowerMeterInstrument",
       "accessor": "Meter",
       "displayName": "Configure Measurement",
-      "displayGroups": ["Instrument Components", "PowerMeter", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "PowerMeter",
+        "Configure"
+      ],
       "description": "Configure power-meter units, auto-range, averaging, and optional correction.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Unit", "displayName": "Unit", "type": "enum", "enumType": "PowerUnit", "order": 2, "default": "Dbm" },
-        { "name": "AutoRange", "displayName": "Auto range", "type": "bool", "order": 3, "default": true },
-        { "name": "AutoAverage", "displayName": "Auto average", "type": "bool", "order": 4, "default": true },
-        { "name": "CorrectionFreqHz", "displayName": "Correction frequency", "type": "nullableDouble", "order": 5, "unit": "Hz" },
-        { "name": "OffsetDb", "displayName": "Offset", "type": "nullableDouble", "order": 6, "unit": "dB" }
+        {
+          "name": "Unit",
+          "displayName": "Unit",
+          "type": "enum",
+          "enumType": "PowerUnit",
+          "order": 2,
+          "default": "Dbm"
+        },
+        {
+          "name": "AutoRange",
+          "displayName": "Auto range",
+          "type": "bool",
+          "order": 3,
+          "default": true
+        },
+        {
+          "name": "AutoAverage",
+          "displayName": "Auto average",
+          "type": "bool",
+          "order": 4,
+          "default": true
+        },
+        {
+          "name": "CorrectionFreqHz",
+          "displayName": "Correction frequency",
+          "type": "nullableDouble",
+          "order": 5,
+          "unit": "Hz"
+        },
+        {
+          "name": "OffsetDb",
+          "displayName": "Offset",
+          "type": "nullableDouble",
+          "order": 6,
+          "unit": "dB"
+        }
       ],
-      "invoke": { "method": "ConfigureMeasurement", "returns": "void", "args": [{ "parameter": "Unit" }, { "parameter": "AutoRange" }, { "parameter": "AutoAverage" }, { "parameter": "CorrectionFreqHz" }, { "parameter": "OffsetDb" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "ConfigureMeasurement",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Unit"
+          },
+          {
+            "parameter": "AutoRange"
+          },
+          {
+            "parameter": "AutoAverage"
+          },
+          {
+            "parameter": "CorrectionFreqHz"
+          },
+          {
+            "parameter": "OffsetDb"
+          }
+        ],
+        "operationId": "PowerMeterConfigureMeasurement"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "pwrmeter_initiate",
@@ -1266,13 +2972,23 @@
       "instrumentType": "PowerMeterInstrument",
       "accessor": "Meter",
       "displayName": "Initiate",
-      "displayGroups": ["Instrument Components", "PowerMeter", "Acquire"],
+      "displayGroups": [
+        "Instrument Components",
+        "PowerMeter",
+        "Acquire"
+      ],
       "description": "Start a power-meter acquisition (INIT).",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [],
-      "invoke": { "method": "Initiate", "returns": "void", "dialectKey": "initiate" },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "Initiate",
+        "returns": "void",
+        "operationId": "PowerMeterInitiate"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "pwrmeter_fetch",
@@ -1283,16 +2999,39 @@
       "instrumentType": "PowerMeterInstrument",
       "accessor": "Meter",
       "displayName": "Fetch",
-      "displayGroups": ["Instrument Components", "PowerMeter", "Acquire"],
+      "displayGroups": [
+        "Instrument Components",
+        "PowerMeter",
+        "Acquire"
+      ],
       "description": "Fetch the last power-meter reading (FETC?).",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "LimitLow", "displayName": "Limit low", "type": "nullableDouble", "order": 90 },
-        { "name": "LimitHigh", "displayName": "Limit high", "type": "nullableDouble", "order": 91 }
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
       ],
-      "invoke": { "method": "Fetch", "returns": "double", "dialectKey": "fetch" },
-      "publish": { "mode": "scalar", "name": "Fetch", "unit": "", "supportsLimits": true }
+      "invoke": {
+        "method": "Fetch",
+        "returns": "double",
+        "operationId": "PowerMeterFetch"
+      },
+      "publish": {
+        "mode": "scalar",
+        "name": "Fetch",
+        "unit": "",
+        "supportsLimits": true
+      }
     },
     {
       "id": "specan_set_center_frequency",
@@ -1303,15 +3042,37 @@
       "instrumentType": "SpectrumAnalyzerInstrument",
       "accessor": "Analyzer",
       "displayName": "Set Center Frequency",
-      "displayGroups": ["Instrument Components", "SpecAn", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "SpecAn",
+        "Configure"
+      ],
       "description": "Set the analyzer center frequency.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Hertz", "displayName": "Center frequency", "type": "double", "order": 2, "unit": "Hz" }
+        {
+          "name": "Hertz",
+          "displayName": "Center frequency",
+          "type": "double",
+          "order": 2,
+          "unit": "Hz",
+          "default": 1000000000
+        }
       ],
-      "invoke": { "method": "SetCenterFrequency", "returns": "void", "dialectKey": "center_frequency", "args": [{ "parameter": "Hertz" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SetCenterFrequency",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Hertz"
+          }
+        ],
+        "operationId": "SpectrumAnalyzerSetCenterFrequency"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "specan_set_span",
@@ -1322,15 +3083,37 @@
       "instrumentType": "SpectrumAnalyzerInstrument",
       "accessor": "Analyzer",
       "displayName": "Set Span",
-      "displayGroups": ["Instrument Components", "SpecAn", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "SpecAn",
+        "Configure"
+      ],
       "description": "Set the analyzer frequency span.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Hertz", "displayName": "Span", "type": "double", "order": 2, "unit": "Hz" }
+        {
+          "name": "Hertz",
+          "displayName": "Span",
+          "type": "double",
+          "order": 2,
+          "unit": "Hz",
+          "default": 1000000
+        }
       ],
-      "invoke": { "method": "SetSpan", "returns": "void", "dialectKey": "span", "args": [{ "parameter": "Hertz" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SetSpan",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Hertz"
+          }
+        ],
+        "operationId": "SpectrumAnalyzerSetSpan"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "specan_set_rbw",
@@ -1341,15 +3124,37 @@
       "instrumentType": "SpectrumAnalyzerInstrument",
       "accessor": "Analyzer",
       "displayName": "Set RBW",
-      "displayGroups": ["Instrument Components", "SpecAn", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "SpecAn",
+        "Configure"
+      ],
       "description": "Set resolution bandwidth.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Hertz", "displayName": "RBW", "type": "double", "order": 2, "unit": "Hz" }
+        {
+          "name": "Hertz",
+          "displayName": "RBW",
+          "type": "double",
+          "order": 2,
+          "unit": "Hz",
+          "default": 1000
+        }
       ],
-      "invoke": { "method": "SetRbw", "returns": "void", "dialectKey": "rbw", "args": [{ "parameter": "Hertz" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SetRbw",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Hertz"
+          }
+        ],
+        "operationId": "SpectrumAnalyzerSetRbw"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "specan_set_vbw",
@@ -1360,15 +3165,37 @@
       "instrumentType": "SpectrumAnalyzerInstrument",
       "accessor": "Analyzer",
       "displayName": "Set VBW",
-      "displayGroups": ["Instrument Components", "SpecAn", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "SpecAn",
+        "Configure"
+      ],
       "description": "Set video bandwidth.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Hertz", "displayName": "VBW", "type": "double", "order": 2, "unit": "Hz" }
+        {
+          "name": "Hertz",
+          "displayName": "VBW",
+          "type": "double",
+          "order": 2,
+          "unit": "Hz",
+          "default": 1000
+        }
       ],
-      "invoke": { "method": "SetVbw", "returns": "void", "dialectKey": "vbw", "args": [{ "parameter": "Hertz" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SetVbw",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Hertz"
+          }
+        ],
+        "operationId": "SpectrumAnalyzerSetVbw"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "specan_set_ref_level",
@@ -1379,15 +3206,36 @@
       "instrumentType": "SpectrumAnalyzerInstrument",
       "accessor": "Analyzer",
       "displayName": "Set Reference Level",
-      "displayGroups": ["Instrument Components", "SpecAn", "Configure"],
+      "displayGroups": [
+        "Instrument Components",
+        "SpecAn",
+        "Configure"
+      ],
       "description": "Set the analyzer reference level.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Dbm", "displayName": "Reference level", "type": "double", "order": 2, "unit": "dBm" }
+        {
+          "name": "Dbm",
+          "displayName": "Reference level",
+          "type": "double",
+          "order": 2,
+          "unit": "dBm"
+        }
       ],
-      "invoke": { "method": "SetRefLevel", "returns": "void", "dialectKey": "ref_level", "args": [{ "parameter": "Dbm" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SetRefLevel",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Dbm"
+          }
+        ],
+        "operationId": "SpectrumAnalyzerSetRefLevel"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "specan_sweep_continuous",
@@ -1398,15 +3246,36 @@
       "instrumentType": "SpectrumAnalyzerInstrument",
       "accessor": "Analyzer",
       "displayName": "Sweep Continuous",
-      "displayGroups": ["Instrument Components", "SpecAn", "Sweep"],
+      "displayGroups": [
+        "Instrument Components",
+        "SpecAn",
+        "Sweep"
+      ],
       "description": "Enable or disable continuous sweep.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [
-        { "name": "Continuous", "displayName": "Continuous", "type": "bool", "order": 2, "default": true }
+        {
+          "name": "Continuous",
+          "displayName": "Continuous",
+          "type": "bool",
+          "order": 2,
+          "default": true
+        }
       ],
-      "invoke": { "method": "SweepContinuous", "returns": "void", "dialectKey": "sweep_continuous", "args": [{ "parameter": "Continuous" }] },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SweepContinuous",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Continuous"
+          }
+        ],
+        "operationId": "SpectrumAnalyzerSweepContinuous"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "specan_single_sweep",
@@ -1417,13 +3286,23 @@
       "instrumentType": "SpectrumAnalyzerInstrument",
       "accessor": "Analyzer",
       "displayName": "Single Sweep",
-      "displayGroups": ["Instrument Components", "SpecAn", "Sweep"],
+      "displayGroups": [
+        "Instrument Components",
+        "SpecAn",
+        "Sweep"
+      ],
       "description": "Trigger a single sweep.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [],
-      "invoke": { "method": "SingleSweep", "returns": "void", "dialectKey": "single_sweep" },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "SingleSweep",
+        "returns": "void",
+        "operationId": "SpectrumAnalyzerSingleSweep"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "specan_wait_opc",
@@ -1434,13 +3313,23 @@
       "instrumentType": "SpectrumAnalyzerInstrument",
       "accessor": "Analyzer",
       "displayName": "Wait OPC",
-      "displayGroups": ["Instrument Components", "SpecAn", "Sweep"],
+      "displayGroups": [
+        "Instrument Components",
+        "SpecAn",
+        "Sweep"
+      ],
       "description": "Wait for operation complete (*OPC?).",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [],
-      "invoke": { "method": "WaitOpc", "returns": "void", "dialectKey": "wait_opc" },
-      "publish": { "mode": "none" }
+      "invoke": {
+        "method": "WaitOpc",
+        "returns": "void",
+        "operationId": "SpectrumAnalyzerWaitOpc"
+      },
+      "publish": {
+        "mode": "none"
+      }
     },
     {
       "id": "specan_fetch_trace",
@@ -1451,13 +3340,24 @@
       "instrumentType": "SpectrumAnalyzerInstrument",
       "accessor": "Analyzer",
       "displayName": "Fetch Trace",
-      "displayGroups": ["Instrument Components", "SpecAn", "Acquire"],
+      "displayGroups": [
+        "Instrument Components",
+        "SpecAn",
+        "Acquire"
+      ],
       "description": "Fetch an ASCII trace as Phase I Sample rows.",
       "capability": "base",
       "since": "0.1.0",
       "parameters": [],
-      "invoke": { "method": "FetchTraceAscii", "returns": "trace", "dialectKey": "trace_data" },
-      "publish": { "mode": "sample", "name": "Trace" }
+      "invoke": {
+        "method": "FetchTraceAscii",
+        "returns": "trace",
+        "operationId": "SpectrumAnalyzerFetchTraceAscii"
+      },
+      "publish": {
+        "mode": "sample",
+        "name": "Trace"
+      }
     }
   ]
 }

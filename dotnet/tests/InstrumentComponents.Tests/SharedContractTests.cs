@@ -1,7 +1,6 @@
 using System.Text.Json;
 using InstrumentComponents.Address;
 using InstrumentComponents.Classifier;
-using InstrumentComponents.Dialects;
 using InstrumentComponents.Identity;
 using InstrumentComponents.Kind;
 using InstrumentComponents.Registry;
@@ -15,7 +14,7 @@ internal static class RepoFiles
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (dir is not null)
         {
-            if (File.Exists(Path.Combine(dir.FullName, "spec", "scpi-vectors.json")))
+            if (File.Exists(Path.Combine(dir.FullName, "spec", "driver-operations.json")))
                 return dir.FullName;
             dir = dir.Parent;
         }
@@ -41,48 +40,6 @@ internal static class SpecJson
 
 public class SharedContractTests
 {
-    private sealed class ScpiVectorsDto
-    {
-        public List<GenericTemplateDto> GenericTemplates { get; set; } = [];
-        public List<DialectResolveDto> DialectResolve { get; set; } = [];
-        public List<DialectCommandDto> DialectCommands { get; set; } = [];
-        public List<FormattedCommandDto> FormattedCommands { get; set; } = [];
-    }
-
-    private sealed class GenericTemplateDto
-    {
-        public string ProfileId { get; set; } = "";
-        public string Key { get; set; } = "";
-        public string Command { get; set; } = "";
-    }
-
-    private sealed class DialectResolveDto
-    {
-        public string Kind { get; set; } = "";
-        public string? Manufacturer { get; set; }
-        public string? Model { get; set; }
-        public string ExpectedProfile { get; set; } = "";
-    }
-
-    private sealed class DialectCommandDto
-    {
-        public string Kind { get; set; } = "";
-        public string? Manufacturer { get; set; }
-        public string? Model { get; set; }
-        public string Key { get; set; } = "";
-        public string Command { get; set; } = "";
-    }
-
-    private sealed class FormattedCommandDto
-    {
-        public string Kind { get; set; } = "";
-        public string? Manufacturer { get; set; }
-        public string? Model { get; set; }
-        public string Key { get; set; } = "";
-        public Dictionary<string, string> Vars { get; set; } = [];
-        public string Command { get; set; } = "";
-    }
-
     private sealed class ClassifierFileDto
     {
         public List<ClassifierCaseDto> Cases { get; set; } = [];
@@ -128,58 +85,13 @@ public class SharedContractTests
     private static ClassifySource ParseSource(string label) =>
         Enum.Parse<ClassifySource>(label);
 
-    private static DialectProfile ProfileById(string id) =>
-        DialectRegistry.Profiles.First(p => p.Id == id);
 
-    private static DialectProfile Resolve(string kind, string? manufacturer, string? model) =>
-        DialectRegistry.Resolve(ParseKind(kind), manufacturer, model);
-
-    [Fact]
-    public void GenericTemplatesMatchProfiles()
-    {
-        var vectors = SpecJson.Load<ScpiVectorsDto>("scpi-vectors.json");
-        foreach (var row in vectors.GenericTemplates)
-        {
-            Assert.Equal(row.Command, ProfileById(row.ProfileId).Command(row.Key));
-        }
-    }
-
-    [Fact]
-    public void DialectResolveMatchesVectors()
-    {
-        var vectors = SpecJson.Load<ScpiVectorsDto>("scpi-vectors.json");
-        foreach (var row in vectors.DialectResolve)
-        {
-            Assert.Equal(row.ExpectedProfile, Resolve(row.Kind, row.Manufacturer, row.Model).Id);
-        }
-    }
-
-    [Fact]
-    public void DialectCommandsMatchVectors()
-    {
-        var vectors = SpecJson.Load<ScpiVectorsDto>("scpi-vectors.json");
-        foreach (var row in vectors.DialectCommands)
-        {
-            Assert.Equal(row.Command, Resolve(row.Kind, row.Manufacturer, row.Model).Command(row.Key));
-        }
-    }
-
-    [Fact]
-    public void FormattedCommandsMatchVectors()
-    {
-        var vectors = SpecJson.Load<ScpiVectorsDto>("scpi-vectors.json");
-        foreach (var row in vectors.FormattedCommands)
-        {
-            var vars = row.Vars.Select(kv => (kv.Key, kv.Value)).ToArray();
-            Assert.Equal(row.Command, Resolve(row.Kind, row.Manufacturer, row.Model).FormatCommand(row.Key, vars));
-        }
-    }
 
     [Fact]
     public void ClassifierCasesMatchVectors()
     {
         var file = SpecJson.Load<ClassifierFileDto>("classifier-cases.json");
-        var registry = ModelRegistry.Embedded();
+        var registry = ModelRegistry.FromJson(File.ReadAllText(Path.Combine(RepoFiles.Root(),"validation","standards","registry.json")));
         foreach (var caseRow in file.Cases)
         {
             switch (caseRow.Layer)

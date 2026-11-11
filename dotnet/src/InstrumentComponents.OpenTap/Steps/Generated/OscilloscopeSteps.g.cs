@@ -78,6 +78,7 @@ public sealed class ScopeSetChannelScaleStep : InstrumentBoundStep<OscilloscopeI
     {
         Rules.Add(() => Channel >= 1, "Channel must be at least 1.", nameof(Channel));
         Rules.Add(() => double.IsFinite(VoltsPerDiv), "Volts / div must be a finite number.", nameof(VoltsPerDiv));
+        Rules.Add(() => (VoltsPerDiv > 0), "Volts / div violates the operation's positive constraint.", nameof(VoltsPerDiv));
     }
 
     public override void Run()
@@ -100,6 +101,7 @@ public sealed class ScopeSetTimebaseScaleStep : InstrumentBoundStep<Oscilloscope
     public ScopeSetTimebaseScaleStep()
     {
         Rules.Add(() => double.IsFinite(SecondsPerDiv), "Seconds / div must be a finite number.", nameof(SecondsPerDiv));
+        Rules.Add(() => (SecondsPerDiv > 0), "Seconds / div violates the operation's positive constraint.", nameof(SecondsPerDiv));
     }
 
     public override void Run()

@@ -53,7 +53,7 @@ public sealed class DriverDescriptor
 }
 
 /// <summary>Factories create arbitrary connections, not necessarily SCPI/byte transports.</summary>
-public sealed record DriverOpenContext(DeviceCandidate Candidate, ConnectionOwnership Ownership);
+public sealed record DriverOpenContext(DeviceCandidate Candidate, ConnectionOwnership Ownership, IReadOnlySet<Operation>? RequiredOperations=null);
 public interface IDriverFactory
 {
     DriverDescriptor Descriptor { get; }

@@ -932,12 +932,12 @@ CatalogRequest::PowerMeterRead,
 ScriptStep::Close(Ok(())),
 ],
 expected: None, expected_error: Some(ErrorKind::InvalidArgument) },
-CatalogCase { id: "SCPI-OVERLOAD", calls: vec![
+CatalogCase { id: "SCPI-LARGE-FINITE-NO-ASSUMED-OVERLOAD", calls: vec![
 CatalogRequest::DmmMeasureVoltageDc { range: Some(2.5) },
 ], script: vec![
 ScriptStep::Query(":TEST:DmmMeasureVoltageDc? 2.5".into(), Ok("9.9e37".into())),
 ScriptStep::Close(Ok(())),
 ],
-expected: Some(CatalogReply::Quantity(Quantity { value: 9.9e+37, unit: Unit::Volt, status: MeasurementStatus::Overload })), expected_error: None },
+expected: Some(CatalogReply::Quantity(Quantity { value: 9.9e+37, unit: Unit::Volt, status: MeasurementStatus::Valid })), expected_error: None },
 ] }
 }

@@ -46,7 +46,6 @@ jobs:
           python tools/validate-sdk-release.py
           python -m pip install ./tools/driver-tools
           instrument-driver contracts --input spec/driver-operations.json --rust-output crates/instrument-api/src --dotnet-output dotnet/src/InstrumentComponents.Abstractions --check
-          instrument-driver inventory --repository . --output spec/device-migration-inventory.json --check
           instrument-driver generate --input validation/scpi/profiles.json --output-dir validation/scpi/generated --contract-major 1 --check
           instrument-driver generate-tests --input spec/driver-scpi-cases.json --output-dir validation/scpi/generated --check
           instrument-driver generate --input validation/scpi/choice-profiles.json --output-dir validation/scpi/choice-generated --contract-major 1 --module choice_profiles --namespace GeneratedChoice --check

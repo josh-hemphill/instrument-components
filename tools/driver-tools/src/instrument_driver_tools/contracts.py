@@ -108,11 +108,11 @@ def generate_contracts(manifest: dict) -> dict[str, str]:
         cs += [f'public sealed class {kind}(ICatalogExecutor executor) {{']
         for op in selected:
             params=', '.join(ct[p['type']]+' '+pascal(p['name']) for p in op['parameters']);args=', '.join(pascal(p['name']) for p in op['parameters']);ret='void' if op['result']=='unit' else cr[op['result']]
-            cs += [f'public {ret} {pascal(op["method"])}({params}) => executor.Invoke(new {op["id"]}Request({args})).Into{pascal(op["result"])}();']
+            cs += [f'public {ret} {op["id"].removeprefix(op["kind"])}({params}) => executor.Invoke(new {op["id"]}Request({args})).Into{pascal(op["result"])}();']
         cs += ['}',f'public sealed class Async{kind}(IAsyncCatalogExecutor executor) {{']
         for op in selected:
             params=', '.join(ct[p['type']]+' '+pascal(p['name']) for p in op['parameters']);args=', '.join(pascal(p['name']) for p in op['parameters']);ret='Task' if op['result']=='unit' else 'Task<'+cr[op['result']]+'>';body='return ' if op['result']!='unit' else ''
-            cs += [f'public async {ret} {pascal(op["method"])}Async({params}{", " if params else ""}CancellationToken cancellationToken = default) {{ {body}(await executor.InvokeAsync(new {op["id"]}Request({args}), cancellationToken).ConfigureAwait(false)).Into{pascal(op["result"])}(); }}']
+            cs += [f'public async {ret} {op["id"].removeprefix(op["kind"])}Async({params}{", " if params else ""}CancellationToken cancellationToken = default) {{ {body}(await executor.InvokeAsync(new {op["id"]}Request({args}), cancellationToken).ConfigureAwait(false)).Into{pascal(op["result"])}(); }}']
         cs += ['}']
     rust += ['impl CatalogOperation {', 'pub fn metadata(self) -> OperationMetadata { match self {']
     cs += ['public static class OperationDescriptions { public static OperationMetadata Describe(this CatalogOperation operation) => operation switch {']

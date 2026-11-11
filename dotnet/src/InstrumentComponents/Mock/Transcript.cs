@@ -4,19 +4,19 @@ using InstrumentComponents.Errors;
 
 namespace InstrumentComponents.Mock;
 
-public sealed class Transcript
+public sealed partial class Transcript
 {
     public List<ScriptStep> Steps { get; set; } = new();
 
     public static Transcript FromSteps(IReadOnlyList<ScriptStep> steps) => new() { Steps = steps.ToList() };
 
-    public string ToJson() => JsonSerializer.Serialize(new TranscriptDto { Steps = Steps.Select(StepToDto).ToList() }, JsonOptions);
+    public string ToJson() => JsonSerializer.Serialize(new TranscriptDto { Steps = Steps.Select(StepToDto).ToList() }, TranscriptJsonContext.Default.TranscriptDto);
 
     public static Transcript FromJson(string json)
     {
         try
         {
-            var dto = JsonSerializer.Deserialize<TranscriptDto>(json, JsonOptions)
+            var dto = JsonSerializer.Deserialize(json, TranscriptJsonContext.Default.TranscriptDto)
                 ?? throw new ParseException("empty transcript");
             return new Transcript { Steps = dto.Steps.Select(DtoToStep).ToList() };
         }
@@ -53,9 +53,7 @@ public sealed class Transcript
         public string? Data { get; set; }
     }
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = true,
-    };
+    [JsonSourceGenerationOptions(PropertyNamingPolicy=JsonKnownNamingPolicy.CamelCase,WriteIndented=true)]
+    [JsonSerializable(typeof(TranscriptDto))]
+    private partial class TranscriptJsonContext:JsonSerializerContext { }
 }

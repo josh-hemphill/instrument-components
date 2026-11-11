@@ -116,7 +116,7 @@ public sealed partial class DriverRegistry
         var requested = (required ?? []).ToFrozenSet();
         if (!requested.IsSubsetOf(registration.Descriptor.Operations))
             throw Error(DriverErrorKind.UnsupportedOperation, "Required operation outside driver support envelope.");
-        var backend = registration.Factory.Open(new(candidate, ownership));
+        var backend = registration.Factory.Open(new(candidate, ownership, requested));
         try
         {
             var operations = backend.Operations.ToFrozenSet();

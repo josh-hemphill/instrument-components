@@ -5,7 +5,7 @@
     "groups": [
       "Instrument Components"
     ],
-    "description": "SCPI frequency counter.",
+    "description": "Registered counter device capabilities.",
     "settings": [
       {
         "name": "Name",
@@ -20,7 +20,7 @@
       {
         "name": "VisaAddress",
         "type": "System.String",
-        "displayName": "Visa Address",
+        "displayName": "Resource Address",
         "order": 1,
         "group": [
           "Communication"
@@ -38,8 +38,18 @@
         "defaultValue": "5000"
       },
       {
+        "name": "DriverId",
+        "type": "System.String",
+        "displayName": "Driver ID",
+        "order": 3,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
         "name": "IdentityFields",
-        "type": "InstrumentComponents.OpenTap.ScpiIdentityFields",
+        "type": "InstrumentComponents.OpenTap.DeviceIdentityFields",
         "displayName": "Identity",
         "order": 10,
         "group": [],
@@ -58,7 +68,7 @@
     "groups": [
       "Instrument Components"
     ],
-    "description": "SCPI DC power supply.",
+    "description": "Registered dc power supply device capabilities.",
     "settings": [
       {
         "name": "Name",
@@ -73,7 +83,7 @@
       {
         "name": "VisaAddress",
         "type": "System.String",
-        "displayName": "Visa Address",
+        "displayName": "Resource Address",
         "order": 1,
         "group": [
           "Communication"
@@ -91,18 +101,18 @@
         "defaultValue": "5000"
       },
       {
-        "name": "OutputChannelCount",
-        "type": "System.UInt32?",
-        "displayName": "Output Channels",
+        "name": "DriverId",
+        "type": "System.String",
+        "displayName": "Driver ID",
         "order": 3,
         "group": [
           "Communication"
         ],
-        "defaultValue": null
+        "defaultValue": ""
       },
       {
         "name": "IdentityFields",
-        "type": "InstrumentComponents.OpenTap.ScpiIdentityFields",
+        "type": "InstrumentComponents.OpenTap.DeviceIdentityFields",
         "displayName": "Identity",
         "order": 10,
         "group": [],
@@ -121,7 +131,7 @@
     "groups": [
       "Instrument Components"
     ],
-    "description": "SCPI digital multimeter.",
+    "description": "Registered dmm device capabilities.",
     "settings": [
       {
         "name": "Name",
@@ -136,7 +146,7 @@
       {
         "name": "VisaAddress",
         "type": "System.String",
-        "displayName": "Visa Address",
+        "displayName": "Resource Address",
         "order": 1,
         "group": [
           "Communication"
@@ -154,8 +164,18 @@
         "defaultValue": "5000"
       },
       {
+        "name": "DriverId",
+        "type": "System.String",
+        "displayName": "Driver ID",
+        "order": 3,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
         "name": "IdentityFields",
-        "type": "InstrumentComponents.OpenTap.ScpiIdentityFields",
+        "type": "InstrumentComponents.OpenTap.DeviceIdentityFields",
         "displayName": "Identity",
         "order": 10,
         "group": [],
@@ -174,7 +194,7 @@
     "groups": [
       "Instrument Components"
     ],
-    "description": "SCPI function generator.",
+    "description": "Registered function generator device capabilities.",
     "settings": [
       {
         "name": "Name",
@@ -189,7 +209,7 @@
       {
         "name": "VisaAddress",
         "type": "System.String",
-        "displayName": "Visa Address",
+        "displayName": "Resource Address",
         "order": 1,
         "group": [
           "Communication"
@@ -207,8 +227,18 @@
         "defaultValue": "5000"
       },
       {
+        "name": "DriverId",
+        "type": "System.String",
+        "displayName": "Driver ID",
+        "order": 3,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
         "name": "IdentityFields",
-        "type": "InstrumentComponents.OpenTap.ScpiIdentityFields",
+        "type": "InstrumentComponents.OpenTap.DeviceIdentityFields",
         "displayName": "Identity",
         "order": 10,
         "group": [],
@@ -227,7 +257,7 @@
     "groups": [
       "Instrument Components"
     ],
-    "description": "SCPI oscilloscope.",
+    "description": "Registered oscilloscope device capabilities.",
     "settings": [
       {
         "name": "Name",
@@ -242,7 +272,7 @@
       {
         "name": "VisaAddress",
         "type": "System.String",
-        "displayName": "Visa Address",
+        "displayName": "Resource Address",
         "order": 1,
         "group": [
           "Communication"
@@ -260,8 +290,18 @@
         "defaultValue": "5000"
       },
       {
+        "name": "DriverId",
+        "type": "System.String",
+        "displayName": "Driver ID",
+        "order": 3,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
         "name": "IdentityFields",
-        "type": "InstrumentComponents.OpenTap.ScpiIdentityFields",
+        "type": "InstrumentComponents.OpenTap.DeviceIdentityFields",
         "displayName": "Identity",
         "order": 10,
         "group": [],
@@ -280,7 +320,7 @@
     "groups": [
       "Instrument Components"
     ],
-    "description": "SCPI RF power meter.",
+    "description": "Registered power meter device capabilities.",
     "settings": [
       {
         "name": "Name",
@@ -295,7 +335,7 @@
       {
         "name": "VisaAddress",
         "type": "System.String",
-        "displayName": "Visa Address",
+        "displayName": "Resource Address",
         "order": 1,
         "group": [
           "Communication"
@@ -313,8 +353,18 @@
         "defaultValue": "5000"
       },
       {
+        "name": "DriverId",
+        "type": "System.String",
+        "displayName": "Driver ID",
+        "order": 3,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
         "name": "IdentityFields",
-        "type": "InstrumentComponents.OpenTap.ScpiIdentityFields",
+        "type": "InstrumentComponents.OpenTap.DeviceIdentityFields",
         "displayName": "Identity",
         "order": 10,
         "group": [],
@@ -333,7 +383,7 @@
     "groups": [
       "Instrument Components"
     ],
-    "description": "SCPI spectrum analyzer.",
+    "description": "Registered spectrum analyzer device capabilities.",
     "settings": [
       {
         "name": "Name",
@@ -348,7 +398,7 @@
       {
         "name": "VisaAddress",
         "type": "System.String",
-        "displayName": "Visa Address",
+        "displayName": "Resource Address",
         "order": 1,
         "group": [
           "Communication"
@@ -366,8 +416,18 @@
         "defaultValue": "5000"
       },
       {
+        "name": "DriverId",
+        "type": "System.String",
+        "displayName": "Driver ID",
+        "order": 3,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
         "name": "IdentityFields",
-        "type": "InstrumentComponents.OpenTap.ScpiIdentityFields",
+        "type": "InstrumentComponents.OpenTap.DeviceIdentityFields",
         "displayName": "Identity",
         "order": 10,
         "group": [],
@@ -386,7 +446,7 @@
     "groups": [
       "Instrument Components"
     ],
-    "description": "SCPI switch / matrix.",
+    "description": "Registered switch device capabilities.",
     "settings": [
       {
         "name": "Name",
@@ -401,7 +461,7 @@
       {
         "name": "VisaAddress",
         "type": "System.String",
-        "displayName": "Visa Address",
+        "displayName": "Resource Address",
         "order": 1,
         "group": [
           "Communication"
@@ -419,8 +479,18 @@
         "defaultValue": "5000"
       },
       {
+        "name": "DriverId",
+        "type": "System.String",
+        "displayName": "Driver ID",
+        "order": 3,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
         "name": "IdentityFields",
-        "type": "InstrumentComponents.OpenTap.ScpiIdentityFields",
+        "type": "InstrumentComponents.OpenTap.DeviceIdentityFields",
         "displayName": "Identity",
         "order": 10,
         "group": [],

@@ -91,7 +91,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 26
-      - run: node dotnet/tools/gen-registry.ts
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
@@ -134,7 +133,6 @@ jobs:
           dotnet-version: |
             8.0.x
             9.0.x
-      - run: node dotnet/tools/gen-registry.ts
       - run: dotnet build dotnet/src/InstrumentComponents.OpenTap/InstrumentComponents.OpenTap.csproj -c Release -p:CreateOpenTapPackage=true
       - run: node tools/verify-opentap-package.ts "${{ needs.validate.outputs.version }}"
       - uses: actions/upload-artifact@v4

@@ -136,6 +136,8 @@ pub enum ConnectionOwnership {
 pub struct OpenContext<'a> {
     pub candidate: &'a Candidate,
     pub ownership: ConnectionOwnership,
+    /// Requested operations, allowing known connection-specific rejection before IO.
+    pub required: &'a BTreeSet<Operation>,
 }
 
 /// Static application references to factories root implementations for AOT.

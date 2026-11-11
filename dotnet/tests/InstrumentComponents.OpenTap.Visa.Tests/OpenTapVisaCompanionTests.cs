@@ -1,182 +1,51 @@
-using System.Xml.Linq;
+using System.Text;
 using InstrumentComponents.Address;
 using InstrumentComponents.Connect;
-using InstrumentComponents.OpenTap;
+using InstrumentComponents.Drivers;
+using InstrumentComponents.Drivers.Catalog;
+using InstrumentComponents.Errors;
+using InstrumentComponents.Runtime;
 using InstrumentComponents.Scpi;
 using InstrumentComponents.Session;
 using InstrumentComponents.Transport;
-
 namespace InstrumentComponents.OpenTap.Visa.Tests;
-
 public class OpenTapVisaCompanionTests
 {
-    [Fact]
-    [Trait("Category", "Mock")]
-    public void Register_DoesNotOverwriteExistingProvider()
+    [Fact]public void ExplicitFactoriesOpenWithoutProbesAndUseOneOwnedSession()
     {
-        var previous = OpenTapScpiIo.Provider;
-        var existing = new SentinelProvider();
-        OpenTapScpiIo.Provider = existing;
-        try
-        {
-            OpenTapVisa.Register();
-            Assert.Same(existing, OpenTapScpiIo.Provider);
-        }
-        finally
-        {
-            OpenTapScpiIo.Provider = previous;
-        }
+        var opener=new Opener();var provider=new OpenTapVisaDeviceProvider(connector=>[Factory(connector)],_=>new("Example","Device"),opener);
+        using var handle=provider.Open("TCPIP0::192.0.2.1::inst0::INSTR",TimeSpan.FromSeconds(2),new());
+        Assert.Empty(opener.Transport.Writes);Assert.Equal(1.25,new Dmm(handle).MeasureVoltageDc(null).Value);handle.Close();
+        Assert.Equal(new[]{":READ?\n"},opener.Transport.Writes);Assert.Equal(1,opener.Transport.Disposals);Assert.False(opener.Options!.ResetOnConnect);Assert.Equal(0u,opener.Options.Retries);Assert.False(opener.Options.ReconnectOnFailure);
     }
-
-    [Fact]
-    [Trait("Category", "Mock")]
-    public void RegisterOverride_InstallsVisaProvider()
+    [Fact]public void ConfigurationFailureReleasesTransportAndIsTranslated()
     {
-        var previous = OpenTapScpiIo.Provider;
-        OpenTapScpiIo.Provider = new SentinelProvider();
-        try
-        {
-            OpenTapVisa.RegisterOverride();
-            Assert.IsType<OpenTapVisaScpiIoProvider>(OpenTapScpiIo.Provider);
-        }
-        finally
-        {
-            OpenTapScpiIo.Provider = previous;
-        }
+        var opener=new Opener();opener.Transport.FailConfigure=true;var connector=new VisaScpiConnector(opener,TimeSpan.FromSeconds(1));
+        Assert.Equal(DriverErrorKind.Transport,Assert.Throws<DriverException>(()=>connector.Open(new(new(new("scpi","TCPIP0::192.0.2.1::inst0::INSTR"),new()),ConnectionOwnership.Owned))).Kind);Assert.Equal(1,opener.Transport.Disposals);
     }
-
-    [Fact]
-    [Trait("Category", "Mock")]
-    public void Provider_RejectsEmptyAndUnknownAddressesBeforeVisa()
+    [Fact]public void TimeoutsAreNotRetriedAndRequireExplicitRecovery()
     {
-        var provider = new OpenTapVisaScpiIoProvider();
-        Assert.Throws<InstrumentComponents.Errors.InvalidAddressException>(
-            () => provider.Open("  ", TimeSpan.FromSeconds(1)));
-        Assert.Throws<InstrumentComponents.Errors.InvalidAddressException>(
-            () => provider.Open("mock://unspecified", TimeSpan.FromSeconds(1)));
-        Assert.Throws<InstrumentComponents.Errors.InvalidAddressException>(
-            () => provider.Open("not-a-visa-resource", TimeSpan.FromSeconds(1)));
+        var opener=new Opener();opener.Transport.FailRead=true;var provider=new OpenTapVisaDeviceProvider(connector=>[Factory(connector)],_=>new("Example","Device"),opener);
+        using var handle=provider.Open("TCPIP0::192.0.2.1::inst0::INSTR",TimeSpan.FromSeconds(1),new());
+        Assert.Equal(DriverErrorKind.Timeout,Assert.Throws<DriverException>(()=>new Dmm(handle).MeasureVoltageDc(null)).Kind);
+        Assert.Equal(DriverErrorKind.SessionNeedsRecovery,Assert.Throws<DriverException>(()=>new Dmm(handle).MeasureVoltageDc(null)).Kind);Assert.Single(opener.Transport.Writes);
     }
-
-    [Fact]
-    [Trait("Category", "Mock")]
-    public void Provider_DisposesTransport_WhenScpiSessionConstructionFails()
+    [Fact]public void RegistrationIsExplicitAndDoesNotOverwriteAnExistingProvider()
     {
-        var opener = new ThrowingConfigureOpener();
-        var provider = new OpenTapVisaScpiIoProvider(opener);
-        Assert.Throws<InvalidOperationException>(
-            () => provider.Open("USB0::0x2A8D::0x1301::INSTR", TimeSpan.FromSeconds(1)));
-        Assert.True(opener.Transport.Disposed);
+        var previous=OpenTapDevices.Provider;var first=new OpenTapVisaDeviceProvider(c=>[Factory(c)]);var second=new OpenTapVisaDeviceProvider(c=>[Factory(c)]);
+        try{OpenTapVisa.RegisterOverride(first);OpenTapVisa.Register(second);Assert.Same(first,OpenTapDevices.Provider);OpenTapVisa.RegisterOverride(second);Assert.Same(second,OpenTapDevices.Provider);}finally{OpenTapDevices.Provider=previous;}
     }
-
-    [Fact]
-    [Trait("Category", "Mock")]
-    public void Provider_ReturnsFramedScpiSession_NotInjectedIo()
-    {
-        var opener = new IdleOpener();
-        var provider = new OpenTapVisaScpiIoProvider(opener);
-        using var io = provider.Open("USB0::0x2A8D::0x1301::INSTR", TimeSpan.FromSeconds(1));
-        var session = Assert.IsType<ScpiSession>(io);
-        Assert.False(session.IsInjected);
-        Assert.False(session.Options.ResetOnConnect);
+    private static IDriverFactory Factory(IScpiConnector connector)=>new ScpiFactory(new("synthetic.visa",null,[],[new(CatalogOperation.DmmMeasureVoltageDc,[new(":READ?",ResponseRole.Value)])]),"scpi",connector,[new ExactIdentityRule("scpi","Example","Device")]);
+    private sealed class Opener:ISessionOpener{
+        public Wire Transport=new();public ConnectOptions? Options;
+        public ITransport Open(ResourceAddress address,ConnectOptions options){Options=options;return Transport;}
     }
-
-    [Fact]
-    [Trait("Category", "Mock")]
-    public void MainPackCsprojDoesNotReferenceTheCompanionOrVisa()
-    {
-        var packCsproj = Path.Combine(
-            RepoRoot(),
-            "dotnet",
-            "src",
-            "InstrumentComponents.OpenTap",
-            "InstrumentComponents.OpenTap.csproj");
-        var xml = File.ReadAllText(packCsproj);
-        Assert.DoesNotContain("InstrumentComponents.OpenTap.Visa", xml, StringComparison.Ordinal);
-        Assert.DoesNotContain("InstrumentComponents.Visa", xml, StringComparison.Ordinal);
-        Assert.DoesNotContain("IviFoundation.Visa", xml, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    [Trait("Category", "Mock")]
-    public void CompanionCsprojReferencesOpenTapAndVisa()
-    {
-        var path = Path.Combine(
-            RepoRoot(),
-            "dotnet",
-            "src",
-            "InstrumentComponents.OpenTap.Visa",
-            "InstrumentComponents.OpenTap.Visa.csproj");
-        var project = XDocument.Load(path);
-        var includes = project
-            .Descendants("ProjectReference")
-            .Select(node => node.Attribute("Include")?.Value ?? "")
-            .ToList();
-        Assert.Contains(includes, value => value.Contains("InstrumentComponents.OpenTap.csproj", StringComparison.Ordinal));
-        Assert.Contains(includes, value => value.Contains("InstrumentComponents.Visa.csproj", StringComparison.Ordinal));
-    }
-
-    static string RepoRoot()
-    {
-        var dir = new DirectoryInfo(AppContext.BaseDirectory);
-        while (dir is not null)
-        {
-            if (File.Exists(Path.Combine(dir.FullName, "CHANGELOG.md")) &&
-                Directory.Exists(Path.Combine(dir.FullName, "dotnet")))
-            {
-                return dir.FullName;
-            }
-
-            dir = dir.Parent;
-        }
-
-        throw new InvalidOperationException("could not locate repo root");
-    }
-
-    sealed class SentinelProvider : IOpenTapScpiIoProvider
-    {
-        public IScpiIo Open(string visaAddress, TimeSpan ioTimeout) =>
-            throw new InvalidOperationException("sentinel provider must not open");
-    }
-
-    sealed class ThrowingConfigureOpener : ISessionOpener
-    {
-        public DisposableTransport Transport { get; } = new() { ThrowOnConfigure = true };
-
-        public ITransport Open(ResourceAddress address, ConnectOptions opts) => Transport;
-    }
-
-    sealed class IdleOpener : ISessionOpener
-    {
-        public ITransport Open(ResourceAddress address, ConnectOptions opts) => new DisposableTransport();
-    }
-
-    sealed class DisposableTransport : TransportBase, IDisposable
-    {
-        public bool Disposed { get; private set; }
-        public bool ThrowOnConfigure { get; set; }
-
-        public override void Write(ReadOnlySpan<byte> data)
-        {
-        }
-
-        public override int Read(Span<byte> buffer) => 0;
-
-        public override void Clear()
-        {
-        }
-
-        public override void SetReadTimeout(TimeSpan timeout)
-        {
-        }
-
-        public override void Configure(ConnectOptions opts)
-        {
-            if (ThrowOnConfigure)
-                throw new InvalidOperationException("configure failed");
-            base.Configure(opts);
-        }
-
-        public void Dispose() => Disposed = true;
+    private sealed class Wire:TransportBase,IDisposable{
+        public List<string> Writes=[];public int Disposals;public bool FailConfigure,FailRead;
+        public override void Configure(ConnectOptions options){if(FailConfigure)throw new TransportException("configuration failed");base.Configure(options);}
+        public override void Write(ReadOnlySpan<byte> data)=>Writes.Add(Encoding.UTF8.GetString(data));
+        public override int Read(Span<byte> buffer){if(FailRead)throw new InstrumentTimeoutException();var data="1.25\n"u8;data.CopyTo(buffer);return data.Length;}
+        public override void Clear(){}public override void SetReadTimeout(TimeSpan timeout){}
+        public void Dispose()=>Disposals++;
     }
 }

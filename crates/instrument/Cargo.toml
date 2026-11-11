@@ -1,75 +1,18 @@
 [package]
 name = "instrument-components"
-description = "High-level instrument discovery and typed IVI-inspired classes over VISA"
-version.workspace = true
-edition.workspace = true
-license.workspace = true
-repository.workspace = true
-homepage.workspace = true
-documentation = "https://docs.rs/instrument-components"
-readme.workspace = true
-keywords.workspace = true
-categories.workspace = true
-rust-version.workspace = true
-
+version = "0.2.0-alpha.1"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "Protocol-neutral instrument catalog and explicit build-time driver composition"
+repository = "https://github.com/josh-hemphill/instrument-components"
+readme = "../../README.md"
 [lib]
 name = "instrument"
-
 [dependencies]
-instrument-core.workspace = true
-instrument-visa = { workspace = true, optional = true }
-thiserror.workspace = true
-tracing.workspace = true
-tokio = { workspace = true, optional = true }
-
+instrument-api = { path = "../instrument-api", version = "=0.2.0-alpha.1" }
+instrument-runtime = { path = "../instrument-runtime", version = "=0.2.0-alpha.1" }
 [features]
-default = ["visa"]
-visa = ["dep:instrument-visa"]
-tokio = ["instrument-core/async", "dep:tokio", "instrument-visa?/tokio"]
-cross-compile = ["instrument-visa?/cross-compile"]
-record = ["instrument-core/record"]
-
-[[example]]
-name = "discover"
-required-features = ["visa"]
-
-[[example]]
-name = "dmm_measure"
-required-features = ["visa"]
-
-[[example]]
-name = "manual_tcpip"
-required-features = ["visa"]
-
-[[example]]
-name = "mock_fixture_ci"
-required-features = []
-
-[[example]]
-name = "assign_instruments"
-required-features = ["visa"]
-
-[[example]]
-name = "mock_fixture_ci_async"
-required-features = ["tokio"]
-
-[[example]]
-name = "discover_async"
-required-features = ["visa", "tokio"]
-
+default = []
+async = ["instrument-api/async", "instrument-runtime/async"]
 [dev-dependencies]
-instrument-core.workspace = true
-serde_json.workspace = true
-tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
-
-[[test]]
-name = "hardware"
-required-features = ["visa"]
-
-[[test]]
-name = "async_mock_catalog"
-required-features = ["tokio"]
-
-[[test]]
-name = "async_discovery_static"
-required-features = ["tokio"]
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }

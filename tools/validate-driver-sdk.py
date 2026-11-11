@@ -116,17 +116,20 @@ def main():
     (cargo_home/'config.toml').write_text('[source.crates-io]\nreplace-with="sdk"\n[source.sdk]\ndirectory='+json.dumps(str(registry))+'\n')
     cargo_env = dict(CARGO_HOME=str(cargo_home), CARGO_TARGET_DIR=str(work/'cargo-target'))
     workspace = tomllib.loads((ROOT/'Cargo.toml').read_text())['workspace']['package']; inventory = [dict(package='cargo-dependencies', archive=str(work/'cargo-dependencies.tar.gz'), sha256=hashlib.sha256((work/'cargo-dependencies.tar.gz').read_bytes()).hexdigest())]
-    crate_sources = [ROOT/'crates'/n for n in ['instrument-api', 'instrument-runtime', 'instrument-scpi', 'instrument-testkit']]+[ROOT/'validation/driver-sdk/rust-provider']
+    crate_sources = [ROOT/'crates'/n for n in ['instrument-api', 'instrument-runtime', 'instrument-scpi', 'instrument-testkit', 'instrument']]+[ROOT/'validation/driver-sdk/rust-provider']
     for source in crate_sources:
         manifest = (source/'Cargo.toml').read_text()
         for key, value in workspace.items():
             manifest = re.sub(rf'(?m)^{re.escape(key)}\.workspace\s*=\s*true\s*$', f'{key} = {json.dumps(value)}', manifest)
         # Preserve the real requirement verbatim; do not strengthen proof metadata.
         manifest = re.sub(r'(?m)^(instrument-[\w-]+)\s*=\s*\{\s*path\s*=\s*"[^"]+",\s*version\s*=\s*"([^"]+)"\s*\}', r'\1 = "\2"', manifest)
+        manifest=re.sub(r'(?m)^(instrument-[\w-]+)\s*=\s*\{\s*path\s*=\s*"[^"]+",\s*version\s*=\s*"([^"]+)"\s*\}',r'\1 = "\2"',manifest)
+        if source.name=='instrument':manifest=manifest.replace('readme = "../../README.md"','readme = "README.md"')
         if '[workspace]' not in manifest: manifest += '\n[workspace]\n'
         meta = tomllib.loads(manifest); name = meta['package']['name']; version = meta['package']['version']
         check_rust_pins(meta)
         stage = work/'rust-packages'/name; shutil.copytree(source/'src', stage/'src', ignore=IGNORE); (stage/'Cargo.toml').write_text(manifest)
+        if source.name=='instrument':shutil.copy2(ROOT/'README.md',stage/'README.md')
         if 'path =' in manifest: raise RuntimeError('Source path dependency in staged crate')
         run('pack-'+name, ['cargo', 'package', '--offline', '--allow-dirty', '--no-verify'], stage, cargo_env)
         archive = work/'cargo-target/package'/f'{name}-{version}.crate'
@@ -142,6 +145,7 @@ def main():
     for label, source in [('binary', ROOT/'validation/driver-sdk/rust-consumer'), ('scpi', ROOT/'validation/scpi/rust-consumer')]:
         consumer = work/('rust-'+label+'-consumer'); shutil.copytree(source, consumer, ignore=IGNORE)
         if label == 'scpi':
+            shutil.copy2(ROOT/'validation/scpi/endpoint-proof.rs',consumer/'src/endpoint_proof.rs')
             for f in ['profiles.rs', 'cases.rs']: shutil.copy2(generated/f, consumer/'src'/f)
             for original,target in [('profiles.rs','choice_profiles.rs'),('cases.rs','choice_cases.rs')]:shutil.copy2(choice_generated/original,consumer/'src'/target)
         for feature in ['', 'async']:
@@ -162,7 +166,8 @@ def main():
     feed=work/'nuget-feed';feed.mkdir()
     (work/'dotnet-pack-sources/dotnet').mkdir(parents=True)
     shutil.copy2(ROOT/'dotnet/DriverSdk.Package.targets',work/'dotnet-pack-sources/dotnet/DriverSdk.Package.targets')
-    expected={'InstrumentComponents.Abstractions':set(),'InstrumentComponents.Runtime':{'InstrumentComponents.Abstractions'},'InstrumentComponents.Scpi':{'InstrumentComponents.Abstractions'},'InstrumentComponents.TestKit':{'InstrumentComponents.Scpi'},'InstrumentComponents.SyntheticDriver':{'InstrumentComponents.Abstractions'}}
+    shutil.copy2(ROOT/'dotnet/README.md',work/'dotnet-pack-sources/dotnet/README.md')
+    expected={'InstrumentComponents.Abstractions':set(),'InstrumentComponents.Runtime':{'InstrumentComponents.Abstractions'},'InstrumentComponents.Scpi':{'InstrumentComponents.Abstractions'},'InstrumentComponents.TestKit':{'InstrumentComponents.Scpi'},'InstrumentComponents.SyntheticDriver':{'InstrumentComponents.Abstractions'},'InstrumentComponents':{'InstrumentComponents.Runtime'}}
     for name in expected:
         source=ROOT/'validation/driver-sdk/dotnet-provider' if name.endswith('SyntheticDriver') else ROOT/'dotnet/src'/name
         stage=work/'dotnet-pack-sources'/source.relative_to(ROOT)
@@ -182,6 +187,7 @@ def main():
             if any(n.endswith(('.json','.toml')) or 'vendors/' in n for n in packed.namelist()):raise RuntimeError('Driver data in SDK package')
             inventory.append(dict(package=name,archive=str(archive),sha256=hashlib.sha256(archive.read_bytes()).hexdigest(),dependencies=ranges,files=packed.namelist()))
     aot=work/'dotnet-consumer';shutil.copytree(ROOT/'validation/driver-sdk/dotnet-consumer',aot,ignore=IGNORE)
+    shutil.copy2(ROOT/'validation/scpi/EndpointProof.cs',aot/'EndpointProof.cs')
     # Restore evaluates the project's declared framework independently of publish's
     # TargetFramework override. Keep the copied project and selected target equal.
     project=aot/'AotConsumer.csproj'
@@ -189,7 +195,7 @@ def main():
     for f in ['GeneratedProfiles.cs','GeneratedCases.cs']:shutil.copy2(generated/f,aot/f)
     for f in ['GeneratedProfiles.cs','GeneratedCases.cs']:shutil.copy2(choice_generated/f,aot/('Choice'+f))
     config=aot/'NuGet.Config'
-    config.write_text(f'<configuration><packageSources><clear/><add key="local" value="{feed}"/><add key="nuget" value="https://api.nuget.org/v3/index.json"/></packageSources><packageSourceMapping><packageSource key="local"><package pattern="InstrumentComponents.*"/></packageSource><packageSource key="nuget"><package pattern="Microsoft.*"/><package pattern="runtime.*"/><package pattern="System.*"/></packageSource></packageSourceMapping></configuration>\n')
+    config.write_text(f'<configuration><packageSources><clear/><add key="local" value="{feed}"/><add key="nuget" value="https://api.nuget.org/v3/index.json"/></packageSources><packageSourceMapping><packageSource key="local"><package pattern="InstrumentComponents*"/></packageSource><packageSource key="nuget"><package pattern="Microsoft.*"/><package pattern="runtime.*"/><package pattern="System.*"/></packageSource></packageSourceMapping></configuration>\n')
     nuget_env=dict(NUGET_PACKAGES=str(work/'fresh-nuget-cache'))
     publish=['dotnet','publish','AotConsumer.csproj','-c','Release','-r',rid,'--framework',args.framework,'--self-contained','true','-o',work/'native','--configfile',config]
     if args.cpp_compiler:publish.append('-p:CppCompilerAndLinker='+args.cpp_compiler)

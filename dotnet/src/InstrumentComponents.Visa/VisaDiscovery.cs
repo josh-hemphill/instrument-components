@@ -1,15 +1,7 @@
-using InstrumentComponents.Discovery;
-using InstrumentComponents.Registry;
-using InstrumentComponents.Session;
-
+using InstrumentComponents.Enumerator;
 namespace InstrumentComponents.Visa;
-
+/// <summary>Opt-in VISA enumeration. The host supplies identity evidence and registered factories.</summary>
 public static class VisaDiscovery
 {
-    /// <summary>Creates a discovery builder wired to the local VISA resource manager.</summary>
-    public static global::InstrumentComponents.Discovery.Discovery Create()
-    {
-        var opener = new VisaSessionOpener();
-        return new global::InstrumentComponents.Discovery.Discovery(new VisaEnumerator(), opener, ModelRegistry.Embedded(), opener);
-    }
+    public static IResourceEnumerator Enumerator()=>new VisaEnumerator();
 }

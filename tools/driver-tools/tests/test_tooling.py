@@ -14,20 +14,11 @@ ROOT=Path(__file__).resolve().parents[3]
 sys.path.insert(0,str(ROOT/'tools/driver-tools/src'))
 from instrument_driver_tools.cli import main, read_json
 from instrument_driver_tools.profiles import validate,emit,catalogue
-from instrument_driver_tools.inventory import inventory
 
 
 class ToolingTests(unittest.TestCase):
     def setUp(self):
         self.profiles=json.loads((ROOT/'validation/scpi/profiles.json').read_text(encoding='utf-8'))
-    def test_preservation_inventory_reconciles_authoritative_sources(self):
-        data=inventory(ROOT)
-        self.assertEqual(len(data['modelHints']),47);self.assertEqual(len(data['usbHints']),1)
-        self.assertEqual(len(data['classOperations']),8);self.assertEqual(len(data['dialectProfiles']),13)
-        self.assertEqual(data,json.loads((ROOT/'spec/device-migration-inventory.json').read_text(encoding='utf-8')))
-        self.assertTrue(all(row['disposition']!='UNMAPPED' for row in data['operationLedger']))
-        self.assertFalse(any(row['hardwareValidated'] for row in data['modelHints']))
-        self.assertTrue({'keysight_sensor','keysight_xseries','rigol_dsa'}.issubset({p['profile']['id'] for p in data['dialectProfiles']}))
     def test_bundle_has_semantic_contract_without_private_source_paths(self):
         source=json.loads((ROOT/'spec/driver-operations.json').read_text(encoding='utf-8'))
         source['operations']=[{k:v for k,v in op.items() if k!='source'} for op in source['operations']]

@@ -1,59 +1,60 @@
 using InstrumentComponents.Address;
 using InstrumentComponents.Connect;
+using InstrumentComponents.Drivers;
 using InstrumentComponents.Errors;
+using InstrumentComponents.Runtime;
 using InstrumentComponents.Scpi;
 using InstrumentComponents.Session;
-using InstrumentComponents.Transport;
 using InstrumentComponents.Visa;
 
 namespace InstrumentComponents.OpenTap.Visa;
 
-/// <summary>Registers a VISA-backed <see cref="IOpenTapScpiIoProvider"/> without the main pack importing IVI.</summary>
+/// <summary>Optional standard VISA connector; no model matching, driver data or probes.</summary>
+public sealed class VisaScpiConnector(ISessionOpener opener,TimeSpan timeout) : IScpiConnector
+{
+    public IMessageIo Open(DriverOpenContext context)
+    {
+        try {
+        var address=ResourceAddress.Parse(context.Candidate.Endpoint.Address);
+        var options=new ConnectOptions{OpenTimeout=timeout,ReadTimeout=timeout,WriteTimeout=timeout,PerOpTimeout=timeout,ResetOnConnect=false,Retries=0,ReconnectOnFailure=false};
+        var transport=opener.Open(address,options);
+        // ScpiSession takes ownership and disposes transport when configuration fails.
+        return new Message(new ScpiSession(transport,options));
+        }catch(InstrumentException error){throw Convert(error);}
+    }
+    private static DriverException Convert(InstrumentException error){
+        var kind=error is InvalidAddressException?DriverErrorKind.InvalidArgument:DriverErrorKind.Transport;
+        for(Exception? current=error;current is not null;current=current.InnerException)if(current is InstrumentTimeoutException or TimeoutException)kind=DriverErrorKind.Timeout;
+        return new DriverException(kind,error.Message,error);
+    }
+    private sealed class Message(ScpiSession session):IMessageIo
+    {
+        private static T Translate<T>(Func<T> call){try{return call();}catch(InstrumentException error){throw Convert(error);}}
+        public void Write(string message)=>Translate(()=>{session.Write(message);return true;});
+        public string Query(string message)=>Translate(()=>session.Query(message));
+        // Byte/session recovery requires explicit host resynchronization; no flush or reset inferred.
+        public void Dispose()=>session.Dispose();
+    }
+}
+/// <summary>Application supplies static driver registrations and passive identity evidence.
+/// Native async is available through separately supplied native connectors; this adapter is sync/worker.</summary>
+public sealed class OpenTapVisaDeviceProvider : IOpenTapDeviceProvider
+{
+    private readonly Func<IScpiConnector,IEnumerable<IDriverFactory>> _factories;
+    private readonly Func<string,Drivers.DeviceIdentity> _identity;
+    private readonly ISessionOpener _opener;
+    public OpenTapVisaDeviceProvider(Func<IScpiConnector,IEnumerable<IDriverFactory>> factories,
+        Func<string,Drivers.DeviceIdentity>? identity=null,ISessionOpener? opener=null)
+    {_factories=factories;_identity=identity ?? (_=>new());_opener=opener ?? new VisaSessionOpener();}
+    public DeviceHandle Open(string address,TimeSpan timeout,DriverSelection selection)
+    {
+        var connector=new VisaScpiConnector(_opener,timeout);
+        var registry=new DriverRegistry(_factories(connector));
+        return registry.Open(new(new("scpi",address),_identity(address)),selection);
+    }
+}
 public static class OpenTapVisa
 {
-    /// <summary>Assigns the VISA provider only when none is registered.</summary>
-    public static void Register() =>
-        OpenTapScpiIo.Provider ??= new OpenTapVisaScpiIoProvider();
-
-    /// <summary>Replaces the process-wide provider with the VISA implementation.</summary>
-    public static void RegisterOverride() =>
-        OpenTapScpiIo.Provider = new OpenTapVisaScpiIoProvider();
-}
-
-/// <summary>Opens NI/Keysight VISA message sessions for OpenTAP <c>VisaAddress</c>.</summary>
-public sealed class OpenTapVisaScpiIoProvider : IOpenTapScpiIoProvider
-{
-    private readonly ISessionOpener _opener;
-
-    public OpenTapVisaScpiIoProvider() : this(new VisaSessionOpener())
-    {
-    }
-
-    public OpenTapVisaScpiIoProvider(ISessionOpener opener)
-    {
-        _opener = opener ?? throw new ArgumentNullException(nameof(opener));
-    }
-
-    public IScpiIo Open(string visaAddress, TimeSpan ioTimeout)
-    {
-        if (string.IsNullOrWhiteSpace(visaAddress))
-            throw new InvalidAddressException("empty address");
-
-        var address = ResourceAddress.Parse(visaAddress);
-        if (address.Interface == InterfaceKind.Unknown)
-            throw new InvalidAddressException(visaAddress);
-
-        var timeout = ioTimeout <= TimeSpan.Zero ? TimeSpan.FromSeconds(5) : ioTimeout;
-        var opts = new ConnectOptions
-        {
-            OpenTimeout = timeout,
-            ReadTimeout = timeout,
-            WriteTimeout = timeout,
-            PerOpTimeout = timeout,
-            ResetOnConnect = false,
-        };
-
-        var transport = _opener.Open(address, opts);
-        return new ScpiSession(transport, opts);
-    }
+    public static void Register(IOpenTapDeviceProvider provider)=>OpenTapDevices.Provider ??= provider;
+    public static void RegisterOverride(IOpenTapDeviceProvider provider)=>OpenTapDevices.Provider=provider;
 }

@@ -23,30 +23,57 @@ public interface IScpiConnector { IMessageIo Open(DriverOpenContext context); }
 public interface IAsyncScpiConnector { ValueTask<IAsyncMessageIo> OpenAsync(DriverOpenContext context, CancellationToken cancellationToken = default); }
 /// <summary>IEEE Std 488.2 common commands. Nothing sends these implicitly.</summary>
 public static class Ieee4882 { public const string Identity = "*IDN?", Reset = "*RST", Completion = "*OPC?", Trigger = "*TRG"; }
+internal sealed class EndpointProfiles
+{
+    private readonly ScpiProfile _default;
+    private readonly FrozenDictionary<(string Scheme,string Address),ScpiProfile> _routes;
+    public IReadOnlySet<Operation> Operations {get;}
+    private static (string,string) Key(Endpoint e)=>(string.Concat(e.Scheme.Trim().Select(c=>c is >= 'A' and <= 'Z'?(char)(c+32):c)),e.Address);
+    public EndpointProfiles(ScpiProfile profile,IEnumerable<KeyValuePair<Endpoint,ScpiProfile>>? endpoints)
+    {
+        _default=profile;var routes=new Dictionary<(string,string),ScpiProfile>();
+        foreach(var (endpoint,value) in endpoints ?? []){
+            if(routes.Count>=4096 || string.IsNullOrWhiteSpace(endpoint.Scheme) || string.IsNullOrEmpty(endpoint.Address) || value.Id!=profile.Id || !routes.TryAdd(Key(endpoint),value))throw new DriverException(DriverErrorKind.DriverContractViolation,"Invalid, duplicate or noncanonical endpoint profile");
+        }
+        _routes=routes.ToFrozenDictionary();Operations=routes.Values.SelectMany(p=>p.Operations).Concat(profile.Operations).ToFrozenSet();
+    }
+    public ScpiProfile Select(DriverOpenContext context)
+    {
+        var profile=_routes.GetValueOrDefault(Key(context.Candidate.Endpoint),_default);
+        if(context.RequiredOperations is {} required && !required.IsSubsetOf(profile.Operations))throw new DriverException(DriverErrorKind.UnsupportedOperation,"Required capability unavailable for this endpoint");
+        return profile;
+    }
+}
 public sealed class ScpiFactory : IDriverFactory
 {
-    private readonly ScpiProfile _profile; private readonly IScpiConnector _connector; private readonly IAsyncScpiConnector? _native; private readonly string _scheme;
-    public DriverDescriptor Descriptor { get; }
-    public IReadOnlySet<ExecutionMode> ExecutionModes { get; }
-    public ScpiFactory(ScpiProfile profile, string scheme, IScpiConnector connector, IEnumerable<MatchRule>? rules = null, IAsyncScpiConnector? nativeConnector = null)
-    { _profile = profile; _connector = connector; _native = nativeConnector; _scheme = scheme; ExecutionModes = (nativeConnector is null ? new[] { ExecutionMode.Sync, ExecutionMode.WorkerAsync } : new[] { ExecutionMode.Sync, ExecutionMode.WorkerAsync, ExecutionMode.NativeAsync }).ToFrozenSet(); Descriptor = new(profile.Id, DriverContract.Major, rules ?? [new StandardScpiRule(scheme)], profile.Operations); }
-    public ValueTask<IAsyncDeviceBackend> OpenNativeAsync(DriverOpenContext context, CancellationToken cancellationToken = default) => _native is null
-        ? ValueTask.FromException<IAsyncDeviceBackend>(new DriverException(DriverErrorKind.UnsupportedExecutionMode,"Native connector not configured"))
-        : new AsyncScpiFactory(_profile,_scheme,_native,Descriptor.Rules).OpenNativeAsync(context,cancellationToken);
-    public IDeviceBackend Open(DriverOpenContext context) => new ScpiDevice(_profile, _connector.Open(context), context.Ownership);
+    private readonly EndpointProfiles _profiles;private readonly IScpiConnector _connector;private readonly IAsyncScpiConnector? _native;
+    public DriverDescriptor Descriptor {get;}
+    public IReadOnlySet<ExecutionMode> ExecutionModes {get;}
+    public ScpiFactory(ScpiProfile profile,string scheme,IScpiConnector connector,IEnumerable<MatchRule>? rules=null,IAsyncScpiConnector? nativeConnector=null,IEnumerable<KeyValuePair<Endpoint,ScpiProfile>>? endpointProfiles=null)
+    {
+        _profiles=new(profile,endpointProfiles);_connector=connector;_native=nativeConnector;
+        ExecutionModes=(nativeConnector is null?new[]{ExecutionMode.Sync,ExecutionMode.WorkerAsync}:new[]{ExecutionMode.Sync,ExecutionMode.WorkerAsync,ExecutionMode.NativeAsync}).ToFrozenSet();
+        Descriptor=new(profile.Id,DriverContract.Major,rules ?? [new StandardScpiRule(scheme)],_profiles.Operations);
+    }
+    public async ValueTask<IAsyncDeviceBackend> OpenNativeAsync(DriverOpenContext context,CancellationToken cancellationToken=default)
+    {
+        if(_native is null)throw new DriverException(DriverErrorKind.UnsupportedExecutionMode,"Native connector not configured");
+        var profile=_profiles.Select(context);cancellationToken.ThrowIfCancellationRequested();var io=await _native.OpenAsync(context,cancellationToken).ConfigureAwait(false);
+        try{cancellationToken.ThrowIfCancellationRequested();return new AsyncScpiDevice(profile,io,context.Ownership);}catch{if(context.Ownership==ConnectionOwnership.Owned)io.Dispose();throw;}
+    }
+    public IDeviceBackend Open(DriverOpenContext context){var profile=_profiles.Select(context);return new ScpiDevice(profile,_connector.Open(context),context.Ownership);}
 }
 public sealed class AsyncScpiFactory : IDriverFactory
 {
-    private readonly ScpiProfile _profile; private readonly IAsyncScpiConnector _connector;
-    public DriverDescriptor Descriptor { get; }
-    public IReadOnlySet<ExecutionMode> ExecutionModes { get; } = new[] { ExecutionMode.NativeAsync }.ToFrozenSet();
-    public AsyncScpiFactory(ScpiProfile profile, string scheme, IAsyncScpiConnector connector, IEnumerable<MatchRule>? rules = null)
-    { _profile = profile; _connector = connector; Descriptor = new(profile.Id, DriverContract.Major, rules ?? [new StandardScpiRule(scheme)], profile.Operations); }
-    public async ValueTask<IAsyncDeviceBackend> OpenNativeAsync(DriverOpenContext context, CancellationToken cancellationToken = default)
+    private readonly EndpointProfiles _profiles;private readonly IAsyncScpiConnector _connector;
+    public DriverDescriptor Descriptor{get;}
+    public IReadOnlySet<ExecutionMode> ExecutionModes=>new HashSet<ExecutionMode>{ExecutionMode.NativeAsync}.ToFrozenSet();
+    public AsyncScpiFactory(ScpiProfile profile,string scheme,IAsyncScpiConnector connector,IEnumerable<MatchRule>? rules=null,IEnumerable<KeyValuePair<Endpoint,ScpiProfile>>? endpointProfiles=null)
+    {_profiles=new(profile,endpointProfiles);_connector=connector;Descriptor=new(profile.Id,DriverContract.Major,rules ?? [new StandardScpiRule(scheme)],_profiles.Operations);}
+    public async ValueTask<IAsyncDeviceBackend> OpenNativeAsync(DriverOpenContext context,CancellationToken cancellationToken=default)
     {
-        cancellationToken.ThrowIfCancellationRequested(); var io = await _connector.OpenAsync(context, cancellationToken).ConfigureAwait(false);
-        try { cancellationToken.ThrowIfCancellationRequested(); return new AsyncScpiDevice(_profile, io, context.Ownership); }
-        catch { if (context.Ownership == ConnectionOwnership.Owned) io.Dispose(); throw; }
+        var profile=_profiles.Select(context);cancellationToken.ThrowIfCancellationRequested();var io=await _connector.OpenAsync(context,cancellationToken).ConfigureAwait(false);
+        try{cancellationToken.ThrowIfCancellationRequested();return new AsyncScpiDevice(profile,io,context.Ownership);}catch{if(context.Ownership==ConnectionOwnership.Owned)io.Dispose();throw;}
     }
 }
 internal sealed class ScpiDevice(ScpiProfile profile, IMessageIo io, ConnectionOwnership ownership)

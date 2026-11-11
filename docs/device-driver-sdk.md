@@ -167,7 +167,9 @@ before allocation; the interpreter rechecks the 1 MiB response limit and rejects
 NUL. Commands are printable ASCII, bounded to 64 KiB, with at most 32 plan steps.
 Argument tokens use closed explicit mappings, never arbitrary wire fragments.
 Numeric formatting/parsing is invariant, finite and strict. Scalar overload has an
-explicit status. Samples/traces are owned, finite and bounded to one million points.
+explicit driver-reported status. The generic numeric parser does not infer device
+overload from magnitude; interpretation of sentinel values belongs to the device
+implementation. OpenTAP preserves reported overload as a failed verdict. Samples/traces are owned, finite and bounded to one million points.
 The current scope waveform contract remains ASCII preamble plus data; binary scope
 capture was not present in the old library and is not introduced here.
 
@@ -342,3 +344,11 @@ package composition and native execution, not public-registry availability.
 Production device manifests still declare exact versioned registry dependencies;
 no sibling paths, copied SDK binaries or main-repository checkout enter their
 consumer builds. Registry publication remains a separate release gate.
+
+## Current application boundary
+
+The facade and OpenTAP now consume explicitly registered protocol-neutral handles. The main model registry is empty; device hints, templates and exceptions live in five external repositories. There are no compatibility constructors or raw session escape adapters. All class views of a multifunction device share one handle. See `spec/device-extraction-index.json` for the full source-to-case ownership ledger and `docs-site/docs/getting-started.md` for the new API.
+
+SCPI factories now accept immutable endpoint-specific profiles under one canonical ID. They select the endpoint profile and reject missing required operations before connector IO. Supported channels and complete outputs remain distinct. External `ConnectionBinding` wrappers apply model-owned token and shutdown plans; the shared interpreter knows no model names.
+
+Publisher provisioning automation is in `tools/publisher-setup`. Policy setup, first publication, public-registry consumer validation, and physical evidence remain separate gates. The helper does not publish packages.

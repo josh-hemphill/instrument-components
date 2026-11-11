@@ -1021,3 +1021,16 @@ fn inventory_binding_is_frozen_before_open_and_shutdown_attempts_sparse_outputs(
     assert_eq!(handle.close(true).unwrap_err().kind, ErrorKind::Shutdown);
     script.assert_complete().unwrap();
 }
+
+#[test]
+fn metadata_only_inventory_rebind_does_not_drop_channel_count() {
+    let profile=Profile::new("synthetic.count_binding",Some(vec![1]),Some(vec![Output::DcPowerSupply(1)]),vec![Plan::new(CatalogOperation::DcPowerSupplyChannelCount,vec![])]).unwrap();
+    let bound=profile.bind_inventory(&InventoryBinding{channels:Some(vec![]),outputs:Some(vec![])},None).unwrap();
+    let script=Script::new([ScriptStep::Close(Ok(()))]);let handle=open_profile(bound,&script,ConnectionOwnership::Owned);
+    assert_eq!(handle.invoke(CatalogRequest::DcPowerSupplyChannelCount).unwrap(),CatalogReply::Count(0));handle.close(false).unwrap();script.assert_complete().unwrap();
+}
+
+include!("../../endpoint-proof.rs");
+#[test]fn immutable_endpoint_profiles_keep_per_connection_support(){endpoint_proof::sync().unwrap();}
+#[cfg(feature="async")]
+#[tokio::test]async fn endpoint_profiles_match_native_and_worker_frontends(){endpoint_proof::asynchronous().await.unwrap();}

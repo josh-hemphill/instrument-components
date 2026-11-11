@@ -1,41 +1,7 @@
-# Errors (Rust)
+# Errors and evidence
 
-Core errors live in `instrument_core::Error` (re-exported via `instrument::prelude::*` as `Error` / `Result`).
+Rust `DriverError.kind` and C# `DriverException.Kind` report shared categories: invalid arguments, missing/ambiguous drivers, unsupported operations/modes, transport/timeout/parse/device failures, recovery required, closing/closed sessions, and shutdown failures.
 
-## Common variants
+Validate arguments, plan variants, channel domains, enum tokens and response roles before IO whenever possible. Unsupported operations must produce no commands. Preserve transport diagnostics without converting failures into fabricated measurement values. Recovery must be explicit after a disrupted operation; do not assume an IO exception means nothing reached the instrument.
 
-| Variant | When |
-|---|---|
-| `Error::Comm` | I/O failed with address + command context |
-| `Error::Timeout` | Operation timed out |
-| `Error::UnsupportedKind` | Device does not support requested class |
-| `Error::DeviceNotFound` | Address or `DeviceId` not in catalog |
-| `Error::Backend` | VISA / backend error (boxed) |
-| `Error::ScpiCommand` | SCPI command failed with message |
-| `Error::Parse` | Response could not be parsed |
-| `Error::Transport` | Low-level transport I/O / closed |
-| `Error::MockExhausted` / `MockMismatch` | Scripted fixture mismatch |
-
-## Pattern matching
-
-```rust
-use instrument::prelude::*;
-
-match catalog.open_dmm(&addr) {
-    Ok(mut dmm) => {
-        let v = dmm.measure_voltage_dc(None)?;
-        println!("{v}");
-    }
-    Err(Error::UnsupportedKind { address, kind, supported }) => {
-        eprintln!("{address}: {kind:?} not in {supported:?}");
-    }
-    Err(Error::Comm { address, command, attempts, source }) => {
-        eprintln!("comm @ {address} after {attempts} tries ({command:?}): {source}");
-    }
-    Err(e) => return Err(e),
-}
-```
-
-## Comm context
-
-Retries wrap underlying failures with `Error::with_comm_context(address, command, attempts)` so technicians see which device and SCPI string failed.
+Measurements carry value, physical unit and status. Unknown temperature units stay Unknown until a device-owned plan or explicit configuration establishes Celsius/Kelvin. Reset/recovery invalidate configured read/fetch units. Finite numeric magnitudes are not universally treated as overload; an implementation must report overload from its own documented device evidence. OpenTAP marks reported overload as a failed result.

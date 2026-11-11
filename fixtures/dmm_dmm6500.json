@@ -1,8 +1,0 @@
-{
-  "steps": [
-    { "op": "write", "data": ":SENS:FUNC \"VOLT:DC\";:READ?\n" },
-    { "op": "read", "data": "1.2345\n" },
-    { "op": "write", "data": ":MEAS:VOLT:DC? 10\n" },
-    { "op": "read", "data": "10.001\n" }
-  ]
-}

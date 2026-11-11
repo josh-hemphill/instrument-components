@@ -1,69 +1,57 @@
-# Self-hosted DMM smoke. Not GitHub-hosted. Does not install vendor VISA.
-#
-# Requires a GitHub Actions runner labeled `self-hosted` and `visa` with:
-#   - NI-VISA or Keysight IO Libraries (linkable libvisa / VISA.NET)
-#   - a connected DMM
-#   - Rust stable (or network to install it) and .NET 8
-#
-# Dispatch: Actions → Hardware smoke → Run workflow → INSTRUMENT_RESOURCE
-# (USB/GPIB/TCPIP INSTR). First passing run is hardware evidence for 0.2.0;
-# landing this workflow is not that evidence.
-name: Hardware smoke
-
+# Physical evidence is collected by an explicitly selected application in a driver
+# repository, after previews pass software/native gates. This is never run by CI.
+name: Explicit external bench application
 on:
   workflow_dispatch:
     inputs:
-      instrument_resource:
-        description: VISA resource string for one DMM (USB, GPIB, or TCPIP INSTR)
+      application_repository:
+        description: Repository containing the reviewed bench application
         required: true
         type: string
-      suite:
-        description: Which language suite to run
+      application_ref:
+        description: Immutable application commit to run
         required: true
-        type: choice
-        options:
-          - both
-          - rust
-          - csharp
-        default: both
-
+        type: string
+      instrument_resource:
+        description: Operator-selected VISA resource; no automatic discovery or driver selection
+        required: true
+        type: string
 permissions:
   contents: read
-
 concurrency:
-  group: hardware-smoke
+  group: instrument-bench
   cancel-in-progress: false
-
 jobs:
-  rust-dmm:
-    name: Rust DMM measure
-    if: ${{ inputs.suite == 'both' || inputs.suite == 'rust' }}
+  bench:
     runs-on: [self-hosted, visa]
     timeout-minutes: 15
-    env:
-      CARGO_TERM_COLOR: always
-      INSTRUMENT_RESOURCE: ${{ inputs.instrument_resource }}
     steps:
+      - name: Validate explicit application reference
+        shell: python
+        env:
+          APP_REPOSITORY: ${{ inputs.application_repository }}
+          APP_REF: ${{ inputs.application_ref }}
+        run: |
+          import os, re
+          if not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+',os.environ['APP_REPOSITORY']):raise SystemExit('Repository owner/name required')
+          if not re.fullmatch(r'[0-9a-f]{40}',os.environ['APP_REF']):raise SystemExit('Immutable 40-character commit required')
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Measure DC voltage
-        run: cargo test -p instrument-components --features visa --test hardware dmm_measure_voltage_dc_smoke -- --ignored --nocapture --exact
-
-  csharp-dmm:
-    name: C# DMM measure
-    needs: rust-dmm
-    if: ${{ !cancelled() && (inputs.suite == 'both' || inputs.suite == 'csharp') }}
-    runs-on: [self-hosted, visa]
-    timeout-minutes: 15
-    env:
-      DOTNET_NOLOGO: true
-      INSTRUMENT_RESOURCE: ${{ inputs.instrument_resource }}
-    steps:
-      - uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.application_repository }}
+          ref: ${{ inputs.application_ref }}
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
-      - name: Measure DC voltage
-        run: dotnet test dotnet/tests/InstrumentComponents.Visa.Tests/InstrumentComponents.Visa.Tests.csproj -c Release --filter "FullyQualifiedName~DmmMeasureVoltageDcSmoke" --logger "console;verbosity=normal"
-      - name: OpenTAP VISA companion measure
-        run: dotnet test dotnet/tests/InstrumentComponents.OpenTap.Visa.Tests/InstrumentComponents.OpenTap.Visa.Tests.csproj -c Release --filter "FullyQualifiedName~OpenTapVisaDmmMeasureVoltageDcSmoke" --logger "console;verbosity=normal"
+      - name: Run reviewed application with its committed bench configuration
+        shell: python
+        env:
+          INSTRUMENT_RESOURCE: ${{ inputs.instrument_resource }}
+        run: |
+          import subprocess
+          subprocess.run(['dotnet','run','--project','validation/bench/Bench.csproj','-c','Release','--','--record','artifacts/bench-evidence.json'],check=True)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: physical-bench-evidence
+          path: artifacts/bench-evidence.json
+          if-no-files-found: warn

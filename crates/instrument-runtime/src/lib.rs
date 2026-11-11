@@ -348,6 +348,7 @@ impl DriverRegistry {
         let mut backend = registration.factory.open(&OpenContext {
             candidate,
             ownership,
+            required,
         })?;
         let operations = backend.operations();
         let invalid = operations

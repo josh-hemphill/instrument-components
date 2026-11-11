@@ -224,4 +224,11 @@ public sealed class ScpiCatalogTests
         Assert.Equal(DriverErrorKind.InvalidArgument,Assert.Throws<DriverException>(()=>h.Invoke(new DcPowerSupplySetVoltageRequest(2,1))).Kind);
         Assert.Equal(DriverErrorKind.Shutdown,Assert.Throws<DriverException>(()=>h.Close(true)).Kind);script.AssertComplete();
     }
+    [Fact]public void MetadataOnlyInventoryRebindKeepsLocalCount()
+    {
+        var profile=new ScpiProfile("synthetic.count_binding",[1],[new(OutputKind.DcPowerSupply,1)],[new(CatalogOperation.DcPowerSupplyChannelCount,[])]);
+        var bound=profile.BindInventory(new([],[]),null);var script=new Script([ScriptStep.Close()]);using var h=Open(bound,script);
+        Assert.Equal(0u,h.Invoke(new DcPowerSupplyChannelCountRequest()).IntoCount());h.Close();script.AssertComplete();
+    }
+    [Fact]public Task ImmutableEndpointProfilesKeepPerConnectionSupport()=>EndpointProof.Run();
 }

@@ -35,8 +35,9 @@ public sealed class ScpiProfile
     public ScpiProfile BindInventory(InventoryBinding binding,IReadOnlyList<Step>? shutdownSteps)
     {
         var plans=OperationPlans.Where(p=>p.Operation is not (CatalogOperation.Shutdown or CatalogOperation.DcPowerSupplyChannelCount)).ToList();
-        var psu=plans.Any(p=>p.Operation.Describe().Kind=="DcPowerSupply");
-        if(psu && binding.Outputs is {Count:0})throw Invalid("PSU capabilities cannot declare zero physical outputs");
+        var psu=OperationPlans.Any(p=>p.Operation.Describe().Kind=="DcPowerSupply");
+        var physicalChannels=OperationPlans.Any(p=>p.Operation.Describe().Kind=="DcPowerSupply" && p.Operation.Describe().Parameters.Any(a=>a.Kind==ParameterKind.Channel));
+        if(physicalChannels && binding.Outputs is {Count:0})throw Invalid("PSU capabilities cannot declare zero physical outputs");
         if(binding.Outputs is not null && psu)plans.Add(new(CatalogOperation.DcPowerSupplyChannelCount,[]));
         if(binding.Outputs is not null && shutdownSteps is not null)plans.Add(new(CatalogOperation.Shutdown,shutdownSteps));
         return new ScpiProfile(Id,binding.Channels,binding.Outputs,plans);
@@ -235,7 +236,7 @@ internal sealed class Engine(ScpiProfile profile)
         return reply;
     }
     private static CatalogReply Numeric(string raw, Unit unit)
-    { var value = ScpiNumbers.Parse(raw); return new CatalogReply.Numeric(new(value, unit, Math.Abs(value) >= 9e36 ? MeasurementStatus.Overload : MeasurementStatus.Valid)); }
+    { var value = ScpiNumbers.Parse(raw); return new CatalogReply.Numeric(new(value, unit, MeasurementStatus.Valid)); }
     private static CatalogReply Identity(string raw)
     { var parts = raw.Trim().Split(',').Select(p => p.Trim()).ToArray(); if (parts.Length != 4 || parts[0].Length == 0 || parts[1].Length == 0) throw ScpiNumbers.ParseError("Identity requires four fields"); return new CatalogReply.Identity(new DeviceIdentity(parts[0], parts[1], parts[2], parts[3])); }
     private static CatalogReply Trace(string raw, string? preamble, Prepared prepared)

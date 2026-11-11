@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 const root = new URL("..", import.meta.url);
 const schemaPath = new URL("spec/opentap-operations.schema.json", root);
 const manifestPath = new URL("spec/opentap-operations.json", root);
-const scpiMapPath = new URL("spec/generic-scpi-map.json", root);
+const sdkCatalogue = JSON.parse(readFileSync(new URL("spec/driver-operations.json",root),"utf8"));
 
 const ID_PATTERN = /^[a-z][a-z0-9_]*$/;
 const STEP_PATTERN = /^[A-Z][A-Za-z0-9]*Step$/;
@@ -21,19 +21,9 @@ const KINDS = new Set([
   "Counter",
   "PowerMeter",
   "SpectrumAnalyzer",
-  "Scpi",
+  "Common",
 ]);
 
-const KIND_TO_GENERIC: Record<string, string> = {
-  Dmm: "generic_dmm",
-  DcPowerSupply: "generic_dcpwr",
-  FunctionGenerator: "generic_fgen",
-  Oscilloscope: "generic_scope",
-  Switch: "generic_switch",
-  Counter: "generic_counter",
-  PowerMeter: "generic_pwrmeter",
-  SpectrumAnalyzer: "generic_specan",
-};
 
 const IMPLEMENTATIONS = new Set(["handwritten", "generated"]);
 const OPERATION_KINDS = new Set(["invoke", "composite", "utility"]);
@@ -84,16 +74,19 @@ function assertNoExtraKeys(raw: Record<string, unknown>, allowed: Set<string>, l
   }
 }
 
-function assertInvoke(raw: Record<string, unknown>, label: string, dialectKeys: Set<string>) {
-  assertNoExtraKeys(raw, new Set(["method", "returns", "dialectKey", "args"]), label);
+function assertInvoke(raw: Record<string, unknown>, label: string, operationIds: Set<string>) {
+  assertNoExtraKeys(raw, new Set(["method", "returns", "operationId", "args"]), label);
   requireString(raw.method, `${label}.method`);
   if (raw.returns != null && !RETURN_TYPES.has(requireString(raw.returns, `${label}.returns`))) {
     throw new Error(`${label}.returns is not a supported return type`);
   }
-  if (raw.dialectKey != null) {
-    const key = requireString(raw.dialectKey, `${label}.dialectKey`);
-    if (!dialectKeys.has(key)) {
-      throw new Error(`${label}.dialectKey ${JSON.stringify(key)} is missing from spec/generic-scpi-map.json`);
+  if (raw.operationId == null) throw new Error(`${label}.operationId is required`);
+  if (raw.operationId != null) {
+    const key = requireString(raw.operationId, `${label}.operationId`);
+    const operation=sdkCatalogue.operations.find((o:{id:string})=>o.id===key);
+    if(operation && raw.method!==key.slice(operation.kind.length))throw new Error(`${label}.method disagrees with operationId`);
+    if (!operationIds.has(key)) {
+      throw new Error(`${label}.operationId ${JSON.stringify(key)} is missing from spec/driver-operations.json`);
     }
   }
   if (raw.args != null) {
@@ -108,17 +101,14 @@ function assertInvoke(raw: Record<string, unknown>, label: string, dialectKeys: 
   }
 }
 
-function dialectKeysFor(kind: string, scpiMap: Record<string, Record<string, unknown>>): Set<string> {
-  const profile = KIND_TO_GENERIC[kind];
-  if (profile == null) return new Set();
-  const commands = scpiMap[profile] ?? {};
-  return new Set(Object.keys(commands));
+function operationIdsFor(kind: string, _contracts: Record<string, Record<string, unknown>>): Set<string> {
+  return new Set(sdkCatalogue.operations.filter((operation: {kind:string})=>operation.kind===kind).map((operation:{id:string})=>operation.id));
 }
 
 function validateOperation(
   raw: Record<string, unknown>,
   index: number,
-  scpiMap: Record<string, Record<string, unknown>>,
+  contracts: Record<string, Record<string, unknown>>,
 ) {
   const label = `operations[${index}]`;
   assertNoExtraKeys(raw, OPERATION_KEYS, label);
@@ -152,10 +142,10 @@ function validateOperation(
   const since = requireString(raw.since, `${label}.since`);
   if (!VERSION_PATTERN.test(since)) throw new Error(`${label}.since is invalid`);
 
-  const dialectKeys = dialectKeysFor(instrumentKind, scpiMap);
+  const operationIds = operationIdsFor(instrumentKind, contracts);
   if (kind === "invoke") {
     requireString(raw.accessor, `${label}.accessor`);
-    assertInvoke(requireObject(raw.invoke, `${label}.invoke`), `${label}.invoke`, dialectKeys);
+    assertInvoke(requireObject(raw.invoke, `${label}.invoke`), `${label}.invoke`, operationIds);
     if (raw.composite != null) throw new Error(`${label}: invoke operations cannot set composite`);
   } else if (kind === "composite") {
     requireString(raw.accessor, `${label}.accessor`);
@@ -166,7 +156,7 @@ function validateOperation(
       assertInvoke(
         requireObject(invoke, `${label}.composite[${invokeIndex}]`),
         `${label}.composite[${invokeIndex}]`,
-        dialectKeys,
+        operationIds,
       );
     }
     if (raw.invoke != null) throw new Error(`${label}: composite operations cannot set invoke`);
@@ -207,10 +197,7 @@ function validateOperation(
 function main() {
   JSON.parse(readFileSync(schemaPath, "utf8"));
   const manifest = requireObject(JSON.parse(readFileSync(manifestPath, "utf8")), "manifest");
-  const scpiMap = requireObject(JSON.parse(readFileSync(scpiMapPath, "utf8")), "generic-scpi-map") as Record<
-    string,
-    Record<string, unknown>
-  >;
+  const contracts = {};
   assertNoExtraKeys(manifest, new Set(["$schema", "version", "operations"]), "manifest");
   if (manifest.version !== 1) throw new Error("manifest.version must be 1");
   if (!Array.isArray(manifest.operations) || manifest.operations.length === 0) {
@@ -221,7 +208,7 @@ function main() {
   const stepTypes = new Set<string>();
   for (const [index, operation] of manifest.operations.entries()) {
     const raw = requireObject(operation, `operations[${index}]`);
-    validateOperation(raw, index, scpiMap);
+    validateOperation(raw, index, contracts);
     const id = raw.id as string;
     const stepTypeName = raw.stepTypeName as string;
     if (ids.has(id)) throw new Error(`duplicate operation id ${id}`);

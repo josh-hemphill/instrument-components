@@ -60,10 +60,10 @@ public sealed class PsuReadbackStep : InstrumentBoundStep<DcPowerSupplyInstrumen
         var psu = instrument.Supply;
         var volts = psu.ReadVoltage(Channel);
         var amps = psu.ReadCurrent(Channel);
-        PhaseIResults.PublishSample(Results, $"CH{Channel}.V", 0, volts);
-        PhaseIResults.PublishSample(Results, $"CH{Channel}.I", 0, amps);
+        PhaseIResults.PublishSample(Results, $"CH{Channel}.V", 0, volts.Value);
+        PhaseIResults.PublishSample(Results, $"CH{Channel}.I", 0, amps.Value);
         PhaseIResults.PublishScalar(Results, $"CH{Channel}.V", volts, "V");
         PhaseIResults.PublishScalar(Results, $"CH{Channel}.I", amps, "A");
-        UpgradeVerdict(Verdict.Pass);
+        UpgradeVerdict(volts.Status==InstrumentComponents.Drivers.MeasurementStatus.Valid && amps.Status==InstrumentComponents.Drivers.MeasurementStatus.Valid ? Verdict.Pass : Verdict.Fail);
     }
 }

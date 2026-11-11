@@ -224,6 +224,7 @@ impl DriverRegistry {
         let context = OpenContext {
             candidate,
             ownership,
+            required,
         };
         let mut resource = Resource(Some(registration.factory.open_native(&context).await?));
         let backend = resource.0.as_deref_mut().unwrap();

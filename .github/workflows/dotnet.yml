@@ -29,14 +29,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 26
-      - run: node dotnet/tools/gen-registry.ts
       - run: node tools/gen-shared-tables.ts
-      - run: node tools/gen-dialects.ts
       - run: node tools/validate-opentap-operations.ts
       - run: node tools/gen-opentap-steps.ts
       - run: git diff --exit-code -- spec/opentap-operations.json spec/opentap-operations.schema.json dotnet/src/InstrumentComponents.OpenTap/Steps/Generated/
-      - run: rustfmt crates/instrument-core/src/classifier/probes.rs crates/instrument-core/src/scpi_commands.rs crates/instrument-core/src/dialect.rs
-      - run: git diff --exit-code -- dotnet/src/InstrumentComponents/Data/model_registry.json dotnet/src/InstrumentComponents/Classifier/CapabilityProbes.cs dotnet/src/InstrumentComponents/Classes/ScpiCommands.cs crates/instrument-core/src/classifier/probes.rs crates/instrument-core/src/scpi_commands.rs crates/instrument-core/src/dialect.rs dotnet/src/InstrumentComponents/Dialects/DialectRegistry.cs
+      - run: rustfmt crates/instrument-core/src/classifier/probes.rs
+      - run: git diff --exit-code -- dotnet/src/InstrumentComponents/Classifier/CapabilityProbes.cs crates/instrument-core/src/classifier/probes.rs
 
   build-test:
     name: Build and test (mock)
@@ -77,6 +75,13 @@ jobs:
       - run: dotnet build dotnet/InstrumentComponents.sln -c Release
       - run: dotnet test dotnet/InstrumentComponents.sln -c Release --no-build --filter "Category!=Hardware"
       - run: dotnet run --project dotnet/examples/OpenTapMockPlan/OpenTapMockPlan.csproj -c Release
+      - name: Pack exact facade prerequisites into the clean development feed
+        shell: pwsh
+        run: |
+          foreach ($name in @('InstrumentComponents.Abstractions','InstrumentComponents.Runtime')) {
+            dotnet pack "dotnet/src/$name/$name.csproj" -c Release --no-build -o "${{ runner.temp }}/net10-packages"
+            if ($LASTEXITCODE -ne 0) { throw "Pack failed: $name" }
+          }
       - run: dotnet pack dotnet/src/InstrumentComponents/InstrumentComponents.csproj -c Release --no-build -o "${{ runner.temp }}/net10-packages"
       - run: dotnet pack dotnet/src/InstrumentComponents.Visa/InstrumentComponents.Visa.csproj -c Release --no-build -o "${{ runner.temp }}/net10-packages"
       - run: dotnet restore dotnet/examples/PackageConsumerSmoke/PackageConsumerSmoke.csproj --configfile dotnet/tools/package-consumer.NuGet.Config --packages "${{ runner.temp }}/net10-consumer-cache"

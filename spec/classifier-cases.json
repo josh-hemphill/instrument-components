@@ -2,12 +2,12 @@
   "version": 1,
   "cases": [
     {
-      "id": "usb-keysight-34401a",
+      "id": "usb-synthetic",
       "layer": "address",
-      "address": "USB0::0x0957::0x0607::SN::INSTR",
+      "address": "USB0::0x1111::0x2222::SN::INSTR",
       "expectedIdentity": {
-        "manufacturer": "Keysight Technologies",
-        "model": "34401A"
+        "manufacturer": "Example Instruments",
+        "model": "TestDmm"
       },
       "expectedKinds": [
         { "kind": "Dmm", "confidence": 40, "source": "ModelRegistry" }
@@ -22,17 +22,17 @@
       ]
     },
     {
-      "id": "idn-keithley-2602b",
+      "id": "idn-combined",
       "layer": "idn",
       "idn": {
-        "manufacturer": "Keithley Instruments",
-        "model": "2602B",
+        "manufacturer": "Example Instruments",
+        "model": "TestCombined",
         "serial": "SN001",
         "firmware": "1.0"
       },
       "expectedIdentity": {
-        "manufacturer": "Keithley Instruments",
-        "model": "2602B"
+        "manufacturer": "Example Instruments",
+        "model": "TestCombined"
       },
       "expectedKinds": [
         { "kind": "Dmm", "confidence": 60, "source": "ModelRegistry" },
@@ -41,11 +41,11 @@
       ]
     },
     {
-      "id": "idn-rigol-dsa815",
+      "id": "idn-spectrum",
       "layer": "idn",
       "idn": {
-        "manufacturer": "Rigol Technologies",
-        "model": "DSA815",
+        "manufacturer": "Example Instruments",
+        "model": "TestSpectrum",
         "serial": "SN",
         "firmware": "1.0"
       },
@@ -55,11 +55,11 @@
       ]
     },
     {
-      "id": "idn-keysight-u2001a",
+      "id": "idn-sensor",
       "layer": "idn",
       "idn": {
-        "manufacturer": "Keysight Technologies",
-        "model": "U2001A",
+        "manufacturer": "Example Instruments",
+        "model": "TestSensor",
         "serial": "SN",
         "firmware": "1.0"
       },
@@ -69,11 +69,11 @@
       ]
     },
     {
-      "id": "idn-rigol-ds1054z",
+      "id": "idn-scope",
       "layer": "idn",
       "idn": {
-        "manufacturer": "Rigol Technologies",
-        "model": "DS1054Z",
+        "manufacturer": "Example Instruments",
+        "model": "TestScope",
         "serial": "SN",
         "firmware": "1.0"
       },

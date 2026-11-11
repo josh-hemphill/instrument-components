@@ -1,0 +1,44 @@
+{
+  "entries": [
+    {
+      "manufacturer": "Example Instruments",
+      "model": "TestCombined",
+      "kinds": [
+        "Dmm",
+        "DcPowerSupply"
+      ]
+    },
+    {
+      "manufacturer": "Example Instruments",
+      "model": "TestSpectrum",
+      "kinds": [
+        "SpectrumAnalyzer"
+      ]
+    },
+    {
+      "manufacturer": "Example Instruments",
+      "model": "TestSensor",
+      "kinds": [
+        "PowerMeter"
+      ]
+    },
+    {
+      "manufacturer": "Example Instruments",
+      "model": "TestScope",
+      "kinds": [
+        "Oscilloscope"
+      ]
+    }
+  ],
+  "usbEntries": [
+    {
+      "vid": "1111",
+      "pid": "2222",
+      "manufacturer": "Example Instruments",
+      "model": "TestDmm",
+      "kinds": [
+        "Dmm"
+      ]
+    }
+  ]
+}

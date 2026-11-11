@@ -12,7 +12,7 @@ public sealed class DmmMeasureVoltageDcStep : SampleMeasurementStep<DmmInstrumen
         if (!TryGetInstrument(out var instrument))
             return;
 
-        AcquireSamples(() => instrument.Dmm.MeasureVoltageDc());
+        AcquireSamples(() => instrument.Dmm.MeasureVoltageDc(null));
     }
 }
 
@@ -30,6 +30,6 @@ public sealed class DmmMeasureScalarStep : OptionalLimitStep<DmmInstrument>
         if (!TryGetInstrument(out var instrument))
             return;
 
-        PublishScalar(MetricName, instrument.Dmm.MeasureVoltageDc(), Unit);
+        PublishScalar(MetricName, instrument.Dmm.MeasureVoltageDc(null), Unit);
     }
 }

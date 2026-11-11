@@ -24,4 +24,5 @@
     <ProjectReference Include="..\..\src\InstrumentComponents\InstrumentComponents.csproj" />
   </ItemGroup>
 
+  <ItemGroup><Using Include="InstrumentComponents.Validation"/><Compile Include="../../../validation/neutral/OpaqueDevice.cs" Link="OpaqueDevice.cs"/></ItemGroup>
 </Project>

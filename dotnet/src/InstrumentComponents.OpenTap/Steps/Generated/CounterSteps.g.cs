@@ -11,7 +11,8 @@ public sealed class CounterReadTotalizeStep : OptionalLimitStep<CounterInstrumen
         if (!TryGetInstrument(out var instrument))
             return;
 
-        PublishScalar("Totalize", instrument.Counter.ReadTotalize(), "");
+        var quantity = instrument.Counter.ReadTotalize();
+        PublishScalar("Totalize", quantity, PhaseIResults.UnitSymbol(quantity.Unit));
     }
 }
 
@@ -59,6 +60,7 @@ public sealed class CounterSetGateTimeStep : InstrumentBoundStep<CounterInstrume
     public CounterSetGateTimeStep()
     {
         Rules.Add(() => double.IsFinite(Seconds), "Gate time must be a finite number.", nameof(Seconds));
+        Rules.Add(() => (Seconds > 0), "Gate time violates the operation's positive constraint.", nameof(Seconds));
     }
 
     public override void Run()

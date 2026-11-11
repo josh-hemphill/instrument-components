@@ -1,61 +1,7 @@
-# VISA (Rust)
+# Optional VISA transport
 
-Hardware I/O goes through the `visa` feature (on by default) and the `instrument-visa` crate, which wraps [visa-rs](https://crates.io/crates/visa-rs).
+VISA is an optional standards transport, supplied by `instrument-visa` or `InstrumentComponents.Visa`. Install a compatible x64 VISA runtime on the bench host. Core contracts, facade, drivers and software validation do not require it.
 
-## Install
+The application must explicitly adapt a VISA message session to the selected driver's connector, supply passive identity evidence, register the chosen driver packages and configure IO timeout before opening. The OpenTAP VISA companion includes `VisaScpiConnector` for sync/worker SCPI IO and a provider accepting a static factory callback. Native async requires an actual async connector; it is not inferred from a sync VISA session.
 
-1. Install [NI-VISA](https://www.ni.com/en-us/support/downloads/drivers/download.ni-visa.html) or [Keysight IO Libraries](https://www.keysight.com/us/en/lib/software-detail/computer-software/io-libraries-suite-downloads-2175637.html).
-2. Depend on the facade crate:
-
-```toml
-[dependencies]
-instrument-components = "0.1"
-```
-
-## Linking
-
-| Variable | Purpose |
-|---|---|
-| `LIB_VISA_PATH` | Directory containing `visa64.lib` / `visa.lib` |
-| `LIB_VISA_NAME` | Library name (`visa64`, `visa32`, `visa`) |
-
-CI runners typically use `default-features = false` so they never link a native VISA library.
-
-## Discovery entry point
-
-```rust
-use instrument::prelude::*;
-
-let catalog = Discovery::visa()?.scan()?;
-catalog.print_summary();
-```
-
-Async: `AsyncDiscovery::visa()?.scan().await?` with the `tokio` feature. Session **open** is still sync; subsequent read/write are async.
-
-## Feature flags
-
-| Feature | Default | Description |
-|---|---|---|
-| `visa` | yes | VISA backend via `instrument-visa` |
-| `tokio` | no | Async API over visa-rs tokio adapter |
-| `cross-compile` | no | Cross-compile enum repr for visa-rs |
-| `record` | no | Record real I/O into mock scripts |
-
-```toml
-# Cross-compile example
-instrument-components = { version = "0.1", features = ["visa", "cross-compile"] }
-```
-
-```bash
-cargo build --features cross-compile --target x86_64-pc-windows-gnu
-```
-
-You still need a target VISA import library at link time (`LIB_VISA_PATH`).
-
-## Mock without VISA
-
-```toml
-instrument-components = { version = "0.1", default-features = false }
-```
-
-Use `ScriptedFixture` / `DeviceCatalog::from_fixture` — see [getting started](../getting-started.md).
+VISA enumeration is separate from driver selection. Opening does not automatically identify, probe, reset, retry or reconnect. Physical bench plans must document address, transport/runtime versions, device firmware, package hashes, safe wiring, physical units and expected ranges. Do not run hardware validation until preview software gates pass and the bench configuration has been reviewed.

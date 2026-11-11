@@ -1,184 +1,65 @@
 # Getting started
 
-Walkthrough for a first measurement with a mock fixture, then real hardware.
+Choose the device packages your application needs and register their exported factories explicitly. The root facade provides an immutable catalog of passive candidates. It neither enumerates hardware nor sends identification queries. Your host supplies candidates, identity evidence and the appropriate connector; opening invokes the selected factory.
 
-## Prerequisites
+For a hardware-free example from this checkout:
 
-=== "Rust"
+```sh
+dotnet run --project dotnet/examples/MockFixtureCi
+dotnet run --project dotnet/examples/MockFixtureCiAsync
+cargo test -p instrument-components --all-features
+```
 
-    - Rust 1.70+ (`rustup update stable`)
-    - For hardware: NI-VISA or Keysight IO Libraries installed
+These examples use an opaque in-memory backend. They prove that the facade does not require SCPI. TestKit and synthetic drivers are development dependencies, excluded from production package closures.
 
-=== "C#"
+## Package boundary
 
-    - .NET 8 SDK
-    - For hardware: NI-VISA, Keysight IO Libraries, or another VISA that provides the VISA.NET shared components expected by [IviFoundation.Visa](https://www.nuget.org/packages/IviFoundation.Visa)
+| Responsibility | Rust | .NET |
+|---|---|---|
+| Protocol-neutral contracts and typed views | instrument-api | InstrumentComponents.Abstractions |
+| Registration and serialized session runtime | instrument-runtime | InstrumentComponents.Runtime |
+| Optional data-driven SCPI backend | instrument-scpi | InstrumentComponents.Scpi |
+| Passive application catalog | instrument-components (library `instrument`) | InstrumentComponents |
+| Development scripts and fault injection | instrument-testkit | InstrumentComponents.TestKit |
 
-## Step 1: Add the dependency
+Device packages are `instrument-driver-{vendor}` and `InstrumentComponents.Drivers.{Vendor}`, maintained in the separate [Keysight](https://github.com/josh-hemphill/instrument-components-keysight), [Keithley](https://github.com/josh-hemphill/instrument-components-keithley), [Rigol](https://github.com/josh-hemphill/instrument-components-rigol), [Siglent](https://github.com/josh-hemphill/instrument-components-siglent) and [Tektronix](https://github.com/josh-hemphill/instrument-components-tektronix) repositories. Preview sources and draft PRs are available; public registry availability is a separate release gate. Pin the exact preview SDK and driver versions. All existing model hints are migrated as unvalidated source evidence.
 
-=== "Rust"
+## C# composition
 
-    **Mock / CI (no VISA):**
+With a host-supplied `connector` and passive `candidate`, compose explicitly:
 
-    ```toml
-    [dependencies]
-    instrument-components = { version = "0.1", default-features = false }
-    ```
+```csharp
+using InstrumentComponents.Catalog;
+using InstrumentComponents.Drivers;
+using InstrumentComponents.Drivers.Catalog;
+using InstrumentComponents.Runtime;
+using Vendor = InstrumentComponents.Drivers.Keysight.Drivers;
 
-    **Hardware (VISA default):**
+var registry = new DriverRegistry(Vendor.Factories(connector));
+var catalog = new DeviceCatalog(registry, new[] { candidate });
+using var handle = catalog.Device(candidate.Endpoint).Open();
+var dmm = new Dmm(handle);
+// Invoke only operations advertised by handle.Operations.
+var value = dmm.MeasureVoltageDc(null);
+Console.WriteLine($"{value.Value} {value.Unit}");
+```
 
-    ```toml
-    [dependencies]
-    instrument-components = "0.1"
-    ```
+Opening again requests another connection. Share one handle among class views for multifunction devices. A 2602B's DMM and PSU views therefore share serialization, configuration, units and lifecycle. Never infer supported operations from a model name alone. Request required capabilities at open to reject incompatible connection bindings before transport IO.
 
-=== "C#"
+## Rust composition
 
-    Package publishing is deferred. From the repo:
+```rust,ignore
+use instrument::prelude::*;
+use std::collections::{BTreeMap, BTreeSet};
 
-    ```bash
-    cd dotnet
-    # Mock / CI
-    dotnet run --project examples/MockFixtureCi
+let factories = instrument_driver_keysight::sync_factories(connector, &BTreeMap::new())?;
+let registry = DriverRegistry::new(factories)?;
+let catalog = DeviceCatalog::new(registry, vec![candidate.clone()])?;
+let handle = catalog.device(&candidate.endpoint)?.open(
+    &Selection::default(), &BTreeSet::new(), ConnectionOwnership::Owned,
+)?;
+let value = Dmm(&handle).measure_voltage_dc(None)?;
+handle.close(false)?;
+```
 
-    # Hardware
-    dotnet run --project examples/Discover
-    ```
-
-    Or project-reference `InstrumentComponents` (and `InstrumentComponents.Visa` for hardware).
-
-## Step 2: Mock path (recommended first)
-
-=== "Rust"
-
-    --8<-- "snippets/rust/mock-dmm.md"
-
-    Run: `cargo run` (no extra features needed).
-
-=== "C#"
-
-    --8<-- "snippets/csharp/mock-dmm.md"
-
-    Or: `dotnet run --project examples/MockFixtureCi`
-
-## Step 3: Discover real instruments
-
-=== "Rust"
-
-    ```rust
-    use instrument::prelude::*;
-
-    fn main() -> Result<()> {
-        let catalog = Discovery::visa()?.scan()?;
-        for dev in catalog.devices() {
-            println!(
-                "{} @ {} — {:?}",
-                dev.identity.model.as_deref().unwrap_or("?"),
-                dev.address.raw,
-                dev.supported_kinds,
-            );
-        }
-        Ok(())
-    }
-    ```
-
-    USB and GPIB are found automatically. Add TCPIP manually:
-
-    ```rust
-    Discovery::visa()?
-        .manual_address("TCPIP0::192.168.0.42::INSTR")
-        .scan()?;
-    ```
-
-=== "C#"
-
-    ```csharp
-    using InstrumentComponents.Visa;
-
-    var catalog = VisaDiscovery.Create().Scan();
-    catalog.PrintSummary();
-    ```
-
-    ```bash
-    dotnet run --project examples/Discover
-    ```
-
-## Step 4: Open a typed class
-
-=== "Rust"
-
-    ```rust
-    let catalog = Discovery::visa()?.scan()?;
-    let dmms = catalog.devices_by_kind(InstrumentKind::Dmm);
-    if let Some(dev) = dmms.first() {
-        let mut dmm = catalog.open_dmm(&dev.address.raw)?;
-        let v = dmm.measure_voltage_dc(None)?;
-        println!("{v} V");
-    }
-    ```
-
-=== "C#"
-
-    ```csharp
-    using InstrumentComponents.Kind;
-    using InstrumentComponents.Visa;
-
-    var catalog = VisaDiscovery.Create().Scan();
-    var dmm = catalog.OpenDmm(
-        catalog.DevicesByKind(InstrumentKind.Dmm)[0].Address.Raw);
-    Console.WriteLine(dmm.MeasureVoltageDc());
-    ```
-
-## Step 5: Assign instruments in an app
-
-Use stable `DeviceId` so replacing hardware does not break saved config:
-
-=== "Rust"
-
-    ```rust
-    let device_id = dev.device_id();
-    // persist device_id in your app config
-    let dmm = catalog.reconnect_by_identity(&device_id)?.open_dmm()?;
-    ```
-
-=== "C#"
-
-    ```bash
-    dotnet run --project examples/AssignInstruments
-    ```
-
-    Persist `DeviceId` from discovery, then reconnect by identity after a rescan.
-
-## Optional: Async
-
-=== "Rust"
-
-    Add `features = ["tokio"]` (and a tokio runtime). See [Rust async](rust/async.md).
-
-    ```toml
-    [dependencies]
-    instrument-components = { version = "0.1", default-features = false, features = ["tokio"] }
-    tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
-    ```
-
-=== "C#"
-
-    Core async APIs take `CancellationToken` and return `Task` / `ValueTask`.
-    VISA async is currently a sync bridge — see [C# async](csharp/async.md).
-
-    ```bash
-    dotnet run --project examples/MockFixtureCiAsync
-    ```
-
-## Environment variables (Rust VISA linking)
-
-| Variable | Purpose |
-|---|---|
-| `LIB_VISA_PATH` | Directory containing `visa64.lib` / `visa.lib` |
-| `LIB_VISA_NAME` | Library name (`visa64`, `visa32`, `visa`) |
-
-## Next steps
-
-- [Discovery](discovery.md) — probe policy and classification
-- [DMM class](classes/dmm.md) — measure and configure
-- [Capability matrix](capability-matrix.md) — Base vs Extension status
+The connector and candidate are application inputs, not globals. No runtime assembly scanning, library loading or reflection activation is involved. See [async execution](rust/async.md) and [discovery](discovery.md) for lifecycle and matching rules.

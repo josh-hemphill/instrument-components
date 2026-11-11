@@ -85,9 +85,11 @@ mod tests {
 
     #[test]
     fn io_timeout_uses_max_of_read_and_write() {
-        let mut opts = ConnectOptions::default();
-        opts.read_timeout = Duration::from_secs(2);
-        opts.write_timeout = Duration::from_secs(7);
+        let mut opts = ConnectOptions {
+            read_timeout: Duration::from_secs(2),
+            write_timeout: Duration::from_secs(7),
+            ..ConnectOptions::default()
+        };
         assert_eq!(opts.io_timeout(), Duration::from_secs(7));
         opts.per_op_timeout = Some(Duration::from_millis(50));
         assert_eq!(opts.io_timeout(), Duration::from_millis(50));

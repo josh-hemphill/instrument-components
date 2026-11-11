@@ -1,7 +1,6 @@
 using InstrumentComponents.Address;
 using InstrumentComponents.Connect;
 using InstrumentComponents.Diagnostics;
-using InstrumentComponents.Dialects;
 using InstrumentComponents.Errors;
 using InstrumentComponents.Identity;
 using InstrumentComponents.Ieee4882;
@@ -17,24 +16,6 @@ public sealed class InstrumentSession : IDisposable
     public ResourceAddress Address { get; }
     public ScpiSession Scpi { get; }
     private readonly DeviceIdentity _identity;
-    internal string DmmMeasurementUnit { get; set; } = "";
-    private readonly System.Collections.Concurrent.ConcurrentDictionary<uint, byte> _powerSupplyChannels = new();
-    private uint? _powerSupplyChannelCount;
-    /// <summary>Explicit physical channel count for devices whose dialect has no channel metadata.</summary>
-    public uint? PowerSupplyChannelCount
-    {
-        get => _powerSupplyChannelCount;
-        set { if (value == 0) throw new ArgumentOutOfRangeException(nameof(value)); _powerSupplyChannelCount = value; }
-    }
-    internal void TrackPowerSupplyChannel(uint channel)
-    {
-        if (channel == 0) throw new ArgumentOutOfRangeException(nameof(channel));
-        _powerSupplyChannels.TryAdd(channel, 0);
-    }
-    internal IReadOnlyList<uint> PowerSupplyChannels(uint dialectCount) =>
-        Enumerable.Range(1, checked((int)Math.Max(1, PowerSupplyChannelCount ?? dialectCount)))
-            .Select(x => (uint)x).Concat(_powerSupplyChannels.Keys).Distinct().Order().ToArray();
-
     public InstrumentSession(
         ResourceAddress address,
         ITransport transport,
@@ -78,13 +59,9 @@ public sealed class InstrumentSession : IDisposable
     public string AddressStr => Address.Raw;
     public DeviceIdentity Identity => _identity;
 
-    /// <summary>Resolves the dialect profile for <paramref name="kind"/> using this session's identity.</summary>
-    public DialectProfile DialectFor(InstrumentKind kind) =>
-        DialectRegistry.Resolve(kind, _identity.Manufacturer, _identity.Model);
-
     public Idn Idn() => ScpiComm("idn", scpi => new global::InstrumentComponents.Ieee4882.Ieee4882(scpi).Idn());
 
-    public void Reset() => ScpiComm("*RST", scpi => scpi.WithTransaction(() => { DmmMeasurementUnit = ""; new global::InstrumentComponents.Ieee4882.Ieee4882(scpi).Reset(); return true; }));
+    public void Reset() => ScpiComm("*RST", scpi => scpi.WithTransaction(() => { new global::InstrumentComponents.Ieee4882.Ieee4882(scpi).Reset(); return true; }));
 
     public void ClearStatus() => ScpiComm("*CLS", scpi => { new global::InstrumentComponents.Ieee4882.Ieee4882(scpi).ClearStatus(); return true; });
 

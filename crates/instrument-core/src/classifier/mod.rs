@@ -431,8 +431,11 @@ mod tests {
 
     #[test]
     fn registry_hint_for_usb_vid_pid() {
-        let registry = ModelRegistry::embedded();
-        let addr = ResourceAddress::parse("USB0::0x0957::0x0607::SN::INSTR").unwrap();
+        let registry = ModelRegistry::from_toml(
+            "[[usb_entry]]\nvid=\"1111\"\npid=\"2222\"\nkinds=[\"Dmm\"]\n",
+        )
+        .unwrap();
+        let addr = ResourceAddress::parse("USB0::0x1111::0x2222::SN::INSTR").unwrap();
         let (_, kinds) = classify_from_address(&addr, &registry);
         assert!(kinds.iter().any(|k| k.kind == InstrumentKind::Dmm));
     }

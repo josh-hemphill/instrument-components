@@ -3031,7 +3031,7 @@
       "expectedError": "InvalidArgument"
     },
     {
-      "id": "SCPI-OVERLOAD",
+      "id": "SCPI-LARGE-FINITE-NO-ASSUMED-OVERLOAD",
       "calls": [
         {
           "operation": "DmmMeasureVoltageDc",
@@ -3054,7 +3054,7 @@
         "kind": "quantity",
         "value": 9.9e+37,
         "unit": "Volt",
-        "status": "Overload"
+        "status": "Valid"
       }
     }
   ]

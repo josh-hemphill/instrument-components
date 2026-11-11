@@ -9,8 +9,8 @@ from pathlib import Path, PurePosixPath
 import shutil
 import tarfile
 
-RUST = {'instrument-api', 'instrument-runtime', 'instrument-scpi', 'instrument-testkit'}
-DOTNET = {'InstrumentComponents.Abstractions', 'InstrumentComponents.Runtime', 'InstrumentComponents.Scpi', 'InstrumentComponents.TestKit'}
+RUST = {'instrument-api', 'instrument-runtime', 'instrument-scpi', 'instrument-testkit','instrument-components'}
+DOTNET = {'InstrumentComponents.Abstractions', 'InstrumentComponents.Runtime', 'InstrumentComponents.Scpi', 'InstrumentComponents.TestKit','InstrumentComponents'}
 VERSION = '0.2.0-alpha.1'
 
 
@@ -66,7 +66,7 @@ def prepare(artifacts, output):
     # These are generated local paths, escaped as XML attributes.
     from xml.sax.saxutils import quoteattr
     config=output/'NuGet.Config'
-    config.write_text('<configuration><packageSources><clear/><add key="bootstrap" value='+quoteattr(str(nuget))+'/><add key="nuget" value="https://api.nuget.org/v3/index.json"/></packageSources><packageSourceMapping><packageSource key="bootstrap"><package pattern="InstrumentComponents.*"/></packageSource><packageSource key="nuget"><package pattern="*"/></packageSource></packageSourceMapping></configuration>',encoding='utf-8')
+    config.write_text('<configuration><packageSources><clear/><add key="bootstrap" value='+quoteattr(str(nuget))+'/><add key="nuget" value="https://api.nuget.org/v3/index.json"/></packageSources><packageSourceMapping><packageSource key="bootstrap"><package pattern="InstrumentComponents*"/></packageSource><packageSource key="nuget"><package pattern="*"/></packageSource></packageSourceMapping></configuration>',encoding='utf-8')
     wheel=output/selected['instrument-driver-tools'][0].name;shutil.copy2(selected['instrument-driver-tools'][0],wheel)
     result=dict(mode='pinned-sdk-artifact-bootstrap',CARGO_HOME=str(cargo),NUGET_PACKAGES=str(output/'nuget-cache'),nugetConfig=str(config),nugetFeed=str(nuget),cargoRegistry=str(registry),wheel=str(wheel),packages={name:record['sha256'] for name,(_,record) in selected.items()})
     (output/'feeds.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')

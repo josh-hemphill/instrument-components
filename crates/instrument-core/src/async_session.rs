@@ -2,11 +2,9 @@ use crate::address::ResourceAddress;
 use crate::async_transport::DynAsyncTransport;
 use crate::connect::ConnectOptions;
 use crate::diagnostics::Diagnostics;
-use crate::dialect::{resolve_dialect, DialectProfile};
 use crate::error::Result;
 use crate::identity::{DeviceIdentity, Idn};
 use crate::ieee4882::AsyncIeee4882;
-use crate::kind::InstrumentKind;
 use crate::scpi::AsyncScpiSession;
 use std::future::Future;
 use std::pin::Pin;
@@ -63,15 +61,6 @@ impl AsyncInstrumentSession {
 
     pub fn identity(&self) -> &DeviceIdentity {
         &self.identity
-    }
-
-    /// Resolves the dialect profile for `kind` using this session's identity.
-    pub fn dialect_for(&self, kind: InstrumentKind) -> &'static DialectProfile {
-        resolve_dialect(
-            kind,
-            self.identity.manufacturer.as_deref(),
-            self.identity.model.as_deref(),
-        )
     }
 
     pub fn scpi(&self) -> &AsyncScpiSession {

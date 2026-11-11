@@ -3,6 +3,7 @@ use instrument_runtime::*;
 use instrument_testkit::*;
 use std::{collections::BTreeSet, sync::Arc};
 include!("profiles.rs");
+include!("endpoint_proof.rs");
 include!("cases.rs");
 include!("choice_profiles.rs");
 include!("choice_cases.rs");
@@ -63,6 +64,7 @@ fn check(actual: Result<CatalogReply>, example: &CatalogCase, last: bool) -> Res
     Ok(())
 }
 fn main() -> Result<()> {
+    endpoint_proof::sync()?;
     generated_profiles::profiles()?;
     for (choice, example) in examples() {
         assert!(
@@ -106,6 +108,13 @@ fn main() -> Result<()> {
         h.close(false)?;
         script.assert_complete()?;
     }
+    {
+        let script=typed_script();
+        let catalog=instrument::DeviceCatalog::new(DriverRegistry::new(generated_profiles::sync_factories(Arc::new(script.clone()))?)?,vec![candidate()])?;
+        let device=catalog.device(&candidate().endpoint)?;
+        let handle=device.open(&selection(),&BTreeSet::new(),ConnectionOwnership::Owned)?;
+        typed(&handle)?;handle.close(false)?;script.assert_complete()?;
+    }
     println!("PASS packaged SCPI sync: all eight typed classes and shared conformance cases");
     #[cfg(feature = "async")]
     tokio::runtime::Builder::new_current_thread()
@@ -116,6 +125,16 @@ fn main() -> Result<()> {
 }
 #[cfg(feature = "async")]
 async fn asynchronous() -> Result<()> {
+    endpoint_proof::asynchronous().await?;
+    for mode in 0..3 {
+        let script=typed_script();
+        let catalog=instrument::DeviceCatalog::new(DriverRegistry::new(generated_profiles::combined_factories(Arc::new(script.clone()),Arc::new(script.clone()))?)?,vec![candidate()])?;
+        let device=catalog.device(&candidate().endpoint)?;
+        if mode==0{let handle=device.open_native(&selection(),&BTreeSet::new(),ConnectionOwnership::Owned).await?;typed_async(&handle).await?;handle.close(false).await?;}
+        else{let handle=device.open_worker(&selection(),&BTreeSet::new(),ConnectionOwnership::Owned).await?;if mode==1{typed_async(&handle).await?;}else{typed(&handle)?;}handle.close(false).await?;script.assert_thread_affinity()?;}
+        script.assert_complete()?;
+    }
+
     for mode in 0..3 {
         for (choice, example) in examples() {
             assert!(

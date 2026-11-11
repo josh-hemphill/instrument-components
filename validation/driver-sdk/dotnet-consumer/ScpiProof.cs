@@ -20,7 +20,8 @@ internal static class ScpiProof
             if(test.Calls.Count==0)throw new InvalidOperationException("Scenario must establish an outcome");
             var script = new Script(test.Script); IDriverFactory factory = group.Factory(script);
             var registry = new DriverRegistry([factory]); var candidate = new DeviceCandidate(new("scpi","fixture"),new DeviceIdentity("Synthetic","All")); var selection=new DriverSelection(AllowStandardScpi:true);
-            var sync = mode==0 ? registry.Open(candidate,selection) : null; var native = mode==1 ? await registry.OpenNativeAsync(candidate,selection) : null; var worker=mode>=2 ? await registry.OpenWorkerAsync(candidate,selection):null;
+            var device=new InstrumentComponents.Catalog.DeviceCatalog(registry,[candidate]).Device(candidate.Endpoint);
+            var sync = mode==0 ? device.Open(selection) : null; var native = mode==1 ? await device.OpenNativeAsync(selection) : null; var worker=mode>=2 ? await device.OpenWorkerAsync(selection):null;
             for(var i=0;i<test.Calls.Count;i++)
             {
                 CatalogReply? reply=null; DriverException? failure=null;

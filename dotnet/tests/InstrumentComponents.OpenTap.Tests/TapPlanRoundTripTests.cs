@@ -9,7 +9,7 @@ public class TapPlanRoundTripTests
     {
         foreach (var type in OpenTapCatalog.InstrumentTypes())
         {
-            var original = (ScpiInstrument)OpenTapCatalog.Create(type);
+            var original = (DeviceInstrument)OpenTapCatalog.Create(type);
             original.Name = $"Bench {type.Name}";
             original.VisaAddress = "TCPIP0::192.0.2.10::inst0::INSTR";
             original.IoTimeoutMilliseconds = 2500;
@@ -22,12 +22,12 @@ public class TapPlanRoundTripTests
 
             var loaded = serializer.DeserializeFromString(xml, TypeData.FromType(type));
             Assert.IsType(type, loaded);
-            var instrument = Assert.IsAssignableFrom<ScpiInstrument>(loaded);
+            var instrument = Assert.IsAssignableFrom<DeviceInstrument>(loaded);
             Assert.Equal(original.VisaAddress, instrument.VisaAddress);
             Assert.Equal(2500, instrument.IoTimeoutMilliseconds);
 
             var ex = Assert.Throws<InvalidOperationException>(() => instrument.Open());
-            Assert.Contains("does not open a vendor VISA", ex.Message, StringComparison.Ordinal);
+            Assert.Contains("Attach a device or register", ex.Message, StringComparison.Ordinal);
         }
     }
 
@@ -72,7 +72,7 @@ public class TapPlanRoundTripTests
                     Assert.NotNull(instrument);
                     Assert.False(string.IsNullOrWhiteSpace(instrument.VisaAddress));
                     var ex = Assert.Throws<InvalidOperationException>(() => instrument.Open());
-                    Assert.Contains("does not open a vendor VISA", ex.Message, StringComparison.Ordinal);
+                    Assert.Contains("Attach a device or register", ex.Message, StringComparison.Ordinal);
                 }
             }
             finally
@@ -82,12 +82,12 @@ public class TapPlanRoundTripTests
         });
     }
 
-    private static Dictionary<Type, ScpiInstrument> CreateNamedInstruments()
+    private static Dictionary<Type, DeviceInstrument> CreateNamedInstruments()
     {
-        var instruments = new Dictionary<Type, ScpiInstrument>();
+        var instruments = new Dictionary<Type, DeviceInstrument>();
         foreach (var type in OpenTapCatalog.InstrumentTypes())
         {
-            var instrument = (ScpiInstrument)OpenTapCatalog.Create(type);
+            var instrument = (DeviceInstrument)OpenTapCatalog.Create(type);
             instrument.Name = type.Name;
             instrument.VisaAddress = $"TCPIP0::{type.Name}::inst0::INSTR";
             instrument.IoTimeoutMilliseconds = 1234;
@@ -97,7 +97,7 @@ public class TapPlanRoundTripTests
         return instruments;
     }
 
-    private static TestStep CreateBoundStep(Type stepType, IReadOnlyDictionary<Type, ScpiInstrument> instruments)
+    private static TestStep CreateBoundStep(Type stepType, IReadOnlyDictionary<Type, DeviceInstrument> instruments)
     {
         var step = (TestStep)OpenTapCatalog.Create(stepType);
         var property = stepType.GetProperty("Instrument")
@@ -106,19 +106,19 @@ public class TapPlanRoundTripTests
         return step;
     }
 
-    private static ScpiInstrument ResolveInstrument(Type instrumentType, IReadOnlyDictionary<Type, ScpiInstrument> instruments)
+    private static DeviceInstrument ResolveInstrument(Type instrumentType, IReadOnlyDictionary<Type, DeviceInstrument> instruments)
     {
-        if (instrumentType == typeof(ScpiInstrument))
+        if (instrumentType == typeof(DeviceInstrument))
             return instruments[typeof(DmmInstrument)];
         if (instruments.TryGetValue(instrumentType, out var instrument))
             return instrument;
         throw new InvalidOperationException($"no instrument registered for {instrumentType.FullName}");
     }
 
-    private static ScpiInstrument InstrumentOf(ITestStep step)
+    private static DeviceInstrument InstrumentOf(ITestStep step)
     {
         var property = step.GetType().GetProperty("Instrument")
             ?? throw new InvalidOperationException($"{step.GetType().Name} has no Instrument property.");
-        return Assert.IsAssignableFrom<ScpiInstrument>(property.GetValue(step));
+        return Assert.IsAssignableFrom<DeviceInstrument>(property.GetValue(step));
     }
 }

@@ -6,7 +6,6 @@ import subprocess
 import sys
 import tempfile
 from . import VERSION
-from .inventory import canonical, inventory
 
 
 def read_json(path):
@@ -41,10 +40,6 @@ def main(argv=None):
     parser = argparse.ArgumentParser(prog='instrument-driver')
     parser.add_argument('--version', action='version', version=VERSION)
     sub = parser.add_subparsers(dest='command', required=True)
-    audit = sub.add_parser('inventory', help='Inventory an explicitly selected legacy checkout before extraction')
-    audit.add_argument('--repository', type=Path, required=True)
-    audit.add_argument('--output', type=Path, required=True)
-    audit.add_argument('--check', action='store_true')
     gen = sub.add_parser('generate', help='Validate explicit profile input and generate static Rust/C# profiles')
     gen.add_argument('--input', type=Path, required=True)
     gen.add_argument('--schema', type=Path)
@@ -80,8 +75,6 @@ def main(argv=None):
         elif args.command == 'prepare-feeds':
             from .feeds import prepare
             print(json.dumps(prepare(args.artifacts,args.output),indent=2))
-        elif args.command == 'inventory':
-            write(args.output, canonical(inventory(args.repository.resolve())), args.check)
         elif args.command in ('generate', 'generate-tests'):
             from .profiles import emit, validate
             data = read_json(args.input)

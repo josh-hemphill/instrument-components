@@ -1,5 +1,5 @@
-using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using InstrumentComponents.Kind;
 
 namespace InstrumentComponents.Registry;
@@ -12,24 +12,18 @@ public sealed class UsbHint
 }
 
 /// <summary>IVI-registry-inspired model → kinds lookup (hints only).</summary>
-public sealed class ModelRegistry
+public sealed partial class ModelRegistry
 {
     private readonly Dictionary<string, List<InstrumentKind>> _byModel = new();
     private readonly Dictionary<(string Vid, string Pid), UsbHint> _byUsb = new();
     private readonly Dictionary<string, List<InstrumentKind>> _runtime = new();
 
-    public static ModelRegistry Embedded()
-    {
-        var asm = typeof(ModelRegistry).Assembly;
-        using var stream = asm.GetManifestResourceStream("InstrumentComponents.Data.model_registry.json")
-            ?? throw new InvalidOperationException("embedded model_registry.json not found");
-        using var reader = new StreamReader(stream);
-        return FromJson(reader.ReadToEnd());
-    }
+    /// <summary>Core has no embedded device implementations or identity table.</summary>
+    public static ModelRegistry Embedded() => new();
 
     public static ModelRegistry FromJson(string json)
     {
-        var file = JsonSerializer.Deserialize<RegistryFile>(json, JsonOptions)
+        var file = JsonSerializer.Deserialize(json, RegistryJsonContext.Default.RegistryFile)
             ?? throw new InvalidOperationException("registry parse failed");
         var registry = new ModelRegistry();
         foreach (var entry in file.Entries)
@@ -85,10 +79,9 @@ public sealed class ModelRegistry
             .Select(k => k!.Value)
             .ToList();
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true,
-    };
+    [JsonSourceGenerationOptions(PropertyNameCaseInsensitive=true)]
+    [JsonSerializable(typeof(RegistryFile))]
+    private partial class RegistryJsonContext:JsonSerializerContext { }
 
     private sealed class RegistryFile
     {

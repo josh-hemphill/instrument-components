@@ -75,3 +75,10 @@ Check(workerTrace.Base.Outputs.Values.All(enabled => !enabled));
 Check(workerTrace.Base.Closes == 1 && workerTrace.Affinity.All(e => e.Thread == workerTrace.Affinity.First().Thread));
 Console.WriteLine("PASS Native AOT native/worker modes: async values, cancellation quarantine, mixed worker frontends, recovery, shutdown, affinity");
 await ScpiProof.Run();
+await EndpointProof.Run();
+
+// Standard explicit-data helpers must also work with reflection disabled.
+var transcript=InstrumentComponents.Mock.Transcript.FromJson("{\"steps\":[{\"op\":\"write\",\"data\":\"*IDN?\"}]}");
+if(InstrumentComponents.Mock.Transcript.FromJson(transcript.ToJson()).Steps.Count!=1)throw new InvalidOperationException("AOT transcript source metadata missing");
+var explicitHints=InstrumentComponents.Registry.ModelRegistry.FromJson("{\"entries\":[{\"manufacturer\":\"Example\",\"model\":\"Device\",\"kinds\":[\"Dmm\"]}]}");
+if(explicitHints.LookupModel("Example","Device")?.Count!=1)throw new InvalidOperationException("AOT explicit registry parser failed");

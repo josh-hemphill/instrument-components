@@ -65,9 +65,9 @@ public class ManifestValidationTests
     private static Type ViewType(OperationRecord operation)
     {
         if (operation.Kind == "utility")
-            return typeof(ScpiInstrument);
+            return typeof(DeviceInstrument);
 
-        var instrument = typeof(ScpiInstrument).Assembly.GetType($"InstrumentComponents.OpenTap.{operation.InstrumentType}")
+        var instrument = typeof(DeviceInstrument).Assembly.GetType($"InstrumentComponents.OpenTap.{operation.InstrumentType}")
             ?? throw new InvalidOperationException($"unknown instrument {operation.InstrumentType}");
         var accessor = instrument.GetProperty(operation.Accessor)
             ?? throw new InvalidOperationException($"{operation.InstrumentType} missing accessor {operation.Accessor}");

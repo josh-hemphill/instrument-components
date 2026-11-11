@@ -1,5 +1,4 @@
 using InstrumentComponents.Address;
-using InstrumentComponents.Classes;
 using InstrumentComponents.Identity;
 using InstrumentComponents.Scpi;
 using InstrumentComponents.Session;
@@ -17,7 +16,7 @@ public class ScpiIoInjectionTests
             io,
             new DeviceIdentity { Manufacturer = "Acme", Model = "DMM1" });
 
-        var volts = new Dmm(session).MeasureVoltageDc();
+        var volts = ScpiSession.ParseF64(session.Scpi.Query(":MEAS:VOLT:DC?"));
 
         Assert.InRange(volts, 3.299, 3.301);
         Assert.Equal([":MEAS:VOLT:DC?"], io.Commands);

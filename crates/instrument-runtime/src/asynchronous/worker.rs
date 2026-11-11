@@ -267,6 +267,7 @@ impl DriverRegistry {
                 let outcome = factory.open_worker(&OpenContext {
                     candidate: &candidate,
                     ownership,
+                    required: &required,
                 });
                 let mut resource = match outcome {
                     Ok(backend) => LocalResource(Some(backend)),

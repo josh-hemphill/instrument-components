@@ -24,4 +24,5 @@
     <Compile Include="../../../validation/scpi/choice-generated/GeneratedCases.cs" Link="ChoiceCases.cs" />
     <None Include="../../../spec/driver-choice-invalid-cases.json" Link="driver-choice-invalid-cases.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+  <ItemGroup><Compile Include="../../../validation/scpi/EndpointProof.cs" Link="EndpointProof.cs"/></ItemGroup>
 </Project>

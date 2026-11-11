@@ -5,7 +5,10 @@
 //! response, and retain no host accesses after native cancellation. A failed/partial
 //! message requires explicit host recovery establishing a clean response boundary.
 use instrument_api::{catalog::*, *};
-use std::{collections::BTreeSet, sync::Arc};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    sync::Arc,
+};
 mod profile;
 pub use profile::*;
 #[cfg(feature = "async")]
@@ -70,15 +73,75 @@ fn operations(profile: &Profile) -> BTreeSet<Operation> {
     }
     ops
 }
+type ProfileRoutes = BTreeMap<(String, String), Profile>;
+fn endpoint_key(endpoint: &Endpoint) -> (String, String) {
+    (
+        endpoint.scheme.trim().to_ascii_lowercase(),
+        endpoint.address.clone(),
+    )
+}
+fn profile_routes(id: &str, profiles: Vec<(Endpoint, Profile)>) -> Result<ProfileRoutes> {
+    if profiles.len() > 4096 {
+        return Err(error(
+            ErrorKind::DriverContractViolation,
+            "excessive endpoint profiles",
+        ));
+    }
+    let mut routes = BTreeMap::new();
+    for (endpoint, profile) in profiles {
+        if endpoint.scheme.trim().is_empty()
+            || endpoint.address.is_empty()
+            || profile.id() != id
+            || routes.insert(endpoint_key(&endpoint), profile).is_some()
+        {
+            return Err(error(
+                ErrorKind::DriverContractViolation,
+                "invalid, duplicate, or noncanonical endpoint profile",
+            ));
+        }
+    }
+    Ok(routes)
+}
+fn route_operations(default: &Profile, routes: &ProfileRoutes) -> BTreeSet<Operation> {
+    let mut envelope = operations(default);
+    for profile in routes.values() {
+        envelope.extend(operations(profile));
+    }
+    envelope
+}
+fn selected_profile(
+    default: &Profile,
+    routes: &ProfileRoutes,
+    context: &OpenContext<'_>,
+) -> Result<Profile> {
+    let profile = routes
+        .get(&endpoint_key(&context.candidate.endpoint))
+        .unwrap_or(default);
+    if !context.required.is_subset(&operations(profile)) {
+        return Err(error(
+            ErrorKind::UnsupportedOperation,
+            "required capability unavailable for this endpoint",
+        ));
+    }
+    Ok(profile.clone())
+}
 #[derive(Clone)]
 pub struct ScpiFactory {
     descriptor: DriverDescriptor,
     profile: Profile,
+    routes: ProfileRoutes,
     connector: Arc<dyn Connector>,
     #[cfg(feature = "async")]
     native: Option<Arc<dyn AsyncConnector>>,
 }
 impl ScpiFactory {
+    /// Immutable connection-specific data under one canonical factory identity.
+    pub fn with_endpoint_profiles(mut self, profiles: Vec<(Endpoint, Profile)>) -> Result<Self> {
+        self.routes = profile_routes(self.profile.id(), profiles)?;
+        self.descriptor.operations = route_operations(&self.profile, &self.routes);
+        Ok(self)
+    }
+
     pub fn with_rules(mut self, rules: Vec<MatchRule>) -> Self {
         self.descriptor.rules = rules;
         self
@@ -100,6 +163,7 @@ impl ScpiFactory {
                 operations: operations(&profile),
             },
             profile,
+            routes: BTreeMap::new(),
             connector,
             #[cfg(feature = "async")]
             native: None,
@@ -138,12 +202,17 @@ impl DriverFactory for ScpiFactory {
                     "native connector not configured",
                 )
             })?;
-            asynchronous::open_device(self.profile.clone(), connector.clone(), context).await
+            asynchronous::open_device(
+                selected_profile(&self.profile, &self.routes, context)?,
+                connector.clone(),
+                context,
+            )
+            .await
         })
     }
     fn open(&self, context: &OpenContext<'_>) -> Result<Box<dyn DeviceBackend>> {
         Ok(Box::new(ScpiDevice {
-            engine: Engine::new(self.profile.clone()),
+            engine: Engine::new(selected_profile(&self.profile, &self.routes, context)?),
             io: self.connector.open(context)?,
             ownership: context.ownership,
             closed: false,

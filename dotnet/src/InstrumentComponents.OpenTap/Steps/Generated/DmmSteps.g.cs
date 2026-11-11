@@ -18,6 +18,8 @@ public sealed class DmmConfigureCurrentAcStep : InstrumentBoundStep<DmmInstrumen
     {
         Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
         Rules.Add(() => Resolution is null || double.IsFinite(Resolution.Value), "Resolution must be finite when set.", nameof(Resolution));
+        Rules.Add(() => Range is null || (Range.Value > 0), "Range violates the operation's positive constraint.", nameof(Range));
+        Rules.Add(() => Resolution is null || (Resolution.Value > 0), "Resolution violates the operation's positive constraint.", nameof(Resolution));
     }
 
     public override void Run()
@@ -45,6 +47,8 @@ public sealed class DmmConfigureCurrentDcStep : InstrumentBoundStep<DmmInstrumen
     {
         Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
         Rules.Add(() => Resolution is null || double.IsFinite(Resolution.Value), "Resolution must be finite when set.", nameof(Resolution));
+        Rules.Add(() => Range is null || (Range.Value > 0), "Range violates the operation's positive constraint.", nameof(Range));
+        Rules.Add(() => Resolution is null || (Resolution.Value > 0), "Resolution violates the operation's positive constraint.", nameof(Resolution));
     }
 
     public override void Run()
@@ -72,6 +76,8 @@ public sealed class DmmConfigureResistance4WireStep : InstrumentBoundStep<DmmIns
     {
         Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
         Rules.Add(() => Resolution is null || double.IsFinite(Resolution.Value), "Resolution must be finite when set.", nameof(Resolution));
+        Rules.Add(() => Range is null || (Range.Value > 0), "Range violates the operation's positive constraint.", nameof(Range));
+        Rules.Add(() => Resolution is null || (Resolution.Value > 0), "Resolution violates the operation's positive constraint.", nameof(Resolution));
     }
 
     public override void Run()
@@ -99,6 +105,8 @@ public sealed class DmmConfigureResistanceStep : InstrumentBoundStep<DmmInstrume
     {
         Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
         Rules.Add(() => Resolution is null || double.IsFinite(Resolution.Value), "Resolution must be finite when set.", nameof(Resolution));
+        Rules.Add(() => Range is null || (Range.Value > 0), "Range violates the operation's positive constraint.", nameof(Range));
+        Rules.Add(() => Resolution is null || (Resolution.Value > 0), "Resolution violates the operation's positive constraint.", nameof(Resolution));
     }
 
     public override void Run()
@@ -126,6 +134,8 @@ public sealed class DmmConfigureVoltageAcStep : InstrumentBoundStep<DmmInstrumen
     {
         Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
         Rules.Add(() => Resolution is null || double.IsFinite(Resolution.Value), "Resolution must be finite when set.", nameof(Resolution));
+        Rules.Add(() => Range is null || (Range.Value > 0), "Range violates the operation's positive constraint.", nameof(Range));
+        Rules.Add(() => Resolution is null || (Resolution.Value > 0), "Resolution violates the operation's positive constraint.", nameof(Resolution));
     }
 
     public override void Run()
@@ -153,6 +163,8 @@ public sealed class DmmConfigureVoltageDcStep : InstrumentBoundStep<DmmInstrumen
     {
         Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
         Rules.Add(() => Resolution is null || double.IsFinite(Resolution.Value), "Resolution must be finite when set.", nameof(Resolution));
+        Rules.Add(() => Range is null || (Range.Value > 0), "Range violates the operation's positive constraint.", nameof(Range));
+        Rules.Add(() => Resolution is null || (Resolution.Value > 0), "Resolution violates the operation's positive constraint.", nameof(Resolution));
     }
 
     public override void Run()
@@ -173,7 +185,8 @@ public sealed class DmmFetchStep : OptionalLimitStep<DmmInstrument>
         if (!TryGetInstrument(out var instrument))
             return;
 
-        PublishScalar("Fetch", instrument.Dmm.Fetch(), instrument.Dmm.MeasurementUnit);
+        var quantity = instrument.Dmm.Fetch();
+        PublishScalar("Fetch", quantity, PhaseIResults.UnitSymbol(quantity.Unit));
     }
 }
 
@@ -200,6 +213,7 @@ public sealed class DmmMeasureCurrentAcStep : OptionalLimitStep<DmmInstrument>
     public DmmMeasureCurrentAcStep()
     {
         Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
+        Rules.Add(() => Range is null || (Range.Value > 0), "Range violates the operation's positive constraint.", nameof(Range));
     }
 
     public override void Run()
@@ -207,7 +221,8 @@ public sealed class DmmMeasureCurrentAcStep : OptionalLimitStep<DmmInstrument>
         if (!TryGetInstrument(out var instrument))
             return;
 
-        PublishScalar("Current AC", instrument.Dmm.MeasureCurrentAc(Range), "A");
+        var quantity = instrument.Dmm.MeasureCurrentAc(Range);
+        PublishScalar("Current AC", quantity, PhaseIResults.UnitSymbol(quantity.Unit));
     }
 }
 
@@ -221,6 +236,7 @@ public sealed class DmmMeasureCurrentDcStep : OptionalLimitStep<DmmInstrument>
     public DmmMeasureCurrentDcStep()
     {
         Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
+        Rules.Add(() => Range is null || (Range.Value > 0), "Range violates the operation's positive constraint.", nameof(Range));
     }
 
     public override void Run()
@@ -228,7 +244,8 @@ public sealed class DmmMeasureCurrentDcStep : OptionalLimitStep<DmmInstrument>
         if (!TryGetInstrument(out var instrument))
             return;
 
-        PublishScalar("Current DC", instrument.Dmm.MeasureCurrentDc(Range), "A");
+        var quantity = instrument.Dmm.MeasureCurrentDc(Range);
+        PublishScalar("Current DC", quantity, PhaseIResults.UnitSymbol(quantity.Unit));
     }
 }
 
@@ -242,6 +259,7 @@ public sealed class DmmMeasureResistance2WireStep : OptionalLimitStep<DmmInstrum
     public DmmMeasureResistance2WireStep()
     {
         Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
+        Rules.Add(() => Range is null || (Range.Value > 0), "Range violates the operation's positive constraint.", nameof(Range));
     }
 
     public override void Run()
@@ -249,7 +267,8 @@ public sealed class DmmMeasureResistance2WireStep : OptionalLimitStep<DmmInstrum
         if (!TryGetInstrument(out var instrument))
             return;
 
-        PublishScalar("Resistance", instrument.Dmm.MeasureResistance2Wire(Range), "Ohm");
+        var quantity = instrument.Dmm.MeasureResistance2Wire(Range);
+        PublishScalar("Resistance", quantity, PhaseIResults.UnitSymbol(quantity.Unit));
     }
 }
 
@@ -263,6 +282,7 @@ public sealed class DmmMeasureResistance4WireStep : OptionalLimitStep<DmmInstrum
     public DmmMeasureResistance4WireStep()
     {
         Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
+        Rules.Add(() => Range is null || (Range.Value > 0), "Range violates the operation's positive constraint.", nameof(Range));
     }
 
     public override void Run()
@@ -270,7 +290,8 @@ public sealed class DmmMeasureResistance4WireStep : OptionalLimitStep<DmmInstrum
         if (!TryGetInstrument(out var instrument))
             return;
 
-        PublishScalar("Resistance 4W", instrument.Dmm.MeasureResistance4Wire(Range), "Ohm");
+        var quantity = instrument.Dmm.MeasureResistance4Wire(Range);
+        PublishScalar("Resistance 4W", quantity, PhaseIResults.UnitSymbol(quantity.Unit));
     }
 }
 
@@ -283,6 +304,7 @@ public sealed class DmmMeasureTemperatureStep : OptionalLimitStep<DmmInstrument>
     public DmmMeasureTemperatureStep()
     {
         Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
+        Rules.Add(() => Range is null || (Range.Value > 0), "Range violates the operation's positive constraint.", nameof(Range));
     }
 
     public override void Run()
@@ -290,7 +312,8 @@ public sealed class DmmMeasureTemperatureStep : OptionalLimitStep<DmmInstrument>
         if (!TryGetInstrument(out var instrument))
             return;
 
-        PublishScalar("Temperature", instrument.Dmm.MeasureTemperature(Range), "C");
+        var quantity = instrument.Dmm.MeasureTemperature(Range);
+        PublishScalar("Temperature", quantity, PhaseIResults.UnitSymbol(quantity.Unit));
     }
 }
 
@@ -304,6 +327,7 @@ public sealed class DmmMeasureVoltageAcStep : OptionalLimitStep<DmmInstrument>
     public DmmMeasureVoltageAcStep()
     {
         Rules.Add(() => Range is null || double.IsFinite(Range.Value), "Range must be finite when set.", nameof(Range));
+        Rules.Add(() => Range is null || (Range.Value > 0), "Range violates the operation's positive constraint.", nameof(Range));
     }
 
     public override void Run()
@@ -311,7 +335,8 @@ public sealed class DmmMeasureVoltageAcStep : OptionalLimitStep<DmmInstrument>
         if (!TryGetInstrument(out var instrument))
             return;
 
-        PublishScalar("Voltage AC", instrument.Dmm.MeasureVoltageAc(Range), "V");
+        var quantity = instrument.Dmm.MeasureVoltageAc(Range);
+        PublishScalar("Voltage AC", quantity, PhaseIResults.UnitSymbol(quantity.Unit));
     }
 }
 
@@ -323,7 +348,8 @@ public sealed class DmmReadStep : OptionalLimitStep<DmmInstrument>
         if (!TryGetInstrument(out var instrument))
             return;
 
-        PublishScalar("Read", instrument.Dmm.Read(), instrument.Dmm.MeasurementUnit);
+        var quantity = instrument.Dmm.Read();
+        PublishScalar("Read", quantity, PhaseIResults.UnitSymbol(quantity.Unit));
     }
 }
 

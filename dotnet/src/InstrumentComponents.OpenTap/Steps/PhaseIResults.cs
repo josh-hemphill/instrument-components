@@ -4,6 +4,9 @@ namespace InstrumentComponents.OpenTap;
 
 public static class PhaseIResults
 {
+    public static string UnitSymbol(InstrumentComponents.Drivers.Catalog.Unit unit)=>unit switch {
+        Drivers.Catalog.Unit.Volt=>"V",Drivers.Catalog.Unit.Ampere=>"A",Drivers.Catalog.Unit.Ohm=>"Ohm",Drivers.Catalog.Unit.Hertz=>"Hz",Drivers.Catalog.Unit.Second=>"s",Drivers.Catalog.Unit.Watt=>"W",Drivers.Catalog.Unit.Dbm=>"dBm",Drivers.Catalog.Unit.Celsius=>"°C",Drivers.Catalog.Unit.Kelvin=>"K",Drivers.Catalog.Unit.Count=>"Count",_=>"Unknown"};
+
     public const string SampleTable = "Sample";
     public const string ScalarTable = "Scalar";
     public const string IdentityTable = "Identity";
@@ -14,6 +17,8 @@ public static class PhaseIResults
 
     public static void PublishSample(ResultSource results, string channel, int index, double value) =>
         results.Publish(SampleTable, SampleColumns, channel, index, value);
+
+    public static void PublishScalar(ResultSource results,string name,InstrumentComponents.Drivers.Catalog.Quantity value,string unit)=>PublishScalar(results,name,value.Value,UnitSymbol(value.Unit));
 
     public static void PublishScalar(
         ResultSource results,

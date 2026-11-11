@@ -935,11 +935,11 @@ new PowerMeterReadRequest(),
 new ScriptStep("close", "", "", null),
 },
 null, DriverErrorKind.InvalidArgument),
-new CatalogCase("SCPI-OVERLOAD", new CatalogRequest[] {
+new CatalogCase("SCPI-LARGE-FINITE-NO-ASSUMED-OVERLOAD", new CatalogRequest[] {
 new DmmMeasureVoltageDcRequest(2.5),
 }, new ScriptStep[] {
 new ScriptStep("query", ":TEST:DmmMeasureVoltageDc? 2.5", "9.9e37", null),
 new ScriptStep("close", "", "", null),
 },
-new CatalogReply.Numeric(new Quantity(9.9e+37, Unit.Volt, MeasurementStatus.Overload))),
+new CatalogReply.Numeric(new Quantity(9.9e+37, Unit.Volt, MeasurementStatus.Valid))),
 }; }

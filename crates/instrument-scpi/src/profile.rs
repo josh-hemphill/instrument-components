@@ -456,10 +456,18 @@ impl Profile {
             })
             .cloned()
             .collect();
-        let psu = plans
-            .iter()
+        let psu = self
+            .plans()
             .any(|p| p.operation.metadata().kind == "DcPowerSupply");
-        if psu && binding.outputs.as_ref().is_some_and(Vec::is_empty) {
+        let physical_channels = self.plans().any(|p| {
+            p.operation.metadata().kind == "DcPowerSupply"
+                && p.operation
+                    .metadata()
+                    .parameters
+                    .iter()
+                    .any(|a| a.kind == ParameterKind::Channel)
+        });
+        if physical_channels && binding.outputs.as_ref().is_some_and(Vec::is_empty) {
             return Err(invalid(
                 "PSU capabilities cannot declare zero physical outputs",
             ));
@@ -762,11 +770,8 @@ impl Engine {
                 CatalogReply::Quantity(Quantity {
                     value: number,
                     unit: prepared.unit,
-                    status: if number.abs() >= 9.0e36 {
-                        MeasurementStatus::Overload
-                    } else {
-                        MeasurementStatus::Valid
-                    },
+                    // Numeric magnitude alone is not a vendor-neutral overload signal.
+                    status: MeasurementStatus::Valid,
                 })
             }
             ReplyKind::Boolean => {

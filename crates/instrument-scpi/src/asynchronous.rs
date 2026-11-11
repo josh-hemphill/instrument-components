@@ -24,9 +24,16 @@ pub trait AsyncConnector: Send + Sync {
 pub struct AsyncScpiFactory {
     descriptor: DriverDescriptor,
     profile: Profile,
+    routes: ProfileRoutes,
     connector: Arc<dyn AsyncConnector>,
 }
 impl AsyncScpiFactory {
+    pub fn with_endpoint_profiles(mut self, profiles: Vec<(Endpoint, Profile)>) -> Result<Self> {
+        self.routes = profile_routes(self.profile.id(), profiles)?;
+        self.descriptor.operations = route_operations(&self.profile, &self.routes);
+        Ok(self)
+    }
+
     pub fn with_rules(mut self, rules: Vec<MatchRule>) -> Self {
         self.descriptor.rules = rules;
         self
@@ -43,6 +50,7 @@ impl AsyncScpiFactory {
                 operations: operations(&profile),
             },
             profile,
+            routes: BTreeMap::new(),
             connector,
         }
     }
@@ -58,11 +66,14 @@ impl DriverFactory for AsyncScpiFactory {
         &'a self,
         context: &'a OpenContext<'_>,
     ) -> DriverFuture<'a, Box<dyn AsyncDeviceBackend>> {
-        Box::pin(open_device(
-            self.profile.clone(),
-            self.connector.clone(),
-            context,
-        ))
+        Box::pin(async move {
+            open_device(
+                selected_profile(&self.profile, &self.routes, context)?,
+                self.connector.clone(),
+                context,
+            )
+            .await
+        })
     }
 }
 struct AsyncScpiDevice {

@@ -1,73 +1,7 @@
-# DMM
+# Dmm
 
-Digital multimeter session view (IVI-inspired / SCPI `:MEASure`). All numeric values use SI base units (V, A, Ω).
+Use the `Dmm` typed view over an already opened protocol-neutral handle. Rust views borrow the handle; C# views retain its shared reference. Async views use the corresponding async handle. A view does not open another connection or introduce device-specific fallback behavior.
 
-See [capability matrix](../capability-matrix.md#dmm) for Base vs Extension status.
+Inspect the handle's operation set and request required operations at open. Device packages own literal commands, supported arguments, channel domains and any model exceptions. An unsupported operation fails without issuing IO; class membership alone does not guarantee every method.
 
-## Open
-
-=== "Rust"
-
-    ```rust
-    let mut dmm = catalog.open_dmm(&address)?;
-    ```
-
-=== "C#"
-
-    ```csharp
-    var dmm = catalog.OpenDmm(address);
-    ```
-
-## Measure
-
-=== "Rust"
-
-    ```rust
-    let vdc = dmm.measure_voltage_dc(None)?;
-    let vac = dmm.measure_voltage_ac(Some(10.0))?;
-    let idc = dmm.measure_current_dc(None)?;
-    let ohms = dmm.measure_resistance(None)?;
-    ```
-
-=== "C#"
-
-    ```csharp
-    var vdc = dmm.MeasureVoltageDc();
-    var vac = dmm.MeasureVoltageAc(10.0);
-    var idc = dmm.MeasureCurrentDc();
-    var ohms = dmm.MeasureResistance();
-    ```
-
-## Configure
-
-=== "Rust"
-
-    ```rust
-    dmm.configure_voltage_dc(Some(10.0), Some(0.001))?;
-    ```
-
-=== "C#"
-
-    ```csharp
-    dmm.ConfigureVoltageDc(range: 10.0, resolution: 0.001);
-    ```
-
-## Mock example
-
-=== "Rust"
-
-    --8<-- "snippets/rust/mock-dmm.md"
-
-=== "C#"
-
-    --8<-- "snippets/csharp/mock-dmm.md"
-
-## Async
-
-=== "Rust"
-
-    `AsyncDmm` mirrors the sync methods with `.await`. See [Rust async](../rust/async.md).
-
-=== "C#"
-
-    `AsyncDmm` exposes `MeasureVoltageDcAsync`, etc. See [C# async](../csharp/async.md).
+Measurement results preserve units and status. See [capabilities](../capability-matrix.md), [composition](../getting-started.md) and [errors](../csharp/errors.md). The authoritative operation signatures are generated from `spec/driver-operations.json` in the main repository. External package provenance links source behavior to exact transcript cases. Hardware confirmation remains pending.

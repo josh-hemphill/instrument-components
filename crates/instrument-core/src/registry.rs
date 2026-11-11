@@ -45,8 +45,7 @@ pub struct UsbHint {
 
 impl ModelRegistry {
     pub fn embedded() -> Self {
-        const EMBEDDED: &str = include_str!("../data/model_registry.toml");
-        Self::from_toml(EMBEDDED).unwrap_or_default()
+        Self::default()
     }
 
     pub fn from_toml(content: &str) -> std::result::Result<Self, String> {

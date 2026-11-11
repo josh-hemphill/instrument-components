@@ -33,7 +33,7 @@ def verify(repository,feeds,output,framework):
     cargo=output/'cargo-home';cargo.mkdir();(cargo/'config.toml').write_text('[source.crates-io]\nreplace-with="proof"\n[source.proof]\ndirectory='+json.dumps(str(registry))+'\n',encoding='utf-8')
     nuget=output/'nuget-feed';shutil.copytree(prepared['nugetFeed'],nuget)
     from xml.sax.saxutils import quoteattr
-    config=output/'NuGet.Config';config.write_text('<configuration><packageSources><clear/><add key="proof" value='+quoteattr(str(nuget))+'/><add key="nuget" value="https://api.nuget.org/v3/index.json"/></packageSources><packageSourceMapping><packageSource key="proof"><package pattern="InstrumentComponents.*"/></packageSource><packageSource key="nuget"><package pattern="*"/></packageSource></packageSourceMapping></configuration>',encoding='utf-8')
+    config=output/'NuGet.Config';config.write_text('<configuration><packageSources><clear/><add key="proof" value='+quoteattr(str(nuget))+'/><add key="nuget" value="https://api.nuget.org/v3/index.json"/></packageSources><packageSourceMapping><packageSource key="proof"><package pattern="InstrumentComponents*"/></packageSource><packageSource key="nuget"><package pattern="*"/></packageSource></packageSourceMapping></configuration>',encoding='utf-8')
     env=dict(os.environ,CARGO_HOME=str(cargo),CARGO_TARGET_DIR=str(output/'cargo-target'),NUGET_PACKAGES=str(output/'nuget-cache'),DOTNET_CLI_HOME=str(output/'dotnet-home'),DOTNET_NOLOGO='1',DOTNET_CLI_TELEMETRY_OPTOUT='1',PYTHONPATH='')
     def run(name,command,cwd=output,negative=False,native=False):
         print(name+': '+' '.join(map(str,command)),flush=True);log=output/(name+'.log')

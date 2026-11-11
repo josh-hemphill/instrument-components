@@ -16,6 +16,6 @@ public sealed class SpectrumAnalyzerMarkerPeakStep : InstrumentBoundStep<Spectru
         var dbm = analyzer.MarkerY();
         PhaseIResults.PublishScalar(Results, "MarkerX", hz, "Hz");
         PhaseIResults.PublishScalar(Results, "MarkerY", dbm, "dBm");
-        UpgradeVerdict(Verdict.Pass);
+        UpgradeVerdict(hz.Status==InstrumentComponents.Drivers.MeasurementStatus.Valid && dbm.Status==InstrumentComponents.Drivers.MeasurementStatus.Valid ? Verdict.Pass : Verdict.Fail);
     }
 }

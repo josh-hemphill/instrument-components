@@ -1,58 +1,16 @@
-# Async I/O (C#)
+# Async execution
 
-Core async APIs take `CancellationToken` and return `Task` / `ValueTask`. Typed async classes (`AsyncDmm`, etc.) mirror the sync surface with `*Async` method names.
+Rust enables `async` on the SDK/facade and selected device packages. C# exposes the equivalent frontends without a feature switch.
 
-## Mock quick start
+| Frontend | Rust | C# |
+|---|---|---|
+| Synchronous | DeviceHandle | DeviceHandle |
+| Native async transport | NativeDeviceHandle | NativeDeviceHandle |
+| Dedicated worker, async caller | WorkerDeviceHandle | WorkerDeviceHandle |
+| Dedicated worker, blocking caller | same worker handle | same worker handle |
 
-```csharp
-using InstrumentComponents.Catalog;
-using InstrumentComponents.Kind;
-using InstrumentComponents.Mock;
+Call `open_native` / `OpenNativeAsync` only when a factory supplies genuine async IO. `open_worker` / `OpenWorkerAsync` runs a sync transport on a dedicated worker with thread affinity; it does not turn VISA calls into native async. The combined SCPI factory can register both connectors under one canonical ID.
 
-var fixture = ScriptedFixture.Builder()
-    .Idn("Acme", "DMM1", "SN1", "1.0")
-    .Kinds(InstrumentKind.Dmm)
-    .OnQuery(":MEAS:VOLT:DC?", "1.0")
-    .Build();
+The runtime serializes one complete logical operation, including multi-command plans. Class views share configuration and unit state. A canceled operation that may have started IO leaves recovery responsibility explicit; queued cancellation must not issue commands. No hidden retry, reconnect or reset is performed. Use the SDK recovery contract at a confirmed clean boundary; recovery and reset invalidate cached configured units.
 
-var catalog = DeviceCatalog.FromFixture("mock://dmm", fixture);
-var dmm = await catalog.Device("mock://dmm").OpenDmmAsync();
-var volts = await dmm.MeasureVoltageDcAsync();
-Console.WriteLine($"{volts} V");
-```
-
-```bash
-dotnet run --project examples/MockFixtureCiAsync
-```
-
-## VISA async honesty
-
-[`VisaAsyncTransport`](https://github.com/josh-hemphill/instrument-components/blob/latest/dotnet/src/InstrumentComponents.Visa/VisaAsyncTransport.cs) wraps sync `VisaTransport` in `SyncAsAsyncTransport`:
-
-- `WriteAsync` / `ReadAsync` run blocking VISA I/O on the thread pool.
-- `CancellationToken` cancels queued bridge work before it starts; it does **not** cancel an in-flight native VISA call the way true APM would.
-- This is intentional until vendor APM proves reliable across Keysight and NI on Windows **and** Linux.
-
-Do **not** advertise “true async VISA I/O” for the C# package yet. Rust already has true async via visa-rs `InstrumentTokioAdapter` — see [Rust async](../rust/async.md).
-
-## Hardware
-
-```csharp
-using InstrumentComponents.Visa;
-
-var catalog = await VisaDiscovery.Create().ScanAsync();
-var dmm = await catalog
-    .Device(catalog.DevicesByKind(InstrumentComponents.Kind.InstrumentKind.Dmm)[0].Address.Raw)
-    .OpenDmmAsync();
-var volts = await dmm.MeasureVoltageDcAsync();
-```
-
-## Related
-
-- [C# VISA](visa.md) — packages and platform notes
-- Agent spike notes: repo `docs/visa-async-csharp.md`
-
-A running native call owns its read/write buffer until it finishes under the VISA
-timeout. Its task remains pending until then. Complete session queries serialize
-the write/read pair so concurrent callers cannot exchange replies. Dispose waits
-for an active call before closing the native session.
+Close the handle explicitly and await async close. Owned connections are disposed once; borrowed connections stay with the application. Request checked Shutdown only when complete output inventory is known. A closed/closing handle rejects subsequent calls. An operation-level timeout is distinct from caller cancellation; connectors must translate their transport failures into the shared error kinds.

@@ -15,7 +15,7 @@ public sealed partial class DriverRegistry
         if (!registration.Modes.Contains(ExecutionMode.WorkerAsync)) throw Error(DriverErrorKind.UnsupportedExecutionMode, "Worker mode unavailable.");
         var requested = (required ?? []).ToFrozenSet();
         if (!requested.IsSubsetOf(registration.Descriptor.Operations)) throw Error(DriverErrorKind.UnsupportedOperation, "Required operation outside envelope.");
-        var state = new WorkerState(registration.Factory, new(candidate, ownership), registration.Descriptor.Operations, requested);
+        var state = new WorkerState(registration.Factory, new(candidate, ownership, requested), registration.Descriptor.Operations, requested);
         state.Start();
         try
         {
