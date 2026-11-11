@@ -3,14 +3,14 @@
 [1m[92m   Compiling[0m instrument-scpi v0.2.0-alpha.1
 [1m[92m   Compiling[0m instrument-runtime v0.2.0-alpha.1
 [1m[92m   Compiling[0m instrument-components v0.2.0-alpha.1
+[1m[92m   Compiling[0m instrument-driver-rigol v0.2.0-alpha.1
 [1m[92m   Compiling[0m instrument-driver-keysight v0.2.0-alpha.1
+[1m[92m   Compiling[0m instrument-driver-keithley v0.2.0-alpha.1
+[1m[92m   Compiling[0m instrument-driver-tektronix v0.2.0-alpha.1
 [1m[92m   Compiling[0m instrument-driver-siglent v0.2.0-alpha.1
 [1m[92m   Compiling[0m instrument-testkit v0.2.0-alpha.1
-[1m[92m   Compiling[0m instrument-driver-rigol v0.2.0-alpha.1
-[1m[92m   Compiling[0m instrument-driver-tektronix v0.2.0-alpha.1
-[1m[92m   Compiling[0m instrument-driver-keithley v0.2.0-alpha.1
 [1m[92m   Compiling[0m all-device-composition v0.0.0 (D:\a\_temp\composition-proof\app\rust)
-[1m[92m    Finished[0m `release` profile [optimized] target(s) in 49.14s
+[1m[92m    Finished[0m `release` profile [optimized] target(s) in 47.30s
 [1m[92m     Running[0m `D:\a\_temp\composition-proof\cargo-target\release\all-device-composition.exe`
 PASS Keysight package: 831 independent cases; exact traffic, values, units, errors and resource lifetime
 PASS Keithley package: 297 independent cases; exact traffic, values, units, errors and resource lifetime

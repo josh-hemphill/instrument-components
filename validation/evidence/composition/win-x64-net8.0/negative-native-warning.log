@@ -1,4 +1,4 @@
   Determining projects to restore...
   All projects are up-to-date for restore.
-D:\a\_temp\composition-proof\app\dotnet\Program.cs(46,252): error IL3050: Using member 'WarningProbe.Trigger()' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. intentional AOT gate. [D:\a\_temp\composition-proof\app\dotnet\Composition.csproj]
-D:\a\_temp\composition-proof\app\dotnet\Program.cs(46,252): error IL2026: Using member 'WarningProbe.Trigger()' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. intentional gate. [D:\a\_temp\composition-proof\app\dotnet\Composition.csproj]
+D:\a\_temp\composition-proof\app\dotnet\Program.cs(51,252): error IL3050: Using member 'WarningProbe.Trigger()' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. intentional AOT gate. [D:\a\_temp\composition-proof\app\dotnet\Composition.csproj]
+D:\a\_temp\composition-proof\app\dotnet\Program.cs(51,252): error IL2026: Using member 'WarningProbe.Trigger()' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. intentional gate. [D:\a\_temp\composition-proof\app\dotnet\Composition.csproj]

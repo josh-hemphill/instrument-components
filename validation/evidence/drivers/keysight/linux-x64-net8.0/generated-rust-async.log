@@ -5,12 +5,12 @@
 [1m[92m   Compiling[0m pin-project-lite v0.2.17
 [1m[92m   Compiling[0m instrument-scpi v0.2.0-alpha.1
 [1m[92m   Compiling[0m syn v2.0.117
-[1m[92m   Compiling[0m instrument-driver-keysight v0.2.0-alpha.1 (/home/runner/work/_temp/driver-proof/consumer-generated)
 [1m[92m   Compiling[0m instrument-testkit v0.2.0-alpha.1
+[1m[92m   Compiling[0m instrument-driver-keysight v0.2.0-alpha.1 (/home/runner/work/_temp/driver-proof/consumer-generated)
 [1m[92m   Compiling[0m tokio-macros v2.7.0
 [1m[92m   Compiling[0m tokio v1.52.3
 [1m[92m   Compiling[0m instrument-runtime v0.2.0-alpha.1
 [1m[92m   Compiling[0m keysight-package-proof v0.0.0 (/home/runner/work/_temp/driver-proof/consumer-generated/validation/rust)
-[1m[92m    Finished[0m `release` profile [optimized] target(s) in 18.82s
+[1m[92m    Finished[0m `release` profile [optimized] target(s) in 20.15s
 [1m[92m     Running[0m `/home/runner/work/_temp/driver-proof/cargo-target/release/keysight-package-proof`
 PASS Keysight package: 831 independent cases; exact traffic, values, units, errors and resource lifetime

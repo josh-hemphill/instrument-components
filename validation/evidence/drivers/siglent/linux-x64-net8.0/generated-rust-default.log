@@ -5,6 +5,6 @@
 [1m[92m   Compiling[0m instrument-driver-siglent v0.2.0-alpha.1 (/home/runner/work/_temp/driver-proof/consumer-generated)
 [1m[92m   Compiling[0m instrument-testkit v0.2.0-alpha.1
 [1m[92m   Compiling[0m siglent-package-proof v0.0.0 (/home/runner/work/_temp/driver-proof/consumer-generated/validation/rust)
-[1m[92m    Finished[0m `release` profile [optimized] target(s) in 9.60s
+[1m[92m    Finished[0m `release` profile [optimized] target(s) in 4.30s
 [1m[92m     Running[0m `/home/runner/work/_temp/driver-proof/cargo-target/release/siglent-package-proof`
 PASS Siglent package: 134 independent cases; exact traffic, values, units, errors and resource lifetime
