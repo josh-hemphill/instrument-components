@@ -11,12 +11,14 @@ public static class PhaseIResults
     public const string ScalarTable = "Scalar";
     public const string IdentityTable = "Identity";
 
-    public static readonly List<string> SampleColumns = ["Channel", "Index", "Value"];
+    public static readonly List<string> SampleColumns = ["Channel", "Index", "Value", "Unit"];
     public static readonly List<string> ScalarColumns = ["Name", "Value", "Unit", "LimitLow", "LimitHigh"];
     public static readonly List<string> IdentityColumns = ["Idn", "DutSerial"];
 
-    public static void PublishSample(ResultSource results, string channel, int index, double value) =>
-        results.Publish(SampleTable, SampleColumns, channel, index, value);
+    public static void PublishSample(ResultSource results,string channel,int index,InstrumentComponents.Drivers.Catalog.Quantity value)=>PublishSample(results,channel,index,value.Value,UnitSymbol(value.Unit));
+
+    public static void PublishSample(ResultSource results, string channel, int index, double value,string unit="Unknown") =>
+        results.Publish(SampleTable, SampleColumns, channel, index, value,unit);
 
     public static void PublishScalar(ResultSource results,string name,InstrumentComponents.Drivers.Catalog.Quantity value,string unit)=>PublishScalar(results,name,value.Value,UnitSymbol(value.Unit));
 

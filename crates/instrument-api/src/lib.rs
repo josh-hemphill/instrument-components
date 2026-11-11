@@ -184,7 +184,8 @@ pub struct Measurement {
     pub status: MeasurementStatus,
 }
 
-/// All values/ranges are in volts. None requests the provider's automatic range.
+/// All values/ranges are in volts. None supplies no explicit range; the provider
+/// defines whether its operation preserves, selects, or changes the device range.
 pub trait DmmMeasurement: Send {
     fn measure_voltage_dc(&mut self, range: Option<f64>) -> Result<Measurement>;
 }

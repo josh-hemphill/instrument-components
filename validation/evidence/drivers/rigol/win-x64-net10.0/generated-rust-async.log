@@ -1,0 +1,16 @@
+[1m[92m   Compiling[0m proc-macro2 v1.0.106
+[1m[92m   Compiling[0m quote v1.0.45
+[1m[92m   Compiling[0m unicode-ident v1.0.24
+[1m[92m   Compiling[0m instrument-api v0.2.0-alpha.1
+[1m[92m   Compiling[0m pin-project-lite v0.2.17
+[1m[92m   Compiling[0m instrument-scpi v0.2.0-alpha.1
+[1m[92m   Compiling[0m instrument-testkit v0.2.0-alpha.1
+[1m[92m   Compiling[0m syn v2.0.117
+[1m[92m   Compiling[0m instrument-driver-rigol v0.2.0-alpha.1 (D:\a\_temp\driver-proof\consumer-generated)
+[1m[92m   Compiling[0m tokio-macros v2.7.0
+[1m[92m   Compiling[0m tokio v1.52.3
+[1m[92m   Compiling[0m instrument-runtime v0.2.0-alpha.1
+[1m[92m   Compiling[0m rigol-package-proof v0.0.0 (D:\a\_temp\driver-proof\consumer-generated\validation\rust)
+[1m[92m    Finished[0m `release` profile [optimized] target(s) in 13.83s
+[1m[92m     Running[0m `D:\a\_temp\driver-proof\cargo-target\release\rigol-package-proof.exe`
+PASS Rigol package: 203 independent cases; exact traffic, values, units, errors and resource lifetime

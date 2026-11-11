@@ -72,8 +72,8 @@ def main():
         records.append(dict(name=name, command=command, cwd=str(cwd), exitCode=result.returncode, expectedFailure=negative, log=str(log), sha256=hashlib.sha256(log.read_bytes()).hexdigest()))
         (work/'validation.json').write_text(json.dumps(records, indent=2)+'\n')
         if negative:
-            if result.returncode == 0 or not re.search(r'\berror IL2026\b', text):
-                raise RuntimeError('Diagnostic gate did not fail with actual IL2026: '+str(log))
+            if result.returncode == 0 or any(not re.search(r'\berror '+diagnostic+r'\b',text) for diagnostic in ['IL2026','IL3050']):
+                raise RuntimeError('Diagnostic gate did not fail with actual IL2026 and IL3050: '+str(log))
         elif result.returncode or diagnostics and re.search(r'\bwarning IL\d+\b', text, re.I):
             print(text[-12000:], flush=True); raise RuntimeError(f'Failed check (exit {result.returncode}): {log}')
         return text
@@ -222,7 +222,7 @@ def main():
         run('native-runtime-isolation',sandbox)
     probe=work/'warning-probe';shutil.copytree(aot,probe,ignore=IGNORE)
     with (probe/'Program.cs').open('a') as code:code.write('\nWarningProbe.Trigger();\n')
-    (probe/'WarningProbe.cs').write_text('using System.Diagnostics.CodeAnalysis; internal static class WarningProbe { [RequiresUnreferencedCode("Intentional diagnostic gate test")] internal static void Trigger() {} }\n')
+    (probe/'WarningProbe.cs').write_text('using System.Diagnostics.CodeAnalysis; internal static class WarningProbe { [RequiresUnreferencedCode("Intentional diagnostic gate test")][RequiresDynamicCode("Intentional AOT diagnostic gate test")] internal static void Trigger() {} }\n')
     warning=[str(x) for x in publish];warning[warning.index(str(work/'native'))]=str(work/'warning-native');warning[warning.index(str(config))]=str(probe/'NuGet.Config')
     run('negative-trimming-gate',warning,probe,nuget_env,negative=True)
     core_dotnet=work/'dotnet-core-only';core_dotnet.mkdir();core_feed=work/'core-only-feed';core_feed.mkdir()

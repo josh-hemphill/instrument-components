@@ -202,7 +202,7 @@ function emitSampleTraceStep(operation: Operation): string {
 
         var samples = instrument.${operation.accessor}.${operation.invoke!.method}(${args});
         for (var i = 0; i < samples.Values.Count; i++)
-            PhaseIResults.PublishSample(Results, ${JSON.stringify(channel)}, i, samples.Values[i]);
+            PhaseIResults.PublishSample(Results, ${JSON.stringify(channel)}, i, samples.Values[i],PhaseIResults.UnitSymbol(samples.Unit));
         UpgradeVerdict(samples.Values.All(double.IsFinite) ? Verdict.Pass : Verdict.Fail);`,
   );
 }

@@ -40,7 +40,7 @@ def verify(repository,feeds,output,framework):
         with log.open('w',encoding='utf-8') as stream:result=subprocess.run(list(map(str,command)),cwd=cwd,env=env,stdout=stream,stderr=subprocess.STDOUT)
         text=log.read_text(encoding='utf-8',errors='replace');records.append(dict(name=name,command=list(map(str,command)),exitCode=result.returncode,expectedFailure=negative,log=log.name,sha256=hashlib.sha256(log.read_bytes()).hexdigest()))
         (output/'execution.json').write_text(json.dumps(records,indent=2)+'\n',encoding='utf-8')
-        failed=(result.returncode==0 or not re.search(r'\berror IL2026\b',text)) if negative else (result.returncode!=0 or native and re.search(r'\bwarning IL\d+\b',text,re.I))
+        failed=(result.returncode==0 or any(not re.search(r'\berror '+diagnostic+r'\b',text) for diagnostic in ['IL2026','IL3050'])) if negative else (result.returncode!=0 or native and re.search(r'\bwarning IL\d+\b',text,re.I))
         if failed:raise RuntimeError(name+' failed:\n'+text[-12000:])
         return text
     for source,outputs in [(repository/'profiles.json',emit),(repository/'cases.json',emit_cases)]:
@@ -108,7 +108,7 @@ def verify(repository,feeds,output,framework):
         run(mode+'-native-execute',[binary])
         (output/(mode+'-native.json')).write_text(json.dumps(dict(rid=rid,framework=framework,sha256=hashlib.sha256(binary.read_bytes()).hexdigest(),executed=True)),encoding='utf-8')
         if mode=='packed':
-            with (dotnet/'Program.cs').open('a',encoding='utf-8') as code:code.write('\ninternal static class WarningProbe { [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("intentional diagnostic gate")] internal static void Trigger(){} internal static void Run()=>Trigger(); }\n')
+            with (dotnet/'Program.cs').open('a',encoding='utf-8') as code:code.write('\ninternal static class WarningProbe { [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("intentional diagnostic gate")][System.Diagnostics.CodeAnalysis.RequiresDynamicCode("intentional AOT diagnostic gate")] internal static void Trigger(){} internal static void Run()=>Trigger(); }\n')
             # Keep the annotated call reachable; the regular consumer completed above.
             code=dotnet/'Program.cs';code.write_text(code.read_text(encoding='utf-8').replace('await Proof.Run();','WarningProbe.Run(); await Proof.Run();'),encoding='utf-8')
             run('negative-native-warning-gate',publish,negative=True,native=True)

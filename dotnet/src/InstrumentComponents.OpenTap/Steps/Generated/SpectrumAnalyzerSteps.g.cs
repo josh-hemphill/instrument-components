@@ -13,7 +13,7 @@ public sealed class SpectrumAnalyzerFetchTraceStep : InstrumentBoundStep<Spectru
 
         var samples = instrument.Analyzer.FetchTraceAscii();
         for (var i = 0; i < samples.Values.Count; i++)
-            PhaseIResults.PublishSample(Results, "Trace", i, samples.Values[i]);
+            PhaseIResults.PublishSample(Results, "Trace", i, samples.Values[i],PhaseIResults.UnitSymbol(samples.Unit));
         UpgradeVerdict(samples.Values.All(double.IsFinite) ? Verdict.Pass : Verdict.Fail);
     }
 }

@@ -13,6 +13,7 @@ ROOT=Path(__file__).resolve().parents[1]
 VENDORS=['keysight','keithley','rigol','siglent','tektronix']
 def read(path):return json.loads(path.read_text(encoding='utf-8'))
 def digest(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+def source_digest(path):return hashlib.sha256(path.read_bytes().replace(b"\r\n",b"\n")).hexdigest()
 def write(path,value):path.write_text(json.dumps(value,indent=2,sort_keys=True)+'\n',encoding='utf-8')
 def generate(parent):
     archive=parent/'instrument-components-keysight/provenance/migration-tooling/device-migration-inventory.json'
@@ -49,7 +50,35 @@ def generate(parent):
     for row in baseline['openTapLedger']:
         if row['id'] not in current:raise ValueError('OpenTAP step lost')
         steps.append(dict(id=row['id'],stepTypeName=current[row['id']]['stepTypeName'],targetOperations=row['targetOperations'],changedSemantics=row['changedSemantics'],test='dotnet/tests/InstrumentComponents.OpenTap.Tests/OperationExecutionTests.cs',disposition='implemented-on-protocol-neutral-handle'))
-    return dict(schemaVersion=1,baselineCommit='5eb92b17f775d326e5a3542ee40855b156321745',hardwareValidated=False,apiCompatibilityRequired=False,publicationStatus='not-published-by-this-migration',sourceHashes=baseline['sourceSha256']|baseline['extractionSources'],models=models,usbHints=[dict(row,repository=canonical[(row['manufacturer'],row['model'])]['repository'],driver=canonical[(row['manufacturer'],row['model'])]['driver']) for row in baseline['usbHints']],profiles=profiles,operations=baseline['implementedNeutralOperationIds'],publicSymbols=symbols,openTapSteps=steps,packages=packages,operationCoverage=coverage)
+    evidencePath=ROOT/'spec/device-execution-evidence.json'
+    evidence=read(evidencePath) if evidencePath.exists() else dict(cells=[],corpora={})
+    cells={cell['id']:cell for cell in evidence['cells']}
+    for package in packages:
+        vendor=package['repository'].rsplit('-',1)[1];corpusId='driver:'+vendor
+        corpus=evidence['corpora'].get(corpusId)
+        if corpus and corpus['caseManifestSha256']!=package['files']['cases.json']:raise ValueError('Execution corpus differs from source cases: '+vendor)
+        package['executionCellIds']=sorted(cell['id'] for cell in cells.values() if cell.get('corpusId')==corpusId and cell['kind']=='case-execution')
+        package['caseCorpusId']=corpusId
+    packageByRepo={package['repository'].split('/')[1]:package for package in packages}
+    for record in coverage:
+        package=packageByRepo[record['repository']];record['id']=record['driver']+'/'+record['operation'];record['executionCellIds']=package['executionCellIds']
+        corpus=evidence['corpora'].get(package['caseCorpusId'])
+        if corpus and not set(record['cases'])<=set(corpus['caseIds']):raise ValueError('Case not in executed corpus')
+    kinds={model['driver']:set().union(*(set(m['kinds']) for m in models if m['driver']==model['driver'])) for model in models}
+    for symbol in symbols:
+        operation=symbol['targetOperation']
+        related=[row for row in coverage if symbol['kind'] in kinds[row['driver']] and (operation=='Quantity.Unit' or row['operation']==operation)] if operation else []
+        symbol['operationCoverageIds']=[row['id'] for row in related]
+        symbol['executionCellIds']=sorted({cell for row in related for cell in row['executionCellIds']})
+    for model in models:model['executionCellIds']=packageByRepo[model['repository']]['executionCellIds']
+    for step in steps:
+        step['test']='dotnet/tests/InstrumentComponents.OpenTap.Tests/OperationOracleTests.cs'
+        step['testCaseIds']=['opentap:'+step['id']+':nondefault','opentap:'+step['id']+':loaded-nondefault']
+        step['oracle']='validation/neutral/opentap-oracle.json'
+        step['oracleSha256']=digest(ROOT/step['oracle']) if (ROOT/step['oracle']).exists() else None
+        step['executionCellIds']=sorted(cell['id'] for cell in cells.values() if cell['kind']=='opentap-exact-and-loaded')
+        if current[step['id']]['publish']['mode'] in ['sample','sampleAndScalar']:step['changedSemantics']=(step['changedSemantics'] or '')+' Sample rows additionally preserve the actual physical Unit.'
+    return dict(executionEvidenceFile='spec/device-execution-evidence.json',executionEvidenceSha256=digest(evidencePath) if evidencePath.exists() else None,schemaVersion=1,baselineCommit='5eb92b17f775d326e5a3542ee40855b156321745',hardwareValidated=False,apiCompatibilityRequired=False,publicationStatus='not-published-by-this-migration',sourceHashes=baseline['sourceSha256']|baseline['extractionSources'],models=models,usbHints=[dict(row,repository=canonical[(row['manufacturer'],row['model'])]['repository'],driver=canonical[(row['manufacturer'],row['model'])]['driver']) for row in baseline['usbHints']],profiles=profiles,operations=baseline['implementedNeutralOperationIds'],publicSymbols=symbols,openTapSteps=steps,packages=packages,operationCoverage=coverage)
 
 def check(index,parent=None):
     assert len(index['models'])==47 and sum(len(m['kinds']) for m in index['models'])==48
@@ -63,6 +92,28 @@ def check(index,parent=None):
     assert len({(m['manufacturer'],m['model']) for m in index['models']})==47
     assert {row['operation'] for row in index['operationCoverage']}==set(index['operations']),'Operation coverage does not reconcile all83 operations'
     assert len(index['packages'])==5 and all(r['cases'] for r in index['operationCoverage'])
+    evidence=read(ROOT/index['executionEvidenceFile'])
+    assert digest(ROOT/index['executionEvidenceFile'])==index['executionEvidenceSha256'],'Execution index drift'
+    cells={cell['id']:cell for cell in evidence['cells']};assert len(cells)==len(evidence['cells'])
+    for cell in cells.values():
+        assert digest(ROOT/cell['log'])==cell['logSha256'],'Executed log drift: '+cell['id']
+    for row in index['operationCoverage']:
+        assert row['executionCellIds'],'Missing execution join: '+row['id']
+        for identity in row['executionCellIds']:
+            cell=cells[identity];assert cell['status']=='PASS' and cell['kind']=='case-execution'
+            corpus=evidence['corpora'][cell['corpusId']];assert set(row['cases'])<=set(corpus['caseIds'])
+    for package in index['packages']:
+        selected=[cells[identity] for identity in package['executionCellIds']]
+        assert {(cell['rid'],cell['framework']) for cell in selected}=={(rid,framework) for rid in ['linux-x64','win-x64'] for framework in ['net8.0','net10.0']}
+        assert evidence['corpora'][package['caseCorpusId']]['caseManifestSha256']==package['files']['cases.json']
+    assert all(row['targetOperation'] is None or row['executionCellIds'] for row in index['publicSymbols'])
+    for row in index['openTapSteps']:
+        assert row['executionCellIds'] and digest(ROOT/row['oracle'])==row['oracleSha256'],'Missing/current OpenTAP evidence'
+        for identity in row['executionCellIds']:
+            cell=cells[identity];assert cell['kind']=='opentap-exact-and-loaded' and cell['status']=='PASS'
+            assert set(row['testCaseIds'])<=set(cell['caseIds']) and cell['oracleSha256']==row['oracleSha256']
+            for file,expected in cell['sourceFileSha256'].items():assert source_digest(ROOT/file)==expected,'Tested OpenTAP source drift: '+file
+
     # Production dependencies/resources never pull implementation packages or old
     # model/dialect tables into the standalone main build.
     forbidden=['crates/instrument-core/data/model_registry.toml','crates/instrument-core/data/dialects/profiles.toml','crates/instrument-core/data/scpi_commands.toml','dotnet/src/InstrumentComponents/Dialects','dotnet/src/InstrumentComponents/Classes']

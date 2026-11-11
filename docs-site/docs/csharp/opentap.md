@@ -6,6 +6,6 @@ All class views use one attached handle. Resource Open validates class capabilit
 
 Use `VisaScpiConnector` from the optional `InstrumentComponents.OpenTap.Visa` companion when the host chooses VISA and SCPI. Supply the static driver factories and passive evidence through its provider callback. Device packages are application dependencies; the OpenTAP pack does not bundle them or activate external assemblies by reflection.
 
-Quantity-bearing results publish their actual units, including Unknown. Typed overload results produce Verdict.Fail. Ordinary measurements use the configured limits. Operation parameters follow the SDK domains. Round-trip TapPlan and all-step opaque-backend tests run without hardware.
+Quantity-bearing results publish their actual units, including Unknown. Sample rows also carry a Unit column; fixed nondefault argument/value/unit oracles cover every step directly and after a saved TapPlan is reloaded and executed. Typed overload results produce Verdict.Fail. Ordinary measurements use the configured limits. Operation parameters follow the SDK domains. Round-trip TapPlan and all-step opaque-backend tests run without hardware.
 
 The OpenTAP host is validated separately from the Native AOT SDK consumer and is not claimed to be AOT compatible. Build the pack with the repository's OpenTAP packaging command after the .NET tests pass; deploy the selected external driver assemblies as part of the host application.

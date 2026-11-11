@@ -30,7 +30,7 @@ public abstract class SampleMeasurementStep<TInstrument> : InstrumentBoundStep<T
             TapThread.ThrowIfAborted();
             var measurement = measure();
             var value=measurement.Value;
-            PhaseIResults.PublishSample(Results, Channel, i, value);
+            PhaseIResults.PublishSample(Results, Channel, i, measurement);
             if (!double.IsFinite(value) || measurement.Status!=InstrumentComponents.Drivers.MeasurementStatus.Valid) UpgradeVerdict(Verdict.Fail);
             if (IntervalMs > 0 && i < count - 1)
                 TapThread.Sleep(IntervalMs);
