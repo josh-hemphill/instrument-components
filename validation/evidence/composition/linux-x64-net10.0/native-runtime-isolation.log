@@ -1,0 +1,6 @@
+PASS all-five static Native AOT app:47IDN+USB, combined/conflicting hints, equal rank,2602B multiview and four frontends
+PASS Keysight packaged Native AOT: 831 independent cases x 4 frontends; exact traffic, values, units, errors and lifetime
+PASS Keithley packaged Native AOT: 297 independent cases x 4 frontends; exact traffic, values, units, errors and lifetime
+PASS Rigol packaged Native AOT: 203 independent cases x 4 frontends; exact traffic, values, units, errors and lifetime
+PASS Siglent packaged Native AOT: 134 independent cases x 4 frontends; exact traffic, values, units, errors and lifetime
+PASS Tektronix packaged Native AOT: 118 independent cases x 4 frontends; exact traffic, values, units, errors and lifetime

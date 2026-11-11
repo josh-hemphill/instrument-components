@@ -10,7 +10,9 @@ def main(inventory,lock):
   archive=Path(row['localArchive']);evidence=Path(row['localEvidence'])
   if 'sha256:'+sha(archive)!=row['digest'] or row['jobConclusion']!='success' or row['benchStepConclusion']!='success':raise ValueError('Incomplete composition/bench cell')
   proof=json.loads((evidence/'composition.json').read_text());execution=json.loads((evidence/'execution.json').read_text())
-  if proof['lockSha256']!=sha(lock) or not proof['nativeExecuted'] or proof['mode']!='pinned-ci-artifact-bootstrap':raise ValueError('Unmatched current composition lock/source')
+  canonicalLock=lock.read_bytes().replace(b'\r\n',b'\n')
+  expectedLock=hashlib.sha256(canonicalLock.replace(b'\n',b'\r\n') if proof['rid']=='win-x64' else canonicalLock).hexdigest()
+  if proof['lockSha256']!=expectedLock or not proof['nativeExecuted'] or proof['mode']!='pinned-ci-artifact-bootstrap':raise ValueError('Unmatched current composition lock/source')
   rid=proof['rid'];framework=proof['framework'];phases={phase['name']:phase for phase in execution};required={'rust-default','rust-async','native-publish','native-execute','native-lifecycle-repeat','negative-native-warning'}
   if rid=='linux-x64':required|={'native-runtime-isolation','native-dependencies'}
   if not required<=set(phases):raise ValueError('Missing native composition phase')
@@ -29,7 +31,7 @@ def main(inventory,lock):
    dest=ROOT/'validation/evidence/composition'/(rid+'-'+framework)/source.name;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(source,dest)
    logs.append(dict(phase=name,log=str(dest.relative_to(ROOT)),logSha256=phase['sha256'],exitCode=phase['exitCode'],expectedFailure=phase['expectedFailure']))
   run=row['workflow_run']['id'];repo='josh-hemphill/instrument-components-keysight';sourceCommit=row['workflow_run']['head_sha'];url='https://github.com/'+repo+'/actions/runs/'+str(run)+'/artifacts/'+str(row['id'])
-  cell=dict(id='composition:'+rid+':'+framework,kind='all-five-composition',rid=rid,framework=framework,status='PASS',sourceCommit=sourceCommit,runId=run,jobId=row['jobId'],artifactId=row['id'],artifactDigest=row['digest'],url=url,lockSha256=sha(lock),sdkSourceCommit=locked['sdkCommit'],driverSourceCommits={d['vendor']:d['sourceCommit'] for d in locked['drivers']},corpusIds=sorted(result['corpora']),frontends=['Sync','NativeAsync','WorkerAsync','WorkerBlocking'],rustFeatures=['default','async'],diagnostics=['IL2026','IL3050'],isolationExecuted=rid=='linux-x64',benchSoftwareVerified=True,nativeSha256=proof['sha256'],phaseLogs=logs,log=logs[0]['log'],logSha256=logs[0]['logSha256'])
+  cell=dict(id='composition:'+rid+':'+framework,kind='all-five-composition',rid=rid,framework=framework,status='PASS',sourceCommit=sourceCommit,runId=run,jobId=row['jobId'],artifactId=row['id'],artifactDigest=row['digest'],url=url,lockSha256=hashlib.sha256(canonicalLock).hexdigest(),runnerLockSha256=proof['lockSha256'],runnerLockFormat='Windows CRLF' if rid=='win-x64' else 'LF',sdkSourceCommit=locked['sdkCommit'],driverSourceCommits={d['vendor']:d['sourceCommit'] for d in locked['drivers']},corpusIds=sorted(result['corpora']),frontends=['Sync','NativeAsync','WorkerAsync','WorkerBlocking'],rustFeatures=['default','async'],diagnostics=['IL2026','IL3050'],isolationExecuted=rid=='linux-x64',benchSoftwareVerified=True,nativeSha256=proof['sha256'],phaseLogs=logs,log=logs[0]['log'],logSha256=logs[0]['logSha256'])
   result['cells'].append(cell);artifacts.append(dict(id=row['id'],digest=row['digest'],sourceCommit=sourceCommit,runId=run,url=url,proof=proof))
  if len(rows)!=4:raise ValueError('Four composition artifacts required')
  result['compositionArtifacts']=artifacts;path.write_text(json.dumps(result,indent=2,sort_keys=True)+'\n');print('Verified four native all-five/bench software cells, both diagnostic gates and exact package/phase/binary joins')

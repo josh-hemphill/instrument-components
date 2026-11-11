@@ -15,3 +15,12 @@ Validation layers must be reported separately:
 The batch publisher helper in `tools/publisher-setup` removes repeated policy entry. NuGet needs one normal account sign-in. Existing crates need a temporary trusted-publishing configuration token. New crate names require first publication before their policies can be created; that publication remains a separately reviewed action. SDK packages release before facade/integration packages, then external packages, then public composition validation.
 
 Use the task's current source/evidence index and CI run IDs to assess which gates actually ran. Workflow definitions alone are not execution evidence; do not promote stale runs on earlier source revisions as final cutover validation.
+
+Current software acceptance includes all20 independent vendor native cells and
+all four statically composed all-five cells, with actual IL2026 and IL3050
+failures verified. The 74 OpenTAP steps have exact nondefault request/value/unit
+oracles and execute saved/reloaded plans; a deliberately wrong forwarded range
+fails those oracles. `python tools/device-extraction-index.py
+--require-complete-evidence` checks the committed execution/package/log joins
+offline. These are software and artifact-bootstrap results. Public-registry
+publication/validation and physical bench evidence remain pending.
