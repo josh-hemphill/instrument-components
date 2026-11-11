@@ -6,7 +6,7 @@ of `instrument-core` / `InstrumentComponents`, VISA and vendor implementations.
 Version `0.2.0-alpha.1` is a prepared preview, not a published stable contract.
 Internal Cargo and NuGet package dependencies pin that exact preview revision;
 package proofs inspect the real emitted dependency ranges without strengthening them.
-The legacy facade remains until external device packages are integrated.
+The facade and OpenTAP now use explicitly registered protocol-neutral handles. The old device-aware facade has been removed.
 
 The November 2026 decisions permit a breaking API and preview publication before
 hardware validation. All current model hints and all eight classes remain in the
@@ -285,13 +285,9 @@ schema, TestKit, all-mode synthetic tests, portable package/AOT proof and releas
 assets. The release manifest is `spec/driver-sdk-release.json`; publication has
 not happened merely because pack/publish tooling exists.
 
-Pending after repository/publisher setup: convert and validate every real device
-profile/behavior in independent driver packages; compose selected factories into
-facade/discovery/OpenTAP applications; remove vendor tables/branches from shared
-classes and old artifacts; publish previews after both native platform gates.
-The old facade/core artifacts still bundle current device support. No real device
-package or hardware support is established by synthetic conformance. See the
-[exact delivery sequence and inputs](device-package-delivery.md).
+Implemented across five external repositories: all source model/USB hints, source-derived operation profiles, endpoint-specific inventory bindings and independently specified wire cases. The main facade/discovery/OpenTAP consume registered neutral handles; vendor tables, device exceptions and legacy device fixtures have moved out of main production sources and artifacts. See `spec/device-extraction-index.json` for ownership and disposition counts.
+
+Local packed native proofs and hosted Windows/Linux .NET8/10 SDK and independent driver proofs are recorded by source revision. All-five composition, public registry setup/publication, and physical bench evidence are distinct gates; consult the current evidence record rather than treating a workflow definition as a passing run. No physical hardware validation has been performed. See [delivery sequence and inputs](device-package-delivery.md).
 
 ### Explicit argument choices and physical inventories
 

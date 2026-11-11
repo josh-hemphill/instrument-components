@@ -21,14 +21,16 @@ def generate(parent):
         repo='instrument-components-'+vendor;root=parent/repo;profiles=read(root/'profiles.json')['profiles'];cases=read(root/'cases.json')['cases'];identities=read(root/'provenance/identities.json')
         records=[]
         for profile in profiles:
-            for operation in [p['operation'] for p in profile['plans']]:
+            positive={call['operation'] for case in cases if case['id'].split('|')[0]==profile['id'] for i,call in enumerate(case['calls']) if i+1<len(case['calls']) or 'expectedError' not in case}
+            declared={p['operation'] for p in profile['plans']}
+            for operation in sorted(positive|declared):
                 matching=[case for case in cases if case['id'].split('|')[0]==profile['id'] and any(call['operation']==operation for call in case['calls'])]
                 if not matching:raise ValueError('No executable case: '+profile['id']+'/'+operation)
-                records.append(dict(driver=profile['id'],operation=operation,cases=[c['id'] for c in matching],negativeCases=[c['id'] for c in matching if 'expectedError' in c],disposition='implemented-source-derived-no-hardware-evidence'))
+                records.append(dict(driver=profile['id'],operation=operation,cases=[c['id'] for c in matching],negativeCases=[c['id'] for c in matching if 'expectedError' in c and c['calls'][-1]['operation']==operation],disposition='implemented-source-derived-no-hardware-evidence' if operation in declared else 'explicit-inventory-binding-required'))
         write(root/'provenance/operation-coverage.json',records)
         for identity in identities:
             for hint in identity['hints']:
-                models.append(dict(manufacturer=hint['manufacturer'],model=hint['model'],kinds=hint['kinds'],repository=repo,driver=identity['driver'],evidence='source-hint-and-software-transcripts-only',hardwareValidated=False))
+                models.append(dict(manufacturer=hint['manufacturer'],model=hint['model'],kinds=hint['kinds'],repository=repo,driver=identity['driver'],legacyResolvedProfiles={kind:value['profile'] for kind,value in hint['legacyResolution'].items()},modelSourceSha256=baseline['sourceSha256']['crates/instrument-core/data/model_registry.toml'],evidence='source-hint-and-software-transcripts-only',hardwareValidated=False))
         files=['profiles.json','cases.json','driver-package.json','provenance/identities.json','provenance/operation-coverage.json','provenance/source.json','provenance/public-symbols.json']
         packages.append(dict(repository='josh-hemphill/'+repo,rustPackage='instrument-driver-'+vendor,nugetPackage='InstrumentComponents.Drivers.'+vendor.title(),version='0.2.0-alpha.1',factoryCount=len(profiles),caseCount=len(cases),files={file:digest(root/file) for file in files},validation=dict(workflow='ci.yml',matrix=dict(os=['ubuntu-latest','windows-latest'],framework=['net8.0','net10.0']),status='execution-evidence-recorded-separately-by-commit-and-artifact-hash')))
         coverage.extend(dict(row,repository=repo) for row in records)
@@ -59,6 +61,7 @@ def check(index,parent=None):
     assert {r['id'] for r in index['openTapSteps']}=={r['id'] for r in read(ROOT/'spec/opentap-operations.json')['operations']}
     assert all(row['targetOperation'] is None or row['targetOperation'] in operations|{'Quantity.Unit'} for row in index['publicSymbols'])
     assert len({(m['manufacturer'],m['model']) for m in index['models']})==47
+    assert {row['operation'] for row in index['operationCoverage']}==set(index['operations']),'Operation coverage does not reconcile all83 operations'
     assert len(index['packages'])==5 and all(r['cases'] for r in index['operationCoverage'])
     # Production dependencies/resources never pull implementation packages or old
     # model/dialect tables into the standalone main build.

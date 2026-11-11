@@ -12,6 +12,10 @@ on:
         description: Immutable application commit to run
         required: true
         type: string
+      bench_configuration:
+        description: Reviewed committed JSON configuration under validation/bench/configs
+        required: true
+        type: string
       instrument_resource:
         description: Operator-selected VISA resource; no automatic discovery or driver selection
         required: true
@@ -31,9 +35,11 @@ jobs:
         env:
           APP_REPOSITORY: ${{ inputs.application_repository }}
           APP_REF: ${{ inputs.application_ref }}
+          BENCH_CONFIGURATION: ${{ inputs.bench_configuration }}
         run: |
           import os, re
           if not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+',os.environ['APP_REPOSITORY']):raise SystemExit('Repository owner/name required')
+          if not re.fullmatch(r'validation/bench/configs/[A-Za-z0-9_-]+\.json',os.environ['BENCH_CONFIGURATION']):raise SystemExit('Reviewed configuration path required')
           if not re.fullmatch(r'[0-9a-f]{40}',os.environ['APP_REF']):raise SystemExit('Immutable 40-character commit required')
       - uses: actions/checkout@v4
         with:
@@ -46,9 +52,11 @@ jobs:
         shell: python
         env:
           INSTRUMENT_RESOURCE: ${{ inputs.instrument_resource }}
+          BENCH_CONFIGURATION: ${{ inputs.bench_configuration }}
         run: |
-          import subprocess
-          subprocess.run(['dotnet','run','--project','validation/bench/Bench.csproj','-c','Release','--','--record','artifacts/bench-evidence.json'],check=True)
+          import os,subprocess
+          subprocess.run(['dotnet','restore','validation/bench/Bench.csproj','--locked-mode'],check=True)
+          subprocess.run(['dotnet','run','--project','validation/bench/Bench.csproj','-c','Release','--no-restore','--','--hardware','--config',os.environ['BENCH_CONFIGURATION'],'--record','artifacts/bench-evidence.json'],check=True)
       - uses: actions/upload-artifact@v4
         if: always()
         with:

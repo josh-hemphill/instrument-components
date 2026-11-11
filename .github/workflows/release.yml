@@ -31,6 +31,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 26
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Require the exact SDK preview on public registries
+        run: python tools/validate-public-sdk.py
       - id: version
         env:
           RELEASE_TAG: ${{ inputs.tag || github.ref_name }}

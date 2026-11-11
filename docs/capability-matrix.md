@@ -1,78 +1,17 @@
-# Capability matrix (IVI-inspired, not IVI-conformant)
+# Capability matrix
 
-Rows are **Base** (target before calling a class “release-ready”) or **Extension** (optional). Status: `done` / `partial` / `todo` / `deferred`.
+The SDK catalogs eight classes and 83 operations. Every operation is independently advertised; a class does not imply that all its operations are supported. Device-specific behavior and all legacy model hints are maintained in the five external repositories linked from [Getting started](getting-started.md).
 
-## Dmm
+| Capability | Requirement |
+|---|---|
+| Typed measurement/configuration | Explicit device-owned operation plan or neutral backend implementation |
+| Channel addressing | Frozen supported channel IDs; sparse IDs remain sparse |
+| PSU ChannelCount | Complete declared physical output inventory |
+| Checked Shutdown | Complete inventory and disable coverage for every physical output |
+| Native async | Explicit native async connector/backend |
+| Worker async/blocking | Dedicated sync-transport worker |
+| Temperature Read/Fetch units | Explicit known device unit or prior successful configuration; otherwise Unknown |
+| Identity | Explicit operation; passive matching does not query |
+| Reset/recovery | Explicit lifecycle operation; invalidates configured unit state |
 
-| Group | Capability | Status |
-|---|---|---|
-| Base | Measure Vdc / Vac / Idc / Ω | done |
-| Base | Configure range + resolution | done |
-| Base | Immediate / software trigger + Read / Initiate+Fetch | done |
-| Base | AC current | done |
-| Base | 2-wire / 4-wire resistance | done |
-| Extension | Temperature | done |
-| Extension | Multipoint / sample count | deferred |
-
-## DcPowerSupply
-
-| Group | Capability | Status |
-|---|---|---|
-| Base | Set V / I limit, enable output, readback | done |
-| Base | Query output state | done |
-| Base | OVP set / enable / query | done |
-| Base | Channel count helper | done |
-| Extension | Remote sense | done |
-
-## FunctionGenerator
-
-| Group | Capability | Status |
-|---|---|---|
-| Base | Standard waveform, frequency, amplitude, offset, output | done |
-| Base | Duty cycle, output load | done |
-| Base | Burst + trigger (imm/ext/bus) | done |
-| Extension | Arbitrary waveform | deferred |
-
-## Oscilloscope
-
-| Group | Capability | Status |
-|---|---|---|
-| Base | Timebase, channel scale, run/stop, ASCII trace | done |
-| Base | Channel enable + coupling | done |
-| Base | Edge trigger | done |
-| Base | Single acquire | done |
-| Base | Vpp / frequency measurement | done |
-| Extension | Binary waveform (`#N` definite-block) | todo — ASCII capture is the supported path; binary needs a dialect key and golden vector before any release-ready claim |
-
-## Switch
-
-| Group | Capability | Status |
-|---|---|---|
-| Base | Close / open / is_closed / open_all (matrix pair) | done |
-| Base | Path naming helpers | done |
-| Extension | Scan list | deferred |
-
-## Counter
-
-| Group | Capability | Status |
-|---|---|---|
-| Base | Frequency / period / totalize | done |
-| Base | Gate time, channel select | done |
-| Base | Dedicated measurement timeout (beyond `ConnectOptions` I/O timeout) | deferred — queries already bound by session `read_timeout` / `per_op_timeout`; a class-level timeout API has no generic SCPI dialect key |
-
-## PowerMeter
-
-| Group | Capability | Status |
-|---|---|---|
-| Base | Configure units / auto-range / avg / corr freq / offset | done |
-| Base | Read / Initiate+Fetch | done |
-| Extension | Dual channel, manual range, cal, ref osc | deferred |
-
-## SpectrumAnalyzer
-
-| Group | Capability | Status |
-|---|---|---|
-| Base | Center, span, RBW/VBW, ref level | done |
-| Base | Trace fetch (ASCII), marker peak | done |
-| Base | Single / continuous sweep + wait | done |
-| Extension | ACLR / OBW / EMI detectors | deferred |
+The old model registry was an unvalidated hint list. All 47 manufacturer/model hints plus one USB hint are migrated as source evidence, including the multifunction 2602B. No hardware-ready support claim follows from matching a model name. Source-derived profiles and exact software transcripts are the initial evidence level; physical bench records follow reviewed previews.
