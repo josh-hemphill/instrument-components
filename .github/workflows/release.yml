@@ -167,6 +167,7 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag || github.ref_name }}
+          prerelease: ${{ contains(inputs.tag || github.ref_name, '-') }}
           generate_release_notes: true
           files: release-artifacts/*.TapPackage
           fail_on_unmatched_files: true
