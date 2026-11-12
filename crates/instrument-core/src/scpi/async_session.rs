@@ -98,6 +98,16 @@ impl AsyncScpiSession {
             .await
     }
 
+    /// One complete response body, preserving whitespace, without retries or drain.
+    pub async fn query_body(&mut self, command: &str) -> Result<String> {
+        if self.opts.retries != 0 {
+            return Err(Error::Unsupported("query_body requires zero retries"));
+        }
+        self.write_with_retry(command, false).await?;
+        let bytes = self.read_response(self.effective_read_timeout()).await?;
+        Ok(String::from_utf8_lossy(&bytes).into_owned())
+    }
+
     pub async fn query_with_timeout(&mut self, command: &str, timeout: Duration) -> Result<String> {
         let max_attempts = max_write_attempts(true, self.opts.retries);
         let mut attempts = 0;

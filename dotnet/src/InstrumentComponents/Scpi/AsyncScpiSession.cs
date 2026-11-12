@@ -123,6 +123,21 @@ public sealed class AsyncScpiSession : IDisposable
     public Task<string> QueryAsync(string command, CancellationToken cancellationToken = default) =>
         QueryWithTimeoutAsync(command, EffectiveReadTimeout(), cancellationToken);
 
+    /// <summary>One complete response body with payload whitespace preserved and
+    /// no retry, drain or recovery. Requires zero retries.</summary>
+    public async Task<string> QueryBodyAsync(string command, CancellationToken cancellationToken = default)
+    {
+        await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (_opts.Retries != 0) throw new InvalidOperationException("QueryBodyAsync requires zero retries");
+            await WriteWithRetryAsync(command, idempotent: false, cancellationToken).ConfigureAwait(false);
+            return Encoding.UTF8.GetString(await ReadResponseAsync(EffectiveReadTimeout(), cancellationToken).ConfigureAwait(false));
+        }
+        finally { _operationGate.Release(); }
+    }
+
     public async Task<string> QueryWithTimeoutAsync(string command, TimeSpan timeout, CancellationToken cancellationToken = default)
     {
         await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);

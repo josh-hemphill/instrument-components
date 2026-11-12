@@ -170,6 +170,20 @@ public sealed class ScpiSession : IScpiIo
 
     public string Query(string command) => QueryWithTimeout(command, EffectiveReadTimeout());
 
+    /// <summary>One complete response body, preserving payload whitespace. No retry,
+    /// drain or recovery is attempted. Requires byte transport and zero retries.</summary>
+    public string QueryBody(string command)
+    {
+        lock (_operationLock)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (_injected is not null || _opts.Retries != 0)
+                throw new InvalidOperationException("QueryBody requires a byte transport and zero retries");
+            WriteWithRetry(command, idempotent: false);
+            return Encoding.UTF8.GetString(ReadResponse(EffectiveReadTimeout()));
+        }
+    }
+
     public string QueryWithTimeout(string command, TimeSpan timeout)
     {
         lock (_operationLock)

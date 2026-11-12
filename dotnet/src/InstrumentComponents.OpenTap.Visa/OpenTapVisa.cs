@@ -10,14 +10,15 @@ using InstrumentComponents.Visa;
 namespace InstrumentComponents.OpenTap.Visa;
 
 /// <summary>Optional standard VISA connector; no model matching, driver data or probes.</summary>
-public sealed class VisaScpiConnector(ISessionOpener opener,TimeSpan timeout) : IScpiConnector
+public sealed class VisaScpiConnector(ISessionOpener opener,TimeSpan timeout,int maxResponseBytes=ScpiNumbers.MaxResponseBytes,string terminator="\n") : IScpiConnector
 {
     public IMessageIo Open(DriverOpenContext context)
     {
         if(timeout<=TimeSpan.Zero)throw new DriverException(DriverErrorKind.InvalidArgument,"A positive finite operation timeout is required");
+        if(maxResponseBytes<0)throw new DriverException(DriverErrorKind.InvalidArgument,"Response allocation bound cannot be negative");
         try {
         var address=ResourceAddress.Parse(context.Candidate.Endpoint.Address);
-        var options=new ConnectOptions{MaxResponseBytes=ScpiNumbers.MaxResponseBytes,OpenTimeout=timeout,ReadTimeout=timeout,WriteTimeout=timeout,PerOpTimeout=timeout,ResetOnConnect=false,Retries=0,ReconnectOnFailure=false};
+        var options=new ConnectOptions{Terminator=terminator,MaxResponseBytes=maxResponseBytes,OpenTimeout=timeout,ReadTimeout=timeout,WriteTimeout=timeout,PerOpTimeout=timeout,ResetOnConnect=false,Retries=0,ReconnectOnFailure=false};
         var transport=opener.Open(address,options);
         // ScpiSession takes ownership and disposes transport when configuration fails.
         return new Message(new ScpiSession(transport,options));
@@ -32,7 +33,7 @@ public sealed class VisaScpiConnector(ISessionOpener opener,TimeSpan timeout) : 
     {
         private static T Translate<T>(Func<T> call){try{return call();}catch(InstrumentException error){throw Convert(error);}}
         public void Write(string message)=>Translate(()=>{session.Write(message);return true;});
-        public string Query(string message)=>Translate(()=>session.Query(message));
+        public string Query(string message)=>Translate(()=>session.QueryBody(message));
         // Byte/session recovery requires explicit host resynchronization; no flush or reset inferred.
         public void Dispose()=>session.Dispose();
     }
@@ -45,15 +46,18 @@ public sealed class OpenTapVisaDeviceProvider : IOpenTapDeviceProvider
     private readonly Func<string,Drivers.DeviceIdentity> _identity;
     private readonly ISessionOpener _opener;
     private readonly string _endpointScheme;
+    private readonly int _maxResponseBytes;
+    private readonly string _terminator;
     public OpenTapVisaDeviceProvider(Func<IScpiConnector,IEnumerable<IDriverFactory>> factories,
-        Func<string,Drivers.DeviceIdentity>? identity=null,ISessionOpener? opener=null,string endpointScheme="scpi")
+        Func<string,Drivers.DeviceIdentity>? identity=null,ISessionOpener? opener=null,string endpointScheme="scpi",int maxResponseBytes=ScpiNumbers.MaxResponseBytes,string terminator="\n")
     {
         if(string.IsNullOrWhiteSpace(endpointScheme))throw new DriverException(DriverErrorKind.InvalidArgument,"Endpoint scheme is required");
-        _factories=factories;_identity=identity ?? (_=>new());_opener=opener ?? new VisaSessionOpener();_endpointScheme=endpointScheme.Trim();
+        if(maxResponseBytes<0)throw new DriverException(DriverErrorKind.InvalidArgument,"Response allocation bound cannot be negative");
+        _factories=factories;_identity=identity ?? (_=>new());_opener=opener ?? new VisaSessionOpener();_endpointScheme=endpointScheme.Trim();_maxResponseBytes=maxResponseBytes;_terminator=terminator;
     }
     public DeviceHandle Open(string address,TimeSpan timeout,DriverSelection selection)
     {
-        var connector=new VisaScpiConnector(_opener,timeout);
+        var connector=new VisaScpiConnector(_opener,timeout,_maxResponseBytes,_terminator);
         var registry=new DriverRegistry(_factories(connector));
         return registry.Open(new(new(_endpointScheme,address),_identity(address)),selection);
     }

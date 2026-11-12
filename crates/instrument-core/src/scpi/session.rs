@@ -96,6 +96,17 @@ impl ScpiSession {
         self.query_with_timeout(command, self.effective_read_timeout())
     }
 
+    /// One complete response body with payload whitespace preserved. No retry,
+    /// drain or recovery is attempted; requires zero retries.
+    pub fn query_body(&mut self, command: &str) -> Result<String> {
+        if self.opts.retries != 0 {
+            return Err(Error::Unsupported("query_body requires zero retries"));
+        }
+        self.write_with_retry(command, false)?;
+        let bytes = self.read_response(self.effective_read_timeout())?;
+        Ok(String::from_utf8_lossy(&bytes).into_owned())
+    }
+
     pub fn query_with_timeout(&mut self, command: &str, timeout: Duration) -> Result<String> {
         let max_attempts = max_write_attempts(true, self.opts.retries);
         let mut attempts = 0;

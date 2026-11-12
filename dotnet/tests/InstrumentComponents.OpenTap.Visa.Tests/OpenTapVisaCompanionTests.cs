@@ -11,6 +11,29 @@ using InstrumentComponents.Transport;
 namespace InstrumentComponents.OpenTap.Visa.Tests;
 public class OpenTapVisaCompanionTests
 {
+    [Fact]public void CompleteBodyPreservesPayloadWhitespaceAndUsesConfiguredFraming()
+    {
+        var opener=new Opener();opener.Transport.Body=" \t1.25 \r\n";
+        var connector=new VisaScpiConnector(opener,TimeSpan.FromSeconds(1),256,"\r\n");
+        using var io=connector.Open(new(new(new("opaque","GPIB0::3::INSTR"),new()),ConnectionOwnership.Owned));
+        Assert.Equal(" \t1.25 ",io.Query("READ?"));
+        Assert.Equal(new[]{"READ?\r\n"},opener.Transport.Writes);
+    }
+    [Fact]public void HostBoundIsAppliedBeforeOversizedResponseBodyIsRead()
+    {
+        var opener=new Opener();opener.Transport.OversizeHeader=true;
+        var provider=new OpenTapVisaDeviceProvider(c=>[Factory(c)],_=>new("Example","Device"),opener,maxResponseBytes:256);
+        using var handle=provider.Open("GPIB0::3::INSTR",TimeSpan.FromSeconds(1),new());
+        Assert.Equal(256,opener.Options!.MaxResponseBytes);
+        Assert.Equal(DriverErrorKind.Parse,Assert.Throws<DriverException>(()=>new Dmm(handle).MeasureVoltageDc(null)).Kind);
+        Assert.Equal(1,opener.Transport.Reads);Assert.Single(opener.Transport.Writes);
+    }
+    [Fact]public void NegativeResponseBoundRejectsBeforeTransportAcquisition()
+    {
+        var opener=new Opener();var connector=new VisaScpiConnector(opener,TimeSpan.FromSeconds(1),-1);
+        Assert.Equal(DriverErrorKind.InvalidArgument,Assert.Throws<DriverException>(()=>connector.Open(new(new(new("scpi","GPIB0::3::INSTR"),new()),ConnectionOwnership.Owned))).Kind);
+        Assert.Null(opener.Options);
+    }
     [Theory][InlineData("opaque")][InlineData("hpib")]
     public void HostCanChooseEndpointSchemeWithoutDeviceSpecificProviderRules(string scheme)
     {
@@ -44,6 +67,7 @@ public class OpenTapVisaCompanionTests
         using var handle=provider.Open("TCPIP0::192.0.2.1::inst0::INSTR",TimeSpan.FromSeconds(1),new());
         Assert.Equal(DriverErrorKind.Timeout,Assert.Throws<DriverException>(()=>new Dmm(handle).MeasureVoltageDc(null)).Kind);
         Assert.Equal(DriverErrorKind.SessionNeedsRecovery,Assert.Throws<DriverException>(()=>new Dmm(handle).MeasureVoltageDc(null)).Kind);Assert.Single(opener.Transport.Writes);
+        Assert.Equal(1,opener.Transport.Reads);
     }
     [Fact]public void OversizeBlockFailsBeforeBodyReadWithTypedParseAndQuarantinesHandle()
     {
@@ -68,10 +92,10 @@ public class OpenTapVisaCompanionTests
         public ITransport Open(ResourceAddress address,ConnectOptions options){Options=options;return Transport;}
     }
     private sealed class Wire:TransportBase,IDisposable{
-        public List<string> Writes=[];public int Disposals;public bool FailConfigure,FailRead,OversizeHeader;public int Reads;
+        public List<string> Writes=[];public int Disposals;public bool FailConfigure,FailRead,OversizeHeader;public int Reads;public string Body="1.25\n";
         public override void Configure(ConnectOptions options){if(FailConfigure)throw new TransportException("configuration failed");base.Configure(options);}
         public override void Write(ReadOnlySpan<byte> data)=>Writes.Add(Encoding.UTF8.GetString(data));
-        public override int Read(Span<byte> buffer){Reads++;if(OversizeHeader){if(Reads>1)throw new InvalidOperationException("oversize body must not be read");var header="#71048577"u8;header.CopyTo(buffer);return header.Length;}if(FailRead)throw new InstrumentTimeoutException();var data="1.25\n"u8;data.CopyTo(buffer);return data.Length;}
+        public override int Read(Span<byte> buffer){Reads++;if(OversizeHeader){if(Reads>1)throw new InvalidOperationException("oversize body must not be read");var header="#71048577"u8;header.CopyTo(buffer);return header.Length;}if(FailRead)throw new InstrumentTimeoutException();var data=Encoding.UTF8.GetBytes(Body);data.CopyTo(buffer);return data.Length;}
         public override void Clear(){}public override void SetReadTimeout(TimeSpan timeout){}
         public void Dispose()=>Disposals++;
     }
