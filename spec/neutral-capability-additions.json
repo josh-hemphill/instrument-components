@@ -1,6 +1,6 @@
 {
   "executionCellIds": [
-    "core-opentap:linux-x64:net8.0:neutral-additions"
+    "core-opentap:linux-x64:net8.0:message-body"
   ],
   "openTapSteps": [
     {

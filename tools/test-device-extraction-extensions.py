@@ -31,12 +31,14 @@ rejects('lost new operation','spec/driver-operations.json',lambda value:value['o
 rejects('missing new oracle','validation/neutral/additional-opentap-oracle.json',lambda value:value['cases'].pop())
 
 def remove_loaded_case(value):
-    cell=next(c for c in value['cells'] if c['id']=='core-opentap:linux-x64:net8.0:neutral-additions')
+    active=original(ROOT/'spec/neutral-capability-additions.json')['executionCellIds'][0]
+    cell=next(c for c in value['cells'] if c['id']==active)
     cell['caseIds'].remove('opentap:rf_receiver_power:loaded-nondefault')
 rejects('missing loaded execution','spec/device-execution-evidence.json',remove_loaded_case)
 
 def drift_source(value):
-    cell=next(c for c in value['cells'] if c['id']=='core-opentap:linux-x64:net8.0:neutral-additions')
+    active=original(ROOT/'spec/neutral-capability-additions.json')['executionCellIds'][0]
+    cell=next(c for c in value['cells'] if c['id']==active)
     cell['sourceFileSha256']['dotnet/src/InstrumentComponents.OpenTap/DeviceInstrument.cs']='0'*64
 rejects('source drift despite old proof','spec/device-execution-evidence.json',drift_source)
 print('PASS six audit mutations: historical retention, exact added scope, oracle, loaded execution and source integrity')
