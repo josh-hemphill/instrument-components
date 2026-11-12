@@ -14,6 +14,8 @@ public sealed class VisaScpiConnector(ISessionOpener opener,TimeSpan timeout,int
 {
     public IMessageIo Open(DriverOpenContext context)
     {
+        // This adapter allocates a new session; it has no external borrowed owner.
+        if(context.Ownership!=ConnectionOwnership.Owned)throw new DriverException(DriverErrorKind.InvalidArgument,"The allocating VISA connector requires Owned; use an externally owned connector for borrowed sessions");
         if(timeout<=TimeSpan.Zero)throw new DriverException(DriverErrorKind.InvalidArgument,"A positive finite operation timeout is required");
         if(maxResponseBytes<0)throw new DriverException(DriverErrorKind.InvalidArgument,"Response allocation bound cannot be negative");
         try {

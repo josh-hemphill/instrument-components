@@ -1,0 +1,23 @@
+{
+  "evidenceLevel": "local software-only; no hardware or NativeAOT claim for the OpenTAP host",
+  "tests": {
+    "Visa": 15,
+    "OpenTap": 30
+  },
+  "sourceFileSha256": {
+    "dotnet/src/InstrumentComponents.OpenTap.Visa/OpenTapVisa.cs": "08172575b0aa03cb5f71edd705c52ed41afbc2b2398b816103fb4ba5fbf044ea",
+    "dotnet/tests/InstrumentComponents.OpenTap.Visa.Tests/OpenTapVisaCompanionTests.cs": "d15132cdc32848cc275ef48db5da958d2c3865b9034f51f4cfedb6866b16b422"
+  },
+  "records": [
+    {
+      "log": "validation/evidence/visa-owned-only/visa-ownership-fix.log",
+      "sha256": "b6631b484210da2efd4f573151d8c1fa94afce3b53b13cd59325e948f447daf5",
+      "exitCode": 0
+    },
+    {
+      "log": "validation/evidence/visa-owned-only/opentap-ownership-fix.log",
+      "sha256": "9b9b62908764650ca5114c662b4b4f7abc5af7725f628c17263596ecb7c12472",
+      "exitCode": 0
+    }
+  ]
+}

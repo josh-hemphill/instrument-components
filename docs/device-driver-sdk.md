@@ -394,3 +394,9 @@ choose `allowBinaryBlocks: false` for exact plain-text protocols. These are
 protocol/transport choices, with no vendor matching in core. All methods/options
 in this section are source additions pending a new SDK release, and are absent
 from public0.2.0-alpha.1.
+
+`VisaScpiConnector` allocates a fresh session and accepts only `Owned` connections;
+it rejects `Borrowed` and unknown ownership values before transport acquisition.
+The standard OpenTAP provider uses `Owned`. Applications needing borrowed sessions
+must supply a connector that retains an external owner and its release handle;
+the protocol-neutral runtime and device packages preserve that ownership.

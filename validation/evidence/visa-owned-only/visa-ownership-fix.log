@@ -1,0 +1,14 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  InstrumentComponents.Abstractions -> /workspace/instrument-components/dotnet/src/InstrumentComponents.Abstractions/bin/Release/net8.0/InstrumentComponents.Abstractions.dll
+  InstrumentComponents.Runtime -> /workspace/instrument-components/dotnet/src/InstrumentComponents.Runtime/bin/Release/net8.0/InstrumentComponents.Runtime.dll
+  InstrumentComponents.Scpi -> /workspace/instrument-components/dotnet/src/InstrumentComponents.Scpi/bin/Release/net8.0/InstrumentComponents.Scpi.dll
+  InstrumentComponents -> /workspace/instrument-components/dotnet/src/InstrumentComponents/bin/Release/net8.0/InstrumentComponents.dll
+  InstrumentComponents.Visa -> /workspace/instrument-components/dotnet/src/InstrumentComponents.Visa/bin/Release/net8.0/InstrumentComponents.Visa.dll
+  InstrumentComponents.OpenTap -> /workspace/instrument-components/dotnet/src/InstrumentComponents.OpenTap/bin/Release/net8.0/InstrumentComponents.OpenTap.dll
+  InstrumentComponents.OpenTap.Visa -> /workspace/instrument-components/dotnet/src/InstrumentComponents.OpenTap.Visa/bin/Release/net8.0/InstrumentComponents.OpenTap.Visa.dll
+  InstrumentComponents.OpenTap.Visa.Tests -> /workspace/instrument-components/dotnet/tests/InstrumentComponents.OpenTap.Visa.Tests/bin/Release/net8.0/InstrumentComponents.OpenTap.Visa.Tests.dll
+Test run for /workspace/instrument-components/dotnet/tests/InstrumentComponents.OpenTap.Visa.Tests/bin/Release/net8.0/InstrumentComponents.OpenTap.Visa.Tests.dll (.NETCoreApp,Version=v8.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:    15, Skipped:     0, Total:    15, Duration: 131 ms - InstrumentComponents.OpenTap.Visa.Tests.dll (net8.0)

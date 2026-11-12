@@ -11,6 +11,13 @@ using InstrumentComponents.Transport;
 namespace InstrumentComponents.OpenTap.Visa.Tests;
 public class OpenTapVisaCompanionTests
 {
+    [Theory][InlineData(ConnectionOwnership.Borrowed)][InlineData((ConnectionOwnership)99)]
+    public void AllocatingConnectorRejectsNonOwnedBeforeOpeningTransport(ConnectionOwnership ownership)
+    {
+        var opener=new Opener();var connector=new VisaScpiConnector(opener,TimeSpan.FromSeconds(1));
+        Assert.Equal(DriverErrorKind.InvalidArgument,Assert.Throws<DriverException>(()=>connector.Open(new(new(new("opaque","GPIB0::3::INSTR"),new()),ownership))).Kind);
+        Assert.Null(opener.Options);Assert.Empty(opener.Transport.Writes);Assert.Equal(0,opener.Transport.Disposals);
+    }
     [Fact]public void ApplicationCanRequirePlainTextBodiesBeforeBinaryWrappersAreInterpreted()
     {
         var opener=new Opener();opener.Transport.Body="#110\r\n";
