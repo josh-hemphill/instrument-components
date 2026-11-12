@@ -7,6 +7,21 @@ using InstrumentComponents.Transport;
 namespace InstrumentComponents.Tests;
 public class MessageBodyTests
 {
+    [Theory] [InlineData("#110\r\n")] [InlineData("#211+1.25000E+0\r\n")] [InlineData("#00\r\n")] [InlineData("0\r\n1\r\n")] [InlineData("0\n")]
+    public async Task PlainTextModeRejectsBinaryWrappersBeforeTheyCanHideMalformedBody(string wire)
+    {
+        var options = new ConnectOptions { Retries = 0, Terminator = "\r\n" };
+        foreach (var split in new[] { false, true })
+        {
+            ScriptStep[] script = split ? [new WriteStep { Data = "READ?\r\n" }, new ReadStep { Data = wire[..1] }, new ReadStep { Data = wire[1..] }] : [new WriteStep { Data = "READ?\r\n" }, new ReadStep { Data = wire }];
+            var sync = new ScpiSession(new MockTransport(script), options);
+            Assert.Throws<ParseException>(() => sync.QueryBody("READ?"));
+            var native = await AsyncScpiSession.CreateAsync(new MockTransport(script), options);
+            await Assert.ThrowsAsync<ParseException>(() => native.QueryBodyAsync("READ?"));
+        }
+        var standard = new ScpiSession(new MockTransport([new WriteStep { Data = "READ?\r\n" }, new ReadStep { Data = wire }]), options);
+        Assert.DoesNotContain('#', standard.Query("READ?"));
+    }
     [Fact] public async Task SyncAndNativeAsyncPreserveCompletePayloadBody()
     {
         var options = new ConnectOptions { Retries = 0, Terminator = "\r\n" };

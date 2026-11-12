@@ -373,3 +373,24 @@ The source catalog adds three protocol-neutral classes (six operations). Publish
 These are distinct from a waveform generator's Vpp amplitude and a scalar DMM's channel-free methods. Generated Rust/C# sync and async views use the same requests, validation, result units and static registry/runtime. External factories freeze physical inputs, output ports and option inventories before opening; shared core neither discovers proprietary modules nor embeds their commands. Capability checks reject unavailable operations before IO. Resource-only close is separate from complete SafeShutdown coverage.
 
 The source OpenTAP package exposes Data Acquisition, RF Signal Generator and RF Receiver instruments plus six generated steps. Its current contract has eleven instrument classes and eighty steps. The original eight-instrument/seventy-four-step expectations remain preserved in the tests, with separate literal expectations for the additions. OpenTAP itself uses its normal host metadata; Native AOT proof applies to the statically composed Rust/.NET SDK consumers, not an assertion that the OpenTAP host is AOT compatible.
+# Exact complete-message host adapters (unreleased)
+
+The transport/session layer can supply `ScpiSession.query_body` (Rust) or
+`QueryBody` / `QueryBodyAsync` (.NET) when a native scalar protocol needs its
+payload preserved. These methods require zero retries and do not drain, retry,
+reset or recover after timeout. Plain-text mode rejects IEEE488.2 blocks before
+their headers can be removed, additional messages in the buffered frame, and
+terminators other than the configured terminator. It preserves spaces, tabs and
+other payload bytes for the external decoder to validate. The application must
+commission a clean message boundary; the adapter cannot infer stale queued data
+or prove a physical instrument's state. Transport implementations must honor
+finite write/read deadlines and end host accesses before native cancellation
+completes.
+
+The standard .NET VISA connector/provider accepts application-selected
+`endpointScheme`, `maxResponseBytes`, `terminator` and `allowBinaryBlocks`.
+Its default SCPI mode retains binary framing for existing waveform profiles;
+choose `allowBinaryBlocks: false` for exact plain-text protocols. These are
+protocol/transport choices, with no vendor matching in core. All methods/options
+in this section are source additions pending a new SDK release, and are absent
+from public0.2.0-alpha.1.

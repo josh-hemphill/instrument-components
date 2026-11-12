@@ -18,6 +18,80 @@ fn options() -> ConnectOptions {
         ..Default::default()
     }
 }
+
+#[test]
+fn plain_text_body_rejects_binary_wrappers_without_changing_scpi_query() {
+    for wire in [
+        "#110\r\n",
+        "#211+1.25000E+0\r\n",
+        "#00\r\n",
+        "0\r\n1\r\n",
+        "0\n",
+    ] {
+        for split in [false, true] {
+            let mut steps = vec![ScriptStep::Write {
+                data: "READ?\r\n".into(),
+            }];
+            if split {
+                steps.push(ScriptStep::Read {
+                    data: wire[..1].into(),
+                });
+                steps.push(ScriptStep::Read {
+                    data: wire[1..].into(),
+                });
+            } else {
+                steps.push(ScriptStep::Read { data: wire.into() });
+            }
+            let mut session =
+                ScpiSession::new(Box::new(MockTransport::from_script(steps)), options()).unwrap();
+            assert!(matches!(session.query_body("READ?"), Err(Error::Parse(_))));
+        }
+        let mut session = ScpiSession::new(
+            Box::new(MockTransport::from_script(vec![
+                ScriptStep::Write {
+                    data: "READ?\r\n".into(),
+                },
+                ScriptStep::Read { data: wire.into() },
+            ])),
+            options(),
+        )
+        .unwrap();
+        assert!(!session.query("READ?").unwrap().contains('#'));
+    }
+}
+
+#[cfg(feature = "async")]
+#[tokio::test]
+async fn native_plain_text_body_rejects_binary_wrappers() {
+    use instrument_core::{AsyncScpiSession, SyncAsAsyncTransport};
+    for wire in [
+        "#110\r\n",
+        "#211+1.25000E+0\r\n",
+        "#00\r\n",
+        "0\r\n1\r\n",
+        "0\n",
+    ] {
+        let transport = MockTransport::from_script(vec![
+            ScriptStep::Write {
+                data: "READ?\r\n".into(),
+            },
+            ScriptStep::Read {
+                data: wire[..1].into(),
+            },
+            ScriptStep::Read {
+                data: wire[1..].into(),
+            },
+        ]);
+        let mut session =
+            AsyncScpiSession::new(Box::new(SyncAsAsyncTransport::new(transport)), options())
+                .await
+                .unwrap();
+        assert!(matches!(
+            session.query_body("READ?").await,
+            Err(Error::Parse(_))
+        ));
+    }
+}
 fn wire() -> MockTransport {
     MockTransport::from_script(vec![
         ScriptStep::Write {
@@ -129,5 +203,86 @@ fn independent_deadline_expires_on_stalled_incomplete_body_without_retry_or_drai
                 && started.elapsed() < Duration::from_secs(5)
         );
         assert_eq!(calls.load(Ordering::SeqCst), if partial { 3 } else { 2 });
+    }
+}
+
+#[cfg(feature = "async")]
+mod native_deadlines {
+    use super::*;
+    use instrument_core::{async_transport::AsyncTransport, AsyncScpiSession};
+    use std::{future::Future, pin::Pin};
+    struct Wire {
+        calls: Arc<AtomicUsize>,
+        timeout: Duration,
+        partial: bool,
+    }
+    impl AsyncTransport for Wire {
+        fn write<'a>(
+            &'a mut self,
+            _: &'a [u8],
+        ) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>> {
+            Box::pin(async move {
+                self.calls.fetch_add(1, Ordering::SeqCst);
+                Ok(())
+            })
+        }
+        fn read<'a>(
+            &'a mut self,
+            buffer: &'a mut [u8],
+        ) -> Pin<Box<dyn Future<Output = Result<usize>> + Send + 'a>> {
+            Box::pin(async move {
+                self.calls.fetch_add(1, Ordering::SeqCst);
+                if self.partial {
+                    self.partial = false;
+                    buffer[0] = b'+';
+                    return Ok(1);
+                }
+                tokio::time::timeout(self.timeout, std::future::pending::<usize>())
+                    .await
+                    .map_err(|_| Error::Timeout)
+            })
+        }
+        fn set_read_timeout<'a>(
+            &'a mut self,
+            timeout: Duration,
+        ) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>> {
+            Box::pin(async move {
+                self.timeout = timeout;
+                Ok(())
+            })
+        }
+        fn clear<'a>(&'a mut self) -> Pin<Box<dyn Future<Output = Result<()>> + Send + 'a>> {
+            panic!("No automatic clear")
+        }
+    }
+    #[tokio::test]
+    async fn independent_native_deadline_expires_pending_empty_and_incomplete_body() {
+        for partial in [false, true] {
+            let calls = Arc::new(AtomicUsize::new(0));
+            let config = ConnectOptions {
+                per_op_timeout: Some(Duration::from_millis(20)),
+                ..options()
+            };
+            let mut session = AsyncScpiSession::new(
+                Box::new(Wire {
+                    calls: calls.clone(),
+                    timeout: Duration::ZERO,
+                    partial,
+                }),
+                config,
+            )
+            .await
+            .unwrap();
+            let started = std::time::Instant::now();
+            assert!(matches!(
+                session.query_body("READ?").await,
+                Err(Error::Timeout)
+            ));
+            assert!(
+                started.elapsed() >= Duration::from_millis(15)
+                    && started.elapsed() < Duration::from_secs(5)
+            );
+            assert_eq!(calls.load(Ordering::SeqCst), if partial { 3 } else { 2 });
+        }
     }
 }

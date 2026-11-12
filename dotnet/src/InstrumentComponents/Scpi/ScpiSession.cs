@@ -171,8 +171,10 @@ public sealed class ScpiSession : IScpiIo
     public string Query(string command) => QueryWithTimeout(command, EffectiveReadTimeout());
 
     /// <summary>One complete response body, preserving payload whitespace. No retry,
-    /// drain or recovery is attempted. Requires byte transport and zero retries.</summary>
-    public string QueryBody(string command)
+    /// drain or recovery is attempted. Requires byte transport and zero retries.
+    /// Default plain-text mode rejects binary blocks, extra buffered messages and
+    /// alternate terminators; opt into SCPI binary framing explicitly when needed.</summary>
+    public string QueryBody(string command, bool allowBinaryBlocks = false)
     {
         lock (_operationLock)
         {
@@ -180,7 +182,7 @@ public sealed class ScpiSession : IScpiIo
             if (_injected is not null || _opts.Retries != 0)
                 throw new InvalidOperationException("QueryBody requires a byte transport and zero retries");
             WriteWithRetry(command, idempotent: false);
-            return Encoding.UTF8.GetString(ReadResponse(EffectiveReadTimeout()));
+            return Encoding.UTF8.GetString(ReadResponse(EffectiveReadTimeout(), allowBinaryBlocks));
         }
     }
 
@@ -262,7 +264,7 @@ public sealed class ScpiSession : IScpiIo
         }
     }
 
-    private byte[] ReadResponse(TimeSpan timeout)
+    private byte[] ReadResponse(TimeSpan timeout, bool allowBinaryBlocks = true)
     {
         var readStarted = System.Diagnostics.Stopwatch.GetTimestamp();
         _readBuffer.Clear();
@@ -283,7 +285,7 @@ public sealed class ScpiSession : IScpiIo
                 }
                 catch (InstrumentTimeoutException)
                 {
-                    if (TryCompleteBufferedFrame(command, started, out var timedOutPayload))
+                    if (TryCompleteBufferedFrame(command, started, out var timedOutPayload, allowBinaryBlocks))
                         return timedOutPayload;
                     RecordFailure(CommsEventKind.Timeout, command, 1, started, "read timeout");
                     throw;
@@ -296,7 +298,7 @@ public sealed class ScpiSession : IScpiIo
 
                 if (n == 0)
                 {
-                    if (TryCompleteBufferedFrame(command, started, out var zeroPayload))
+                    if (TryCompleteBufferedFrame(command, started, out var zeroPayload, allowBinaryBlocks))
                         return zeroPayload;
                     RecordFailure(CommsEventKind.Timeout, command, 1, started, "zero-byte read");
                     throw new InstrumentTimeoutException();
@@ -306,9 +308,11 @@ public sealed class ScpiSession : IScpiIo
                 {
                     if (_skipBlockTerminator && (chunk[i] == '\r' || chunk[i] == '\n')) continue;
                     _skipBlockTerminator = false;
+                    if (!allowBinaryBlocks && _readBuffer.Count == 0 && chunk[i] == '#')
+                        throw new ParseException("Binary blocks are unavailable for a plain text response body");
                     ScpiFraming.AppendResponseByte(_readBuffer, chunk[i], _opts.Terminator, _opts.MaxResponseBytes);
                 }
-                if (TryCompleteBufferedFrame(command, started, out var payload))
+                if (TryCompleteBufferedFrame(command, started, out var payload, allowBinaryBlocks))
                     return payload;
             }
         }
@@ -319,14 +323,17 @@ public sealed class ScpiSession : IScpiIo
         }
     }
 
-    private bool TryCompleteBufferedFrame(string? command, DateTime started, out byte[] payload)
+    private bool TryCompleteBufferedFrame(string? command, DateTime started, out byte[] payload, bool allowBinaryBlocks = true)
     {
         payload = [];
         if (_readBuffer.Count == 0)
             return false;
         try
         {
-            (payload, _) = ScpiFraming.ExtractResponse(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(_readBuffer), _opts.Terminator, _opts.MaxResponseBytes);
+            var frame = ScpiFraming.ExtractResponse(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(_readBuffer), _opts.Terminator, _opts.MaxResponseBytes);
+            payload = frame.Payload; var consumed = frame.Consumed;
+            if (!allowBinaryBlocks && (consumed != _readBuffer.Count || (_opts.Terminator.Length != 0 && !System.Runtime.InteropServices.CollectionsMarshal.AsSpan(_readBuffer)[..consumed].EndsWith(Encoding.UTF8.GetBytes(_opts.Terminator)))))
+                throw new ParseException("Expected exactly one text response with the configured terminator");
             _skipBlockTerminator = _readBuffer[0] == (byte)'#' && _readBuffer.Count > 1 && _readBuffer[1] != (byte)'0';
             RecordSuccess(CommsEventKind.ReadOk, command, 1, started);
             return true;
