@@ -359,3 +359,17 @@ Channel-bearing plans require a nonempty explicit supported-channel inventory; a
 In the prepared post-alpha.1 source, raw `ConnectOptions.MaxResponseBytes` / `max_response_bytes` optionally caps payload bytes before copying a completed frame; the default remains unlimited for raw helpers. SCPI framing and terminators use a separate bounded allowance. Built-in VISA and bench implementations of the SDK message interface explicitly select the existing 1 MiB SDK payload policy. Oversized declared blocks fail after the header without reading their bodies, and ASCII/indefinite blocks are bounded while accumulating. Typed parse failures never trigger a query retry; hosts must reestablish a clean boundary.
 
 Byte-session drains allow 100 ms total and require EOF or a full 50 ms quiet timeout. A shortened quiet interval cannot establish success. Failed cleanup prevents retry, async cleanup keeps the caller's cancellation token, and timeout restoration is protected before temporary configuration. A cooperative transport must honor read timeouts/cancellation; an indefinitely blocking transport cannot be preempted by these helpers. These corrections are not delivered in immutable alpha.1 packages.
+
+### Unreleased acquisition and RF contracts
+
+The source catalog adds three protocol-neutral classes (six operations). Published alpha.1 retains its original surface; use compatible candidate SDK and driver artifacts together until a new release is authorized.
+
+| Class | Added operations and units |
+|---|---|
+| DataAcquisition | MeasureVoltageDc(channel, optional range in volts) returns a voltage Quantity for one configured positive physical input ID. |
+| RfSignalGenerator | Configure(frequency in Hz, level in dBm) leaves the managed output disabled; OutputEnable explicitly controls it; OutputStateQuery reports its enable setting. Configure does not promise physical settling or control every source in a multifunction device. |
+| RfReceiver | MeasureFrequency returns Hertz; MeasurePower returns dBm. Configuration-specific capabilities remain the external factory's responsibility. |
+
+These are distinct from a waveform generator's Vpp amplitude and a scalar DMM's channel-free methods. Generated Rust/C# sync and async views use the same requests, validation, result units and static registry/runtime. External factories freeze physical inputs, output ports and option inventories before opening; shared core neither discovers proprietary modules nor embeds their commands. Capability checks reject unavailable operations before IO. Resource-only close is separate from complete SafeShutdown coverage.
+
+The source OpenTAP package exposes Data Acquisition, RF Signal Generator and RF Receiver instruments plus six generated steps. Its current contract has eleven instrument classes and eighty steps. The original eight-instrument/seventy-four-step expectations remain preserved in the tests, with separate literal expectations for the additions. OpenTAP itself uses its normal host metadata; Native AOT proof applies to the statically composed Rust/.NET SDK consumers, not an assertion that the OpenTAP host is AOT compatible.

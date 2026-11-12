@@ -301,6 +301,77 @@
       }
     ]
   },
+  "DataAcquisitionMeasureVoltageDcStep": {
+    "fullName": "InstrumentComponents.OpenTap.DataAcquisitionMeasureVoltageDcStep",
+    "displayName": "Measure DC voltage",
+    "groups": [
+      "Instrument Components",
+      "DataAcquisition"
+    ],
+    "description": "Measure one explicitly configured physical input in volts.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.DataAcquisitionInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Channel",
+        "type": "System.UInt32",
+        "displayName": "Channel",
+        "order": 2,
+        "group": [],
+        "defaultValue": "1"
+      },
+      {
+        "name": "Range",
+        "type": "System.Double?",
+        "displayName": "Range",
+        "order": 3,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitLow",
+        "type": "System.Double?",
+        "displayName": "Limit low",
+        "order": 90,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitHigh",
+        "type": "System.Double?",
+        "displayName": "Limit high",
+        "order": 91,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Measure DC voltage"
+      }
+    ]
+  },
   "DmmConfigureCurrentAcStep": {
     "fullName": "InstrumentComponents.OpenTap.DmmConfigureCurrentAcStep",
     "displayName": "Configure AC Current",
@@ -2587,6 +2658,273 @@
           "Common"
         ],
         "defaultValue": "Set Voltage"
+      }
+    ]
+  },
+  "RfReceiverMeasureFrequencyStep": {
+    "fullName": "InstrumentComponents.OpenTap.RfReceiverMeasureFrequencyStep",
+    "displayName": "Measure frequency",
+    "groups": [
+      "Instrument Components",
+      "RfReceiver"
+    ],
+    "description": "Acquire one fresh absolute RF frequency measurement.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.RfReceiverInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitLow",
+        "type": "System.Double?",
+        "displayName": "Limit low",
+        "order": 90,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitHigh",
+        "type": "System.Double?",
+        "displayName": "Limit high",
+        "order": 91,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Measure frequency"
+      }
+    ]
+  },
+  "RfReceiverMeasurePowerStep": {
+    "fullName": "InstrumentComponents.OpenTap.RfReceiverMeasurePowerStep",
+    "displayName": "Measure power",
+    "groups": [
+      "Instrument Components",
+      "RfReceiver"
+    ],
+    "description": "Acquire one fresh RF input-power measurement in dBm.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.RfReceiverInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitLow",
+        "type": "System.Double?",
+        "displayName": "Limit low",
+        "order": 90,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitHigh",
+        "type": "System.Double?",
+        "displayName": "Limit high",
+        "order": 91,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Measure power"
+      }
+    ]
+  },
+  "RfSignalGeneratorConfigureStep": {
+    "fullName": "InstrumentComponents.OpenTap.RfSignalGeneratorConfigureStep",
+    "displayName": "Configure carrier",
+    "groups": [
+      "Instrument Components",
+      "RfSignalGenerator"
+    ],
+    "description": "Configure frequency and level while keeping the managed RF output disabled.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.RfSignalGeneratorInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "FrequencyHz",
+        "type": "System.Double",
+        "displayName": "Frequency",
+        "order": 2,
+        "group": [],
+        "defaultValue": "30000000"
+      },
+      {
+        "name": "LevelDbm",
+        "type": "System.Double",
+        "displayName": "Level",
+        "order": 3,
+        "group": [],
+        "defaultValue": "-30"
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Configure carrier"
+      }
+    ]
+  },
+  "RfSignalGeneratorOutputEnableStep": {
+    "fullName": "InstrumentComponents.OpenTap.RfSignalGeneratorOutputEnableStep",
+    "displayName": "Set output enable",
+    "groups": [
+      "Instrument Components",
+      "RfSignalGenerator"
+    ],
+    "description": "Explicitly enable or disable the configured managed RF output.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.RfSignalGeneratorInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "OutputEnabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 2,
+        "group": [],
+        "defaultValue": false
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Set output enable"
+      }
+    ]
+  },
+  "RfSignalGeneratorOutputStateQueryStep": {
+    "fullName": "InstrumentComponents.OpenTap.RfSignalGeneratorOutputStateQueryStep",
+    "displayName": "Read output state",
+    "groups": [
+      "Instrument Components",
+      "RfSignalGenerator"
+    ],
+    "description": "Read the managed RF enable setting.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.RfSignalGeneratorInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitLow",
+        "type": "System.Double?",
+        "displayName": "Limit low",
+        "order": 90,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitHigh",
+        "type": "System.Double?",
+        "displayName": "Limit high",
+        "order": 91,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Read output state"
       }
     ]
   },

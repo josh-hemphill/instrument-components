@@ -85,6 +85,12 @@ pub enum CatalogOperation {
     QueryIdentity,
     Reset,
     Shutdown,
+    DataAcquisitionMeasureVoltageDc,
+    RfSignalGeneratorConfigure,
+    RfSignalGeneratorOutputEnable,
+    RfSignalGeneratorOutputStateQuery,
+    RfReceiverMeasureFrequency,
+    RfReceiverMeasurePower,
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Waveform {
@@ -324,6 +330,20 @@ pub enum CatalogRequest {
     QueryIdentity,
     Reset,
     Shutdown,
+    DataAcquisitionMeasureVoltageDc {
+        channel: u32,
+        range: Option<f64>,
+    },
+    RfSignalGeneratorConfigure {
+        frequency_hz: f64,
+        level_dbm: f64,
+    },
+    RfSignalGeneratorOutputEnable {
+        enabled: bool,
+    },
+    RfSignalGeneratorOutputStateQuery,
+    RfReceiverMeasureFrequency,
+    RfReceiverMeasurePower,
 }
 impl CatalogRequest {
     pub fn operation(&self) -> CatalogOperation {
@@ -463,6 +483,18 @@ impl CatalogRequest {
             Self::QueryIdentity => CatalogOperation::QueryIdentity,
             Self::Reset => CatalogOperation::Reset,
             Self::Shutdown => CatalogOperation::Shutdown,
+            Self::DataAcquisitionMeasureVoltageDc { .. } => {
+                CatalogOperation::DataAcquisitionMeasureVoltageDc
+            }
+            Self::RfSignalGeneratorConfigure { .. } => CatalogOperation::RfSignalGeneratorConfigure,
+            Self::RfSignalGeneratorOutputEnable { .. } => {
+                CatalogOperation::RfSignalGeneratorOutputEnable
+            }
+            Self::RfSignalGeneratorOutputStateQuery => {
+                CatalogOperation::RfSignalGeneratorOutputStateQuery
+            }
+            Self::RfReceiverMeasureFrequency => CatalogOperation::RfReceiverMeasureFrequency,
+            Self::RfReceiverMeasurePower => CatalogOperation::RfReceiverMeasurePower,
         }
     }
     pub fn arguments(&self) -> Vec<(&'static str, Argument)> {
@@ -676,6 +708,23 @@ impl CatalogRequest {
             Self::QueryIdentity => vec![],
             Self::Reset => vec![],
             Self::Shutdown => vec![],
+            Self::DataAcquisitionMeasureVoltageDc { channel, range } => vec![
+                ("channel", Argument::Channel(*channel)),
+                ("range", Argument::OptionalNumber(*range)),
+            ],
+            Self::RfSignalGeneratorConfigure {
+                frequency_hz,
+                level_dbm,
+            } => vec![
+                ("frequency_hz", Argument::Number(*frequency_hz)),
+                ("level_dbm", Argument::Number(*level_dbm)),
+            ],
+            Self::RfSignalGeneratorOutputEnable { enabled } => {
+                vec![("enabled", Argument::Boolean(*enabled))]
+            }
+            Self::RfSignalGeneratorOutputStateQuery => vec![],
+            Self::RfReceiverMeasureFrequency => vec![],
+            Self::RfReceiverMeasurePower => vec![],
         }
     }
     pub fn validate(&self) -> Result<()> {
@@ -954,6 +1003,25 @@ impl CatalogRequest {
             Self::QueryIdentity => {}
             Self::Reset => {}
             Self::Shutdown => {}
+            Self::DataAcquisitionMeasureVoltageDc { channel, range } => {
+                if *channel == 0 {
+                    return Err(invalid("positive channel/count required"));
+                }
+                validate_number(*range, "positive")?;
+            }
+            Self::RfSignalGeneratorConfigure {
+                frequency_hz,
+                level_dbm,
+            } => {
+                validate_number(Some(*frequency_hz), "positive")?;
+                validate_number(Some(*level_dbm), "finite")?;
+            }
+            Self::RfSignalGeneratorOutputEnable { enabled } => {
+                let _ = enabled;
+            }
+            Self::RfSignalGeneratorOutputStateQuery => {}
+            Self::RfReceiverMeasureFrequency => {}
+            Self::RfReceiverMeasurePower => {}
         }
         Ok(())
     }
@@ -1042,6 +1110,12 @@ impl CatalogRequest {
             Self::QueryIdentity => (ReplyKind::Identity, Unit::Unknown),
             Self::Reset => (ReplyKind::Unit, Unit::Unknown),
             Self::Shutdown => (ReplyKind::Unit, Unit::Unknown),
+            Self::DataAcquisitionMeasureVoltageDc { .. } => (ReplyKind::Quantity, Unit::Volt),
+            Self::RfSignalGeneratorConfigure { .. } => (ReplyKind::Unit, Unit::Unknown),
+            Self::RfSignalGeneratorOutputEnable { .. } => (ReplyKind::Unit, Unit::Unknown),
+            Self::RfSignalGeneratorOutputStateQuery => (ReplyKind::Boolean, Unit::Unknown),
+            Self::RfReceiverMeasureFrequency => (ReplyKind::Quantity, Unit::Hertz),
+            Self::RfReceiverMeasurePower => (ReplyKind::Quantity, Unit::Dbm),
         }
     }
     pub fn configured_unit(&self) -> Option<Unit> {
@@ -2292,6 +2366,189 @@ impl<E: AsyncCatalogExecutor + ?Sized> AsyncSpectrumAnalyzer<'_, E> {
             .into_unit()
     }
 }
+pub struct DataAcquisition<'a, E: ?Sized>(pub &'a E);
+impl<E: CatalogExecutor + ?Sized> DataAcquisition<'_, E> {
+    pub fn query_identity(&self) -> Result<DeviceIdentity> {
+        self.0
+            .invoke(CatalogRequest::QueryIdentity)?
+            .into_identity()
+    }
+    pub fn reset(&self) -> Result<()> {
+        self.0.invoke(CatalogRequest::Reset)?.into_unit()
+    }
+    pub fn shutdown(&self) -> Result<()> {
+        self.0.invoke(CatalogRequest::Shutdown)?.into_unit()
+    }
+    pub fn measure_voltage_dc(&self, channel: u32, range: Option<f64>) -> Result<Quantity> {
+        self.0
+            .invoke(CatalogRequest::DataAcquisitionMeasureVoltageDc { channel, range })?
+            .into_quantity()
+    }
+}
+#[cfg(feature = "async")]
+pub struct AsyncDataAcquisition<'a, E: ?Sized>(pub &'a E);
+#[cfg(feature = "async")]
+impl<E: AsyncCatalogExecutor + ?Sized> AsyncDataAcquisition<'_, E> {
+    pub async fn query_identity(&self) -> Result<DeviceIdentity> {
+        self.0
+            .invoke_async(CatalogRequest::QueryIdentity)
+            .await?
+            .into_identity()
+    }
+    pub async fn reset(&self) -> Result<()> {
+        self.0
+            .invoke_async(CatalogRequest::Reset)
+            .await?
+            .into_unit()
+    }
+    pub async fn shutdown(&self) -> Result<()> {
+        self.0
+            .invoke_async(CatalogRequest::Shutdown)
+            .await?
+            .into_unit()
+    }
+    pub async fn measure_voltage_dc(&self, channel: u32, range: Option<f64>) -> Result<Quantity> {
+        self.0
+            .invoke_async(CatalogRequest::DataAcquisitionMeasureVoltageDc { channel, range })
+            .await?
+            .into_quantity()
+    }
+}
+pub struct RfSignalGenerator<'a, E: ?Sized>(pub &'a E);
+impl<E: CatalogExecutor + ?Sized> RfSignalGenerator<'_, E> {
+    pub fn query_identity(&self) -> Result<DeviceIdentity> {
+        self.0
+            .invoke(CatalogRequest::QueryIdentity)?
+            .into_identity()
+    }
+    pub fn reset(&self) -> Result<()> {
+        self.0.invoke(CatalogRequest::Reset)?.into_unit()
+    }
+    pub fn shutdown(&self) -> Result<()> {
+        self.0.invoke(CatalogRequest::Shutdown)?.into_unit()
+    }
+    pub fn configure(&self, frequency_hz: f64, level_dbm: f64) -> Result<()> {
+        self.0
+            .invoke(CatalogRequest::RfSignalGeneratorConfigure {
+                frequency_hz,
+                level_dbm,
+            })?
+            .into_unit()
+    }
+    pub fn output_enable(&self, enabled: bool) -> Result<()> {
+        self.0
+            .invoke(CatalogRequest::RfSignalGeneratorOutputEnable { enabled })?
+            .into_unit()
+    }
+    pub fn output_state_query(&self) -> Result<bool> {
+        self.0
+            .invoke(CatalogRequest::RfSignalGeneratorOutputStateQuery)?
+            .into_boolean()
+    }
+}
+#[cfg(feature = "async")]
+pub struct AsyncRfSignalGenerator<'a, E: ?Sized>(pub &'a E);
+#[cfg(feature = "async")]
+impl<E: AsyncCatalogExecutor + ?Sized> AsyncRfSignalGenerator<'_, E> {
+    pub async fn query_identity(&self) -> Result<DeviceIdentity> {
+        self.0
+            .invoke_async(CatalogRequest::QueryIdentity)
+            .await?
+            .into_identity()
+    }
+    pub async fn reset(&self) -> Result<()> {
+        self.0
+            .invoke_async(CatalogRequest::Reset)
+            .await?
+            .into_unit()
+    }
+    pub async fn shutdown(&self) -> Result<()> {
+        self.0
+            .invoke_async(CatalogRequest::Shutdown)
+            .await?
+            .into_unit()
+    }
+    pub async fn configure(&self, frequency_hz: f64, level_dbm: f64) -> Result<()> {
+        self.0
+            .invoke_async(CatalogRequest::RfSignalGeneratorConfigure {
+                frequency_hz,
+                level_dbm,
+            })
+            .await?
+            .into_unit()
+    }
+    pub async fn output_enable(&self, enabled: bool) -> Result<()> {
+        self.0
+            .invoke_async(CatalogRequest::RfSignalGeneratorOutputEnable { enabled })
+            .await?
+            .into_unit()
+    }
+    pub async fn output_state_query(&self) -> Result<bool> {
+        self.0
+            .invoke_async(CatalogRequest::RfSignalGeneratorOutputStateQuery)
+            .await?
+            .into_boolean()
+    }
+}
+pub struct RfReceiver<'a, E: ?Sized>(pub &'a E);
+impl<E: CatalogExecutor + ?Sized> RfReceiver<'_, E> {
+    pub fn query_identity(&self) -> Result<DeviceIdentity> {
+        self.0
+            .invoke(CatalogRequest::QueryIdentity)?
+            .into_identity()
+    }
+    pub fn reset(&self) -> Result<()> {
+        self.0.invoke(CatalogRequest::Reset)?.into_unit()
+    }
+    pub fn shutdown(&self) -> Result<()> {
+        self.0.invoke(CatalogRequest::Shutdown)?.into_unit()
+    }
+    pub fn measure_frequency(&self) -> Result<Quantity> {
+        self.0
+            .invoke(CatalogRequest::RfReceiverMeasureFrequency)?
+            .into_quantity()
+    }
+    pub fn measure_power(&self) -> Result<Quantity> {
+        self.0
+            .invoke(CatalogRequest::RfReceiverMeasurePower)?
+            .into_quantity()
+    }
+}
+#[cfg(feature = "async")]
+pub struct AsyncRfReceiver<'a, E: ?Sized>(pub &'a E);
+#[cfg(feature = "async")]
+impl<E: AsyncCatalogExecutor + ?Sized> AsyncRfReceiver<'_, E> {
+    pub async fn query_identity(&self) -> Result<DeviceIdentity> {
+        self.0
+            .invoke_async(CatalogRequest::QueryIdentity)
+            .await?
+            .into_identity()
+    }
+    pub async fn reset(&self) -> Result<()> {
+        self.0
+            .invoke_async(CatalogRequest::Reset)
+            .await?
+            .into_unit()
+    }
+    pub async fn shutdown(&self) -> Result<()> {
+        self.0
+            .invoke_async(CatalogRequest::Shutdown)
+            .await?
+            .into_unit()
+    }
+    pub async fn measure_frequency(&self) -> Result<Quantity> {
+        self.0
+            .invoke_async(CatalogRequest::RfReceiverMeasureFrequency)
+            .await?
+            .into_quantity()
+    }
+    pub async fn measure_power(&self) -> Result<Quantity> {
+        self.0
+            .invoke_async(CatalogRequest::RfReceiverMeasurePower)
+            .await?
+            .into_quantity()
+    }
+}
 impl CatalogOperation {
     pub fn metadata(self) -> OperationMetadata {
         match self {
@@ -3164,6 +3421,68 @@ impl CatalogOperation {
                 parameters: vec![],
                 result: ReplyKind::Unit,
                 unit: Unit::Unknown,
+            },
+            Self::DataAcquisitionMeasureVoltageDc => OperationMetadata {
+                kind: "DataAcquisition",
+                parameters: vec![
+                    ParameterSpec {
+                        name: "channel",
+                        kind: ParameterKind::Channel,
+                        constraint: "positive_integer",
+                    },
+                    ParameterSpec {
+                        name: "range",
+                        kind: ParameterKind::OptionalNumber,
+                        constraint: "positive",
+                    },
+                ],
+                result: ReplyKind::Quantity,
+                unit: Unit::Volt,
+            },
+            Self::RfSignalGeneratorConfigure => OperationMetadata {
+                kind: "RfSignalGenerator",
+                parameters: vec![
+                    ParameterSpec {
+                        name: "frequency_hz",
+                        kind: ParameterKind::Number,
+                        constraint: "positive",
+                    },
+                    ParameterSpec {
+                        name: "level_dbm",
+                        kind: ParameterKind::Number,
+                        constraint: "finite",
+                    },
+                ],
+                result: ReplyKind::Unit,
+                unit: Unit::Unknown,
+            },
+            Self::RfSignalGeneratorOutputEnable => OperationMetadata {
+                kind: "RfSignalGenerator",
+                parameters: vec![ParameterSpec {
+                    name: "enabled",
+                    kind: ParameterKind::Boolean,
+                    constraint: "none",
+                }],
+                result: ReplyKind::Unit,
+                unit: Unit::Unknown,
+            },
+            Self::RfSignalGeneratorOutputStateQuery => OperationMetadata {
+                kind: "RfSignalGenerator",
+                parameters: vec![],
+                result: ReplyKind::Boolean,
+                unit: Unit::Unknown,
+            },
+            Self::RfReceiverMeasureFrequency => OperationMetadata {
+                kind: "RfReceiver",
+                parameters: vec![],
+                result: ReplyKind::Quantity,
+                unit: Unit::Hertz,
+            },
+            Self::RfReceiverMeasurePower => OperationMetadata {
+                kind: "RfReceiver",
+                parameters: vec![],
+                result: ReplyKind::Quantity,
+                unit: Unit::Dbm,
             },
         }
     }

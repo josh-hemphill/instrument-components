@@ -14,6 +14,7 @@ public sealed class VisaScpiConnector(ISessionOpener opener,TimeSpan timeout) : 
 {
     public IMessageIo Open(DriverOpenContext context)
     {
+        if(timeout<=TimeSpan.Zero)throw new DriverException(DriverErrorKind.InvalidArgument,"A positive finite operation timeout is required");
         try {
         var address=ResourceAddress.Parse(context.Candidate.Endpoint.Address);
         var options=new ConnectOptions{MaxResponseBytes=ScpiNumbers.MaxResponseBytes,OpenTimeout=timeout,ReadTimeout=timeout,WriteTimeout=timeout,PerOpTimeout=timeout,ResetOnConnect=false,Retries=0,ReconnectOnFailure=false};
@@ -43,14 +44,18 @@ public sealed class OpenTapVisaDeviceProvider : IOpenTapDeviceProvider
     private readonly Func<IScpiConnector,IEnumerable<IDriverFactory>> _factories;
     private readonly Func<string,Drivers.DeviceIdentity> _identity;
     private readonly ISessionOpener _opener;
+    private readonly string _endpointScheme;
     public OpenTapVisaDeviceProvider(Func<IScpiConnector,IEnumerable<IDriverFactory>> factories,
-        Func<string,Drivers.DeviceIdentity>? identity=null,ISessionOpener? opener=null)
-    {_factories=factories;_identity=identity ?? (_=>new());_opener=opener ?? new VisaSessionOpener();}
+        Func<string,Drivers.DeviceIdentity>? identity=null,ISessionOpener? opener=null,string endpointScheme="scpi")
+    {
+        if(string.IsNullOrWhiteSpace(endpointScheme))throw new DriverException(DriverErrorKind.InvalidArgument,"Endpoint scheme is required");
+        _factories=factories;_identity=identity ?? (_=>new());_opener=opener ?? new VisaSessionOpener();_endpointScheme=endpointScheme.Trim();
+    }
     public DeviceHandle Open(string address,TimeSpan timeout,DriverSelection selection)
     {
         var connector=new VisaScpiConnector(_opener,timeout);
         var registry=new DriverRegistry(_factories(connector));
-        return registry.Open(new(new("scpi",address),_identity(address)),selection);
+        return registry.Open(new(new(_endpointScheme,address),_identity(address)),selection);
     }
 }
 public static class OpenTapVisa

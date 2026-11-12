@@ -3358,6 +3358,289 @@
         "mode": "sample",
         "name": "Trace"
       }
+    },
+    {
+      "id": "daq_measure_voltage_dc",
+      "stepTypeName": "DataAcquisitionMeasureVoltageDcStep",
+      "implementation": "generated",
+      "kind": "invoke",
+      "instrumentKind": "DataAcquisition",
+      "instrumentType": "DataAcquisitionInstrument",
+      "accessor": "Acquisition",
+      "displayName": "Measure DC voltage",
+      "displayGroups": [
+        "Instrument Components",
+        "DataAcquisition"
+      ],
+      "description": "Measure one explicitly configured physical input in volts.",
+      "capability": "base",
+      "since": "0.2.0",
+      "parameters": [
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        },
+        {
+          "name": "Range",
+          "displayName": "Range",
+          "type": "nullableDouble",
+          "order": 3,
+          "unit": "V"
+        },
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
+      ],
+      "invoke": {
+        "method": "MeasureVoltageDc",
+        "returns": "double",
+        "args": [
+          {
+            "parameter": "Channel"
+          },
+          {
+            "parameter": "Range"
+          }
+        ],
+        "operationId": "DataAcquisitionMeasureVoltageDc"
+      },
+      "publish": {
+        "mode": "scalar",
+        "name": "Voltage",
+        "unit": "V",
+        "supportsLimits": true
+      }
+    },
+    {
+      "id": "rf_generator_configure",
+      "stepTypeName": "RfSignalGeneratorConfigureStep",
+      "implementation": "generated",
+      "kind": "invoke",
+      "instrumentKind": "RfSignalGenerator",
+      "instrumentType": "RfSignalGeneratorInstrument",
+      "accessor": "Generator",
+      "displayName": "Configure carrier",
+      "displayGroups": [
+        "Instrument Components",
+        "RfSignalGenerator"
+      ],
+      "description": "Configure frequency and level while keeping the managed RF output disabled.",
+      "capability": "base",
+      "since": "0.2.0",
+      "parameters": [
+        {
+          "name": "FrequencyHz",
+          "displayName": "Frequency",
+          "type": "double",
+          "order": 2,
+          "default": 30000000,
+          "unit": "Hz"
+        },
+        {
+          "name": "LevelDbm",
+          "displayName": "Level",
+          "type": "double",
+          "order": 3,
+          "default": -30,
+          "unit": "dBm"
+        }
+      ],
+      "invoke": {
+        "method": "Configure",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "FrequencyHz"
+          },
+          {
+            "parameter": "LevelDbm"
+          }
+        ],
+        "operationId": "RfSignalGeneratorConfigure"
+      },
+      "publish": {
+        "mode": "none"
+      }
+    },
+    {
+      "id": "rf_generator_output_enable",
+      "stepTypeName": "RfSignalGeneratorOutputEnableStep",
+      "implementation": "generated",
+      "kind": "invoke",
+      "instrumentKind": "RfSignalGenerator",
+      "instrumentType": "RfSignalGeneratorInstrument",
+      "accessor": "Generator",
+      "displayName": "Set output enable",
+      "displayGroups": [
+        "Instrument Components",
+        "RfSignalGenerator"
+      ],
+      "description": "Explicitly enable or disable the configured managed RF output.",
+      "capability": "base",
+      "since": "0.2.0",
+      "parameters": [
+        {
+          "name": "OutputEnabled",
+          "displayName": "Enabled",
+          "type": "bool",
+          "order": 2,
+          "default": false
+        }
+      ],
+      "invoke": {
+        "method": "OutputEnable",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "OutputEnabled"
+          }
+        ],
+        "operationId": "RfSignalGeneratorOutputEnable"
+      },
+      "publish": {
+        "mode": "none"
+      }
+    },
+    {
+      "id": "rf_generator_output_state",
+      "stepTypeName": "RfSignalGeneratorOutputStateQueryStep",
+      "implementation": "generated",
+      "kind": "invoke",
+      "instrumentKind": "RfSignalGenerator",
+      "instrumentType": "RfSignalGeneratorInstrument",
+      "accessor": "Generator",
+      "displayName": "Read output state",
+      "displayGroups": [
+        "Instrument Components",
+        "RfSignalGenerator"
+      ],
+      "description": "Read the managed RF enable setting.",
+      "capability": "base",
+      "since": "0.2.0",
+      "parameters": [
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
+      ],
+      "invoke": {
+        "method": "OutputStateQuery",
+        "returns": "bool",
+        "args": [],
+        "operationId": "RfSignalGeneratorOutputStateQuery"
+      },
+      "publish": {
+        "mode": "scalar",
+        "name": "Output State",
+        "unit": "",
+        "supportsLimits": true
+      }
+    },
+    {
+      "id": "rf_receiver_frequency",
+      "stepTypeName": "RfReceiverMeasureFrequencyStep",
+      "implementation": "generated",
+      "kind": "invoke",
+      "instrumentKind": "RfReceiver",
+      "instrumentType": "RfReceiverInstrument",
+      "accessor": "Receiver",
+      "displayName": "Measure frequency",
+      "displayGroups": [
+        "Instrument Components",
+        "RfReceiver"
+      ],
+      "description": "Acquire one fresh absolute RF frequency measurement.",
+      "capability": "base",
+      "since": "0.2.0",
+      "parameters": [
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
+      ],
+      "invoke": {
+        "method": "MeasureFrequency",
+        "returns": "double",
+        "args": [],
+        "operationId": "RfReceiverMeasureFrequency"
+      },
+      "publish": {
+        "mode": "scalar",
+        "name": "Frequency",
+        "unit": "Hz",
+        "supportsLimits": true
+      }
+    },
+    {
+      "id": "rf_receiver_power",
+      "stepTypeName": "RfReceiverMeasurePowerStep",
+      "implementation": "generated",
+      "kind": "invoke",
+      "instrumentKind": "RfReceiver",
+      "instrumentType": "RfReceiverInstrument",
+      "accessor": "Receiver",
+      "displayName": "Measure power",
+      "displayGroups": [
+        "Instrument Components",
+        "RfReceiver"
+      ],
+      "description": "Acquire one fresh RF input-power measurement in dBm.",
+      "capability": "base",
+      "since": "0.2.0",
+      "parameters": [
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
+      ],
+      "invoke": {
+        "method": "MeasurePower",
+        "returns": "double",
+        "args": [],
+        "operationId": "RfReceiverMeasurePower"
+      },
+      "publish": {
+        "mode": "scalar",
+        "name": "Power",
+        "unit": "dBm",
+        "supportsLimits": true
+      }
     }
   ]
 }

@@ -68,6 +68,9 @@ public abstract class DeviceInstrument : Instrument
     public Counter AsCounter()=>new(RequireKind("Counter"));
     public PowerMeter AsPowerMeter()=>new(RequireKind("PowerMeter"));
     public SpectrumAnalyzer AsSpectrumAnalyzer()=>new(RequireKind("SpectrumAnalyzer"));
+    public DataAcquisition AsDataAcquisition()=>new(RequireKind("DataAcquisition"));
+    public RfSignalGenerator AsRfSignalGenerator()=>new(RequireKind("RfSignalGenerator"));
+    public RfReceiver AsRfReceiver()=>new(RequireKind("RfReceiver"));
     public CatalogIdentity QueryIdentity(){var identity=RequireHandle().Invoke(new QueryIdentityRequest()).IntoIdentity();IdentityFields.CopyFrom(identity);return identity;}
     public void Reset()=>RequireHandle().Invoke(new ResetRequest()).IntoUnit();
     public void Shutdown()=>RequireHandle().Invoke(new ShutdownRequest()).IntoUnit();

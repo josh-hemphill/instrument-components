@@ -11,6 +11,21 @@ using InstrumentComponents.Transport;
 namespace InstrumentComponents.OpenTap.Visa.Tests;
 public class OpenTapVisaCompanionTests
 {
+    [Theory][InlineData("opaque")][InlineData("hpib")]
+    public void HostCanChooseEndpointSchemeWithoutDeviceSpecificProviderRules(string scheme)
+    {
+        var opener=new Opener();var provider=new OpenTapVisaDeviceProvider(connector=>[Factory(connector,scheme)],_=>new("Example","Device"),opener,endpointScheme:" "+scheme+" ");
+        using var handle=provider.Open("GPIB0::3::INSTR",TimeSpan.FromSeconds(1),new());
+        Assert.Empty(opener.Transport.Writes);Assert.Equal(1.25,new Dmm(handle).MeasureVoltageDc(null).Value);
+        handle.Close();Assert.Single(opener.Transport.Writes);Assert.Equal(1,opener.Transport.Disposals);
+    }
+    [Theory][InlineData(0)][InlineData(-1)]
+    public void NonpositiveDeadlineRejectsBeforeTransportAcquisition(int milliseconds)
+    {
+        var opener=new Opener();var provider=new OpenTapVisaDeviceProvider(c=>[Factory(c)],_=>new("Example","Device"),opener);
+        Assert.Equal(DriverErrorKind.InvalidArgument,Assert.Throws<DriverException>(()=>provider.Open("GPIB0::3::INSTR",TimeSpan.FromMilliseconds(milliseconds),new())).Kind);
+        Assert.Null(opener.Options);Assert.Empty(opener.Transport.Writes);
+    }
     [Fact]public void ExplicitFactoriesOpenWithoutProbesAndUseOneOwnedSession()
     {
         var opener=new Opener();var provider=new OpenTapVisaDeviceProvider(connector=>[Factory(connector)],_=>new("Example","Device"),opener);
@@ -47,7 +62,7 @@ public class OpenTapVisaCompanionTests
         var previous=OpenTapDevices.Provider;var first=new OpenTapVisaDeviceProvider(c=>[Factory(c)]);var second=new OpenTapVisaDeviceProvider(c=>[Factory(c)]);
         try{OpenTapVisa.RegisterOverride(first);OpenTapVisa.Register(second);Assert.Same(first,OpenTapDevices.Provider);OpenTapVisa.RegisterOverride(second);Assert.Same(second,OpenTapDevices.Provider);}finally{OpenTapDevices.Provider=previous;}
     }
-    private static IDriverFactory Factory(IScpiConnector connector)=>new ScpiFactory(new("synthetic.visa",null,[],[new(CatalogOperation.DmmMeasureVoltageDc,[new(":READ?",ResponseRole.Value)])]),"scpi",connector,[new ExactIdentityRule("scpi","Example","Device")]);
+    private static IDriverFactory Factory(IScpiConnector connector,string scheme="scpi")=>new ScpiFactory(new("synthetic.visa",null,[],[new(CatalogOperation.DmmMeasureVoltageDc,[new(":READ?",ResponseRole.Value)])]),scheme,connector,[new ExactIdentityRule(scheme,"Example","Device")]);
     private sealed class Opener:ISessionOpener{
         public Wire Transport=new();public ConnectOptions? Options;
         public ITransport Open(ResourceAddress address,ConnectOptions options){Options=options;return Transport;}

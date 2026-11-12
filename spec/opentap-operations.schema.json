@@ -26,6 +26,9 @@
         "Counter",
         "PowerMeter",
         "SpectrumAnalyzer",
+        "DataAcquisition",
+        "RfSignalGenerator",
+        "RfReceiver",
         "Common"
       ]
     },

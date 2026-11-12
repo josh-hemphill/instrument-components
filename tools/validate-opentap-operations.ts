@@ -21,6 +21,9 @@ const KINDS = new Set([
   "Counter",
   "PowerMeter",
   "SpectrumAnalyzer",
+  "DataAcquisition",
+  "RfSignalGenerator",
+  "RfReceiver",
   "Common",
 ]);
 
