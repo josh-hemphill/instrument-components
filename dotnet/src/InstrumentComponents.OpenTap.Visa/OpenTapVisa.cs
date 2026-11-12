@@ -16,14 +16,14 @@ public sealed class VisaScpiConnector(ISessionOpener opener,TimeSpan timeout) : 
     {
         try {
         var address=ResourceAddress.Parse(context.Candidate.Endpoint.Address);
-        var options=new ConnectOptions{OpenTimeout=timeout,ReadTimeout=timeout,WriteTimeout=timeout,PerOpTimeout=timeout,ResetOnConnect=false,Retries=0,ReconnectOnFailure=false};
+        var options=new ConnectOptions{MaxResponseBytes=ScpiNumbers.MaxResponseBytes,OpenTimeout=timeout,ReadTimeout=timeout,WriteTimeout=timeout,PerOpTimeout=timeout,ResetOnConnect=false,Retries=0,ReconnectOnFailure=false};
         var transport=opener.Open(address,options);
         // ScpiSession takes ownership and disposes transport when configuration fails.
         return new Message(new ScpiSession(transport,options));
         }catch(InstrumentException error){throw Convert(error);}
     }
     private static DriverException Convert(InstrumentException error){
-        var kind=error is InvalidAddressException?DriverErrorKind.InvalidArgument:DriverErrorKind.Transport;
+        var kind=error is InvalidAddressException?DriverErrorKind.InvalidArgument:error is ParseException?DriverErrorKind.Parse:DriverErrorKind.Transport;
         for(Exception? current=error;current is not null;current=current.InnerException)if(current is InstrumentTimeoutException or TimeoutException)kind=DriverErrorKind.Timeout;
         return new DriverException(kind,error.Message,error);
     }

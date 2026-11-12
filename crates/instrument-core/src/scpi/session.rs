@@ -1,4 +1,4 @@
-use super::framing::try_extract_response;
+use super::framing::{push_response_byte, try_extract_response};
 use super::protocol::{
     is_no_error_reply, is_opc_supported_reply, is_syst_err_supported_reply, max_write_attempts,
     normalize_command, parse_f64, SessionCapabilities,
@@ -30,7 +30,7 @@ impl ScpiSession {
             transport,
             opts,
             capabilities: SessionCapabilities::default(),
-            read_buffer: Vec::with_capacity(4096),
+            read_buffer: Vec::new(),
             diagnostics: None,
             pending_command: None,
             pending_error_reply: None,
@@ -59,20 +59,26 @@ impl ScpiSession {
 
     /// Drains pending bytes from the transport read buffer.
     pub fn flush(&mut self) -> Result<()> {
-        let short = Duration::from_millis(50);
-        self.transport.set_read_timeout(short)?;
         let result = self.drain_read_buffer();
-        let _ = self.restore_io_timeout();
-        result
+        let restored = self.restore_io_timeout();
+        result.and(restored)
     }
 
     fn drain_read_buffer(&mut self) -> Result<()> {
+        let quiet = Duration::from_millis(50);
+        let deadline = Instant::now() + quiet * 2;
         let mut chunk = [0u8; 256];
         loop {
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            if remaining.is_zero() {
+                return Err(Error::Timeout);
+            }
+            let read_timeout = remaining.min(quiet);
+            self.transport.set_read_timeout(read_timeout)?;
             match self.transport.read(&mut chunk) {
                 Ok(0) => break,
                 Ok(_) => continue,
-                Err(Error::Timeout) => break,
+                Err(Error::Timeout) if read_timeout == quiet => break,
                 Err(e) => return Err(e),
             }
         }
@@ -101,7 +107,7 @@ impl ScpiSession {
                     return Ok(String::from_utf8_lossy(&bytes).trim().to_string());
                 }
                 Err(Error::Timeout) if attempts < max_attempts => {
-                    let _ = self.flush();
+                    self.flush()?;
                     if self.opts.reconnect_on_failure {
                         self.try_reconnect();
                     }
@@ -170,7 +176,6 @@ impl ScpiSession {
     }
 
     fn read_response(&mut self, timeout: Duration) -> Result<Vec<u8>> {
-        self.transport.set_read_timeout(timeout)?;
         let result = self.read_framed_response(timeout);
         let _ = self.restore_io_timeout();
         result
@@ -192,9 +197,11 @@ impl ScpiSession {
             match self.transport.read(&mut chunk) {
                 Ok(0) => {
                     if !self.read_buffer.is_empty() {
-                        if let Some((payload, _)) =
-                            try_extract_response(&self.read_buffer, &self.opts.terminator)?
-                        {
+                        if let Some((payload, _)) = try_extract_response(
+                            &self.read_buffer,
+                            &self.opts.terminator,
+                            self.opts.max_response_bytes,
+                        )? {
                             self.record_success(
                                 CommsEventKind::ReadOk,
                                 command.as_deref(),
@@ -221,11 +228,18 @@ impl ScpiSession {
                             continue;
                         }
                         self.skip_block_terminator = false;
-                        self.read_buffer.push(byte);
+                        push_response_byte(
+                            &mut self.read_buffer,
+                            byte,
+                            &self.opts.terminator,
+                            self.opts.max_response_bytes,
+                        )?;
                     }
-                    if let Some((payload, _)) =
-                        try_extract_response(&self.read_buffer, &self.opts.terminator)?
-                    {
+                    if let Some((payload, _)) = try_extract_response(
+                        &self.read_buffer,
+                        &self.opts.terminator,
+                        self.opts.max_response_bytes,
+                    )? {
                         self.record_success(CommsEventKind::ReadOk, command.as_deref(), 1, started);
                         self.skip_block_terminator = self.read_buffer.starts_with(b"#")
                             && self.read_buffer.get(1) != Some(&b'0');
@@ -234,9 +248,11 @@ impl ScpiSession {
                 }
                 Err(Error::Timeout) => {
                     if !self.read_buffer.is_empty() {
-                        if let Some((payload, _)) =
-                            try_extract_response(&self.read_buffer, &self.opts.terminator)?
-                        {
+                        if let Some((payload, _)) = try_extract_response(
+                            &self.read_buffer,
+                            &self.opts.terminator,
+                            self.opts.max_response_bytes,
+                        )? {
                             self.record_success(
                                 CommsEventKind::ReadOk,
                                 command.as_deref(),

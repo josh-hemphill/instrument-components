@@ -4,6 +4,7 @@ import argparse
 import json
 from pathlib import Path
 import re
+import runpy
 import tomllib
 import xml.etree.ElementTree as ET
 
@@ -40,6 +41,8 @@ def validate(root, tag=None):
             if dep not in manifest['nugetPackages'] or dep.endswith('TestKit') and name!='InstrumentComponents.TestKit':raise ValueError('External/test implementation dependency: '+name)
     package=tomllib.loads((root/'tools/driver-tools/pyproject.toml').read_text())
     if package['project']['version']!=pep:raise ValueError('Tool wheel version drift')
+    tool=runpy.run_path(str(root/'tools/driver-tools/src/instrument_driver_tools/__init__.py'))
+    if tool['VERSION']!=version or tool['python_version'](version)!=pep:raise ValueError('Tool runtime/wheel identity drift')
     init=(root/'tools/driver-tools/src/instrument_driver_tools/__init__.py').read_text()
     if f'VERSION = "{version}"' not in init:raise ValueError('Tool CLI version drift')
     if not manifest['publicationRequiresNativePlatformJobs'] or manifest['publicationRequiresHardwareEvidence'] or manifest['hardwareValidated']:raise ValueError('Preview evidence/publication policy mismatch')

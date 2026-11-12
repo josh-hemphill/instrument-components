@@ -30,6 +30,18 @@ public class OpenTapVisaCompanionTests
         Assert.Equal(DriverErrorKind.Timeout,Assert.Throws<DriverException>(()=>new Dmm(handle).MeasureVoltageDc(null)).Kind);
         Assert.Equal(DriverErrorKind.SessionNeedsRecovery,Assert.Throws<DriverException>(()=>new Dmm(handle).MeasureVoltageDc(null)).Kind);Assert.Single(opener.Transport.Writes);
     }
+    [Fact]public void OversizeBlockFailsBeforeBodyReadWithTypedParseAndQuarantinesHandle()
+    {
+        var opener=new Opener();opener.Transport.OversizeHeader=true;
+        var provider=new OpenTapVisaDeviceProvider(connector=>[Factory(connector)],_=>new("Example","Device"),opener);
+        using var handle=provider.Open("TCPIP0::192.0.2.1::inst0::INSTR",TimeSpan.FromSeconds(1),new());
+        Assert.Equal(ScpiNumbers.MaxResponseBytes,opener.Options!.MaxResponseBytes);
+        var error=Assert.Throws<DriverException>(()=>new Dmm(handle).MeasureVoltageDc(null));
+        Assert.Equal(DriverErrorKind.Parse,error.Kind);Assert.IsType<ParseException>(error.InnerException);
+        Assert.Equal(1,opener.Transport.Reads);
+        Assert.Equal(DriverErrorKind.SessionNeedsRecovery,Assert.Throws<DriverException>(()=>new Dmm(handle).MeasureVoltageDc(null)).Kind);
+        Assert.Single(opener.Transport.Writes);
+    }
     [Fact]public void RegistrationIsExplicitAndDoesNotOverwriteAnExistingProvider()
     {
         var previous=OpenTapDevices.Provider;var first=new OpenTapVisaDeviceProvider(c=>[Factory(c)]);var second=new OpenTapVisaDeviceProvider(c=>[Factory(c)]);
@@ -41,10 +53,10 @@ public class OpenTapVisaCompanionTests
         public ITransport Open(ResourceAddress address,ConnectOptions options){Options=options;return Transport;}
     }
     private sealed class Wire:TransportBase,IDisposable{
-        public List<string> Writes=[];public int Disposals;public bool FailConfigure,FailRead;
+        public List<string> Writes=[];public int Disposals;public bool FailConfigure,FailRead,OversizeHeader;public int Reads;
         public override void Configure(ConnectOptions options){if(FailConfigure)throw new TransportException("configuration failed");base.Configure(options);}
         public override void Write(ReadOnlySpan<byte> data)=>Writes.Add(Encoding.UTF8.GetString(data));
-        public override int Read(Span<byte> buffer){if(FailRead)throw new InstrumentTimeoutException();var data="1.25\n"u8;data.CopyTo(buffer);return data.Length;}
+        public override int Read(Span<byte> buffer){Reads++;if(OversizeHeader){if(Reads>1)throw new InvalidOperationException("oversize body must not be read");var header="#71048577"u8;header.CopyTo(buffer);return header.Length;}if(FailRead)throw new InstrumentTimeoutException();var data="1.25\n"u8;data.CopyTo(buffer);return data.Length;}
         public override void Clear(){}public override void SetReadTimeout(TimeSpan timeout){}
         public void Dispose()=>Disposals++;
     }

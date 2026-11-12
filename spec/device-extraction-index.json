@@ -2,7 +2,7 @@
   "apiCompatibilityRequired": false,
   "baselineCommit": "5eb92b17f775d326e5a3542ee40855b156321745",
   "executionEvidenceFile": "spec/device-execution-evidence.json",
-  "executionEvidenceSha256": "1bbfaa9104dff552ead770c18cbd6c2cba8d048a7a4b81e2fad5dcb4df6b950b",
+  "executionEvidenceSha256": "8bdace1860a0ca92cefa8bd9e94980332ace6fb66e2aee8114fd7dead741b64d",
   "hardwareValidated": false,
   "models": [
     {

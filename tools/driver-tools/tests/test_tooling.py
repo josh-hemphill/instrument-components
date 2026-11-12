@@ -174,6 +174,19 @@ class ToolingTests(unittest.TestCase):
         self.assertEqual(subprocess.run(command+['--tag','driver-sdk-v0.2.0-alpha.1'],capture_output=True).returncode,0)
         for tag in ['v0.1.1','driver-sdk-v0.2.0','driver-sdk-v0.2.0-alpha.2']:
             self.assertNotEqual(subprocess.run(command+['--tag',tag],capture_output=True).returncode,0)
+    def test_future_preview_core_consumers_and_python_identity_use_the_requested_version(self):
+        from instrument_driver_tools import python_version
+        import tomllib,xml.etree.ElementTree as ET
+        checks=runpy.run_path(str(ROOT/'tools/validate-driver-sdk.py'))
+        version='0.2.0-alpha.2';rust,dotnet=checks['core_only_manifests'](version,'net10.0')
+        self.assertEqual(set(tomllib.loads(rust)['dependencies'].values()),{'='+version})
+        self.assertEqual({p.get('Version') for p in ET.fromstring(dotnet).findall('.//PackageReference')},{'['+version+']'})
+        self.assertEqual(ET.fromstring(dotnet).findtext('.//TargetFramework'),'net10.0')
+        self.assertEqual(python_version(version),'0.2.0a2')
+        self.assertEqual(python_version('1.3.4-rc.12'),'1.3.4rc12')
+        checks['check_nuget_pins']({'InstrumentComponents.Runtime':'['+version+']'},version)
+        with self.assertRaises(ValueError):checks['check_nuget_pins']({'InstrumentComponents.Runtime':'[0.2.0-alpha.1]'},version)
+
     def test_package_dependency_gate_rejects_minimum_and_caret_ranges(self):
         checks=runpy.run_path(str(ROOT/'tools/validate-driver-sdk.py'))
         for requirement in ['0.2.0-alpha.1','^0.2.0-alpha.1','>=0.2.0-alpha.1','[0.2.0-alpha.1,)']:

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Buffers;
 using System.Text;
 using InstrumentComponents.Connect;
@@ -14,7 +15,7 @@ public sealed class ScpiSession : IScpiIo
     private readonly IScpiIo? _injected;
     private readonly bool _ownsInjected;
     private readonly ConnectOptions _opts;
-    private readonly List<byte> _readBuffer = new(4096);
+    private readonly List<byte> _readBuffer = new();
     private readonly object _operationLock = new();
     private bool _disposed;
     private string? _pendingErrorReply;
@@ -112,28 +113,37 @@ public sealed class ScpiSession : IScpiIo
         if (_injected is not null)
             return;
 
-        var shortTimeout = TimeSpan.FromMilliseconds(50);
-        ByteTransport.SetReadTimeout(shortTimeout);
+        var started = Stopwatch.GetTimestamp();
+        var quiet = TimeSpan.FromMilliseconds(50);
+        var budget = quiet * 2;
         var chunk = ArrayPool<byte>.Shared.Rent(256);
+        var clean = false;
         try
         {
             while (true)
             {
+                var remaining = budget - Stopwatch.GetElapsedTime(started);
+                if (remaining <= TimeSpan.Zero)
+                    throw new InstrumentTimeoutException();
+                var readTimeout = remaining < quiet ? remaining : quiet;
+                ByteTransport.SetReadTimeout(readTimeout);
                 try
                 {
                     var n = ByteTransport.Read(chunk);
                     if (n == 0) break;
                 }
-                catch (InstrumentTimeoutException)
+                catch (InstrumentTimeoutException) when (readTimeout == quiet)
                 {
                     break;
                 }
             }
+            clean = true;
         }
         finally
         {
             ArrayPool<byte>.Shared.Return(chunk);
-            RestoreIoTimeout();
+            if (clean) ByteTransport.SetReadTimeout(_opts.IoTimeout());
+            else RestoreIoTimeout();
         }
         _readBuffer.Clear();
     }
@@ -187,7 +197,7 @@ public sealed class ScpiSession : IScpiIo
             }
             catch (InstrumentTimeoutException) when (attempts < maxAttempts)
             {
-                try { Flush(); } catch { /* best-effort drain */ }
+                FlushCore();
                 if (_opts.ReconnectOnFailure)
                     TryReconnect();
                 Thread.Sleep(_opts.RetryBackoff * (int)attempts);
@@ -282,7 +292,7 @@ public sealed class ScpiSession : IScpiIo
                 {
                     if (_skipBlockTerminator && (chunk[i] == '\r' || chunk[i] == '\n')) continue;
                     _skipBlockTerminator = false;
-                    _readBuffer.Add(chunk[i]);
+                    ScpiFraming.AppendResponseByte(_readBuffer, chunk[i], _opts.Terminator, _opts.MaxResponseBytes);
                 }
                 if (TryCompleteBufferedFrame(command, started, out var payload))
                     return payload;
@@ -302,7 +312,7 @@ public sealed class ScpiSession : IScpiIo
             return false;
         try
         {
-            (payload, _) = ScpiFraming.ExtractResponse(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(_readBuffer), _opts.Terminator);
+            (payload, _) = ScpiFraming.ExtractResponse(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(_readBuffer), _opts.Terminator, _opts.MaxResponseBytes);
             _skipBlockTerminator = _readBuffer[0] == (byte)'#' && _readBuffer.Count > 1 && _readBuffer[1] != (byte)'0';
             RecordSuccess(CommsEventKind.ReadOk, command, 1, started);
             return true;

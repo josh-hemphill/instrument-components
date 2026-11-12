@@ -352,3 +352,10 @@ SCPI factories now accept immutable endpoint-specific profiles under one canonic
 Publisher provisioning automation is in `tools/publisher-setup`. Policy setup, first publication, public-registry consumer validation, and physical evidence remain separate gates. The helper does not publish packages.
 
 Channel-bearing plans require a nonempty explicit supported-channel inventory; a known-empty set cannot advertise an operation with no valid request. Empty channel sets remain valid for non-channel DMM operations and metadata-only ChannelCount with a complete empty output inventory. This is checked consistently by the Python tool and Rust/C# constructors before connector IO.
+
+
+### Byte-stream adapter limits and recovery
+
+In the prepared post-alpha.1 source, raw `ConnectOptions.MaxResponseBytes` / `max_response_bytes` optionally caps payload bytes before copying a completed frame; the default remains unlimited for raw helpers. SCPI framing and terminators use a separate bounded allowance. Built-in VISA and bench implementations of the SDK message interface explicitly select the existing 1 MiB SDK payload policy. Oversized declared blocks fail after the header without reading their bodies, and ASCII/indefinite blocks are bounded while accumulating. Typed parse failures never trigger a query retry; hosts must reestablish a clean boundary.
+
+Byte-session drains allow 100 ms total and require EOF or a full 50 ms quiet timeout. A shortened quiet interval cannot establish success. Failed cleanup prevents retry, async cleanup keeps the caller's cancellation token, and timeout restoration is protected before temporary configuration. A cooperative transport must honor read timeouts/cancellation; an indefinitely blocking transport cannot be preempted by these helpers. These corrections are not delivered in immutable alpha.1 packages.

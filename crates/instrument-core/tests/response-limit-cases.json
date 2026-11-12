@@ -1,0 +1,184 @@
+{
+  "cases": [
+    {
+      "wire": "abc\n",
+      "limit": 3,
+      "payload": "abc"
+    },
+    {
+      "wire": "abcd\n",
+      "limit": 3,
+      "error": "parse"
+    },
+    {
+      "wire": "abcd",
+      "limit": 3,
+      "error": "parse"
+    },
+    {
+      "wire": "#13abc",
+      "limit": 3,
+      "payload": "abc"
+    },
+    {
+      "wire": "#14",
+      "limit": 3,
+      "error": "parse"
+    },
+    {
+      "wire": "#9999999999",
+      "limit": 3,
+      "error": "parse"
+    },
+    {
+      "wire": "#0abc\n",
+      "limit": 3,
+      "payload": "abc"
+    },
+    {
+      "wire": "#0abcd\n",
+      "limit": 3,
+      "error": "parse"
+    },
+    {
+      "wire": "#0abcd",
+      "limit": 3,
+      "error": "parse"
+    },
+    {
+      "wire": "µ\n",
+      "limit": 2,
+      "payload": "µ"
+    },
+    {
+      "wire": "µ\n",
+      "limit": 1,
+      "error": "parse"
+    },
+    {
+      "wire": "abc\r\n",
+      "terminator": "\r\n",
+      "limit": 3,
+      "payload": "abc"
+    },
+    {
+      "wire": "abc\r",
+      "terminator": "\r\n",
+      "limit": 3,
+      "error": "timeout"
+    },
+    {
+      "wire": "abc\n",
+      "terminator": "\r\n",
+      "limit": 3,
+      "payload": "abc"
+    },
+    {
+      "wire": "abc",
+      "terminator": "",
+      "limit": 3,
+      "payload": "abc"
+    },
+    {
+      "wire": "abcd",
+      "terminator": "",
+      "limit": 3,
+      "error": "parse"
+    },
+    {
+      "wire": "\n",
+      "limit": 0,
+      "payload": ""
+    },
+    {
+      "wire": "x\n",
+      "limit": 0,
+      "error": "parse"
+    },
+    {
+      "wire": "#10",
+      "limit": 0,
+      "payload": ""
+    },
+    {
+      "wire": "#9000000001A\n",
+      "limit": 1,
+      "payload": "A"
+    },
+    {
+      "wire": "#9000000001A\r\n",
+      "terminator": "\r\n",
+      "limit": 1,
+      "payload": "A"
+    },
+    {
+      "wire": "#9000000001A\r\n",
+      "limit": 1,
+      "payload": "A"
+    },
+    {
+      "wire": "#9000000001A\r\n",
+      "terminator": "",
+      "limit": 1,
+      "payload": "A"
+    },
+    {
+      "wire": "#0abc\r\n",
+      "terminator": "\r\n",
+      "limit": 3,
+      "payload": "abc"
+    },
+    {
+      "wire": "#0\r\n",
+      "terminator": "\r\n",
+      "limit": 0,
+      "payload": ""
+    },
+    {
+      "wire": "#0abc\r",
+      "terminator": "\r\n",
+      "limit": 3,
+      "error": "timeout"
+    },
+    {
+      "wire": "#0abc\r\n",
+      "limit": 4,
+      "payload": "abc\r"
+    },
+    {
+      "wire": "#0abc\r\n",
+      "limit": 3,
+      "error": "parse"
+    },
+    {
+      "wire": "abcd",
+      "terminator": "\r\n",
+      "limit": 3,
+      "error": "parse"
+    },
+    {
+      "wire": "abcX",
+      "terminator": "END",
+      "limit": 3,
+      "error": "parse"
+    },
+    {
+      "wire": "abcE",
+      "terminator": "END",
+      "limit": 3,
+      "error": "timeout"
+    },
+    {
+      "wire": "abcEN",
+      "terminator": "END",
+      "limit": 3,
+      "error": "timeout"
+    },
+    {
+      "wire": "abcEND",
+      "terminator": "END",
+      "limit": 3,
+      "payload": "abc"
+    }
+  ]
+}

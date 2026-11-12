@@ -22,6 +22,9 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 ROOT = Path(__file__).resolve().parent.parent
+SDK_RELEASE = json.loads((ROOT/'spec/driver-sdk-release.json').read_text())
+SDK_VERSION = SDK_RELEASE['version']
+PYTHON_VERSION = SDK_RELEASE['pythonVersion']
 IGNORE = shutil.ignore_patterns('target', 'bin', 'obj', '__pycache__', '.git', 'build', 'dist', '*.egg-info')
 
 
@@ -33,12 +36,21 @@ def check_rust_pins(manifest):
             raise ValueError('Packed SDK dependency is not exact: '+name)
 
 
-def check_nuget_pins(ranges, version='0.2.0-alpha.1'):
+def check_nuget_pins(ranges, version=None):
+    version = SDK_VERSION if version is None else version
     if any(v!='['+version+']' for v in ranges.values()):
         raise ValueError('NuGet SDK dependency is not exact: '+str(ranges))
 
 
+def core_only_manifests(version, framework):
+    return ('[package]\nname="core-only"\nversion="0.0.0"\nedition="2021"\n[workspace]\n[dependencies]\ninstrument-runtime="=@SDK_VERSION@"\ninstrument-scpi="=@SDK_VERSION@"\n[features]\nasync=["instrument-runtime/async","instrument-scpi/async"]\n'.replace("@SDK_VERSION@", version),
+            '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>'+framework+'</TargetFramework></PropertyGroup><ItemGroup><PackageReference Include="InstrumentComponents.Runtime" Version="[@SDK_VERSION@]"/><PackageReference Include="InstrumentComponents.Scpi" Version="[@SDK_VERSION@]"/></ItemGroup></Project>'.replace("@SDK_VERSION@", version))
+
+
 def main():
+    # Validate the exact declarations used below before building any artifacts.
+    import runpy
+    runpy.run_path(str(ROOT/'tools/validate-sdk-release.py'))['validate'](ROOT)
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--artifacts', type=Path)
     parser.add_argument('--framework', choices=['net8.0', 'net10.0'], default='net8.0')
@@ -86,7 +98,7 @@ def main():
     run('tool-dependency-wheels', [sys.executable, '-m', 'pip', 'download', '--index-url', 'https://pypi.org/simple', '--dest', python_feed]+tomllib.loads((tool_source/'pyproject.toml').read_text())['project']['dependencies'])
     run('tool-fresh-venv', [sys.executable, '-m', 'venv', work/'tool-venv'])
     python = work/'tool-venv'/('Scripts/python.exe' if windows else 'bin/python')
-    run('tool-install-offline', [python, '-m', 'pip', 'install', '--no-index', '--find-links', python_feed, 'instrument-driver-tools==0.2.0a1'])
+    run('tool-install-offline', [python, '-m', 'pip', 'install', '--no-index', '--find-links', python_feed, 'instrument-driver-tools=='+PYTHON_VERSION])
     # Never inherit PYTHONPATH pointing to the checkout.
     tool_env = dict(PYTHONPATH='')
     for name, inp in [('profiles', ROOT/'validation/scpi/profiles.json'), ('cases', ROOT/'spec/driver-scpi-cases.json')]:
@@ -152,9 +164,9 @@ def main():
             command = ['cargo', 'run', '--offline', '--release']+(['--features', feature] if feature else [])
             run('rust-'+label+'-'+(feature or 'default'), command, consumer, cargo_env)
             run('rust-'+label+'-'+(feature or 'default')+'-clippy', ['cargo','clippy','--offline','--release']+(['--features',feature] if feature else [])+['--','-D','warnings'], consumer, cargo_env)
-    for name in ['instrument-synthetic-driver-0.2.0-alpha.1','instrument-testkit-0.2.0-alpha.1']: shutil.rmtree(registry/name)
+    for name in ['instrument-synthetic-driver-'+SDK_VERSION,'instrument-testkit-'+SDK_VERSION]: shutil.rmtree(registry/name)
     core = work/'rust-core-only'; (core/'src').mkdir(parents=True)
-    (core/'Cargo.toml').write_text('[package]\nname="core-only"\nversion="0.0.0"\nedition="2021"\n[workspace]\n[dependencies]\ninstrument-runtime="=0.2.0-alpha.1"\ninstrument-scpi="=0.2.0-alpha.1"\n[features]\nasync=["instrument-runtime/async","instrument-scpi/async"]\n')
+    (core/'Cargo.toml').write_text(core_only_manifests(SDK_VERSION,args.framework)[0])
     (core/'src/main.rs').write_text('fn main(){instrument_runtime::DriverRegistry::new([]).unwrap(); println!("PASS standards core only");}\n')
     for feature in ['', 'async']:
         flags=['--features',feature] if feature else []
@@ -227,8 +239,8 @@ def main():
     run('negative-trimming-gate',warning,probe,nuget_env,negative=True)
     core_dotnet=work/'dotnet-core-only';core_dotnet.mkdir();core_feed=work/'core-only-feed';core_feed.mkdir()
     core_names={'InstrumentComponents.Abstractions','InstrumentComponents.Runtime','InstrumentComponents.Scpi'}
-    for name in core_names:shutil.copy2(feed/(name+'.0.2.0-alpha.1.nupkg'),core_feed)
-    (core_dotnet/'CoreOnly.csproj').write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>'+args.framework+'</TargetFramework></PropertyGroup><ItemGroup><PackageReference Include="InstrumentComponents.Runtime" Version="[0.2.0-alpha.1]"/><PackageReference Include="InstrumentComponents.Scpi" Version="[0.2.0-alpha.1]"/></ItemGroup></Project>')
+    for name in core_names:shutil.copy2(feed/(name+'.'+SDK_VERSION+'.nupkg'),core_feed)
+    (core_dotnet/'CoreOnly.csproj').write_text(core_only_manifests(SDK_VERSION,args.framework)[1])
     (core_dotnet/'Program.cs').write_text('new InstrumentComponents.Runtime.DriverRegistry(System.Array.Empty<InstrumentComponents.Drivers.IDriverFactory>());System.Console.WriteLine("PASS standards core only");')
     (core_dotnet/'NuGet.Config').write_text(config.read_text().replace(str(feed),str(core_feed)))
     run('dotnet-core-only',['dotnet','run','--project','CoreOnly.csproj','-c','Release'],core_dotnet,dict(NUGET_PACKAGES=str(work/'fresh-core-only-cache')))

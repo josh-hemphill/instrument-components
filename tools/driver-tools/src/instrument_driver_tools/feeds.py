@@ -11,7 +11,7 @@ import tarfile
 
 RUST = {'instrument-api', 'instrument-runtime', 'instrument-scpi', 'instrument-testkit','instrument-components'}
 DOTNET = {'InstrumentComponents.Abstractions', 'InstrumentComponents.Runtime', 'InstrumentComponents.Scpi', 'InstrumentComponents.TestKit','InstrumentComponents'}
-VERSION = '0.2.0-alpha.1'
+from . import VERSION, python_version
 
 
 def extract(archive, target):
@@ -49,7 +49,7 @@ def prepare(artifacts, output):
         if hashlib.sha256(archive.read_bytes()).hexdigest()!=record['sha256']:raise ValueError('Feed checksum mismatch: '+basename)
         if name in RUST and basename!=name+'-'+VERSION+'.crate':raise ValueError('Unexpected crate version')
         if name in DOTNET and basename!=name+'.'+VERSION+'.nupkg':raise ValueError('Unexpected NuGet version')
-        if name=='instrument-driver-tools' and basename!='instrument_driver_tools-0.2.0a1-py3-none-any.whl':raise ValueError('Unexpected tool wheel version')
+        if name=='instrument-driver-tools' and basename!='instrument_driver_tools-'+python_version(VERSION)+'-py3-none-any.whl':raise ValueError('Unexpected tool wheel version')
         selected[name]=(archive,record)
     if set(selected)!=expected:raise ValueError('SDK feed package set incomplete')
     output.mkdir(parents=True,exist_ok=True);registry=output/'cargo-registry';registry.mkdir()
