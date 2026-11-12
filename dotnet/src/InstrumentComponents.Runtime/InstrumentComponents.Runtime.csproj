@@ -8,9 +8,10 @@
     <Description>Experimental protocol-neutral device registration and sync, native async and dedicated worker session runtime.</Description>
     <PackageLicenseExpression>MIT OR Apache-2.0</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/josh-hemphill/instrument-components</RepositoryUrl>
-  </PropertyGroup>
+  <PackageReadmeFile>README.md</PackageReadmeFile><PackageProjectUrl>https://github.com/josh-hemphill/instrument-components/blob/e9549a19a86428b020bf65799563a7bd5ad39a9b/docs-site/docs/getting-started.md</PackageProjectUrl></PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../InstrumentComponents.Abstractions/InstrumentComponents.Abstractions.csproj" />
   </ItemGroup>
   <Import Project="../../DriverSdk.Package.targets" />
+  <ItemGroup><None Include="../../README.md" Pack="true" PackagePath="/" /></ItemGroup>
 </Project>

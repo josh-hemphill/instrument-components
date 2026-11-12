@@ -66,6 +66,7 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Getting started: getting-started.md
+  - Initial preview testing: initial-testing.md
   - Discovery: discovery.md
   - Capability matrix: capability-matrix.md
   - Instrument classes:

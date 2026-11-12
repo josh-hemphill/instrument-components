@@ -1,4 +1,4 @@
-use super::framing::extract_response;
+use super::framing::try_extract_response;
 use super::protocol::{
     is_no_error_reply, is_opc_supported_reply, is_syst_err_supported_reply, max_write_attempts,
     normalize_command, parse_f64, SessionCapabilities,
@@ -192,8 +192,8 @@ impl ScpiSession {
             match self.transport.read(&mut chunk) {
                 Ok(0) => {
                     if !self.read_buffer.is_empty() {
-                        if let Ok((payload, _)) =
-                            extract_response(&self.read_buffer, &self.opts.terminator)
+                        if let Some((payload, _)) =
+                            try_extract_response(&self.read_buffer, &self.opts.terminator)?
                         {
                             self.record_success(
                                 CommsEventKind::ReadOk,
@@ -223,8 +223,8 @@ impl ScpiSession {
                         self.skip_block_terminator = false;
                         self.read_buffer.push(byte);
                     }
-                    if let Ok((payload, _)) =
-                        extract_response(&self.read_buffer, &self.opts.terminator)
+                    if let Some((payload, _)) =
+                        try_extract_response(&self.read_buffer, &self.opts.terminator)?
                     {
                         self.record_success(CommsEventKind::ReadOk, command.as_deref(), 1, started);
                         self.skip_block_terminator = self.read_buffer.starts_with(b"#")
@@ -234,8 +234,8 @@ impl ScpiSession {
                 }
                 Err(Error::Timeout) => {
                     if !self.read_buffer.is_empty() {
-                        if let Ok((payload, _)) =
-                            extract_response(&self.read_buffer, &self.opts.terminator)
+                        if let Some((payload, _)) =
+                            try_extract_response(&self.read_buffer, &self.opts.terminator)?
                         {
                             self.record_success(
                                 CommsEventKind::ReadOk,

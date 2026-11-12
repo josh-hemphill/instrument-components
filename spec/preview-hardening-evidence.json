@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "review": "first-public-release-v1",
+  "affectedPublishedVersion": "0.2.0-alpha.1",
+  "publishedArchivesUnchanged": true,
+  "patchedVersionPublished": false,
+  "scope": "Prepared source corrections and initial-user evidence; source fixes do not relabel immutable published packages",
+  "issues": [
+    {
+      "id": "FRAME-ASCII",
+      "status": "SOURCE_FIXED_RELEASE_PENDING",
+      "behavior": "Strict ASCII block lengths and typed parse propagation",
+      "tests": [
+        "shared_strict_block_vectors",
+        "sync_sessions_propagate_malformed_headers_without_reading_again",
+        "async_sessions_propagate_malformed_headers_without_reading_again",
+        "SharedBlockVectorsAndSessionsUseStrictTypedErrors"
+      ]
+    },
+    {
+      "id": "OWNERSHIP-ENUM",
+      "status": "SOURCE_FIXED_RELEASE_PENDING",
+      "behavior": "Undefined ownership rejects before any provider IO",
+      "tests": [
+        "UndefinedOwnershipNeverInvokesAnyProvider",
+        "packed SDK EndpointProof invalid ownership pre-open"
+      ]
+    },
+    {
+      "id": "RETRY-SATURATION",
+      "status": "SOURCE_FIXED_RELEASE_PENDING",
+      "behavior": "Maximum initial-attempt calculation saturates in Rust/C#",
+      "tests": [
+        "retry_attempts_saturate_without_skipping_the_first_attempt",
+        "RetryAttemptsSaturateAndStillAttemptTheOperation",
+        "packed SDK Native AOT retry assertion"
+      ]
+    }
+  ],
+  "metadataCorrections": "SDK/vendor NuGet readme/source URLs prepared; published alpha metadata remains unchanged",
+  "publicDocumentation": "Existing live Pages site still0.1; corrected0.2 source and PR-onlybuild prepared, deployment pending",
+  "additionalHardening": "Byte-stream response size ceiling remains a proposed configurable host policy, not a claimed shipped guarantee; unnecessary C# buffer copies removed",
+  "sourceFileSha256": {
+    "dotnet/src/InstrumentComponents.Runtime/DriverRegistry.cs": "901f392d006c4212e44d3ce2f80e07d9aa1985315b014d07a60cb1c6897e2ec7",
+    "dotnet/src/InstrumentComponents.Runtime/NativeDeviceHandle.cs": "2ab7d3bd9f6b589f9e1885ae67da09ba9267a35592db18443d8b2798e9605e9f",
+    "dotnet/src/InstrumentComponents.Runtime/WorkerDeviceHandle.cs": "2beb5e0704e480401203155e6997b5172812924cd156af37dadf48fdd28bca73",
+    "dotnet/src/InstrumentComponents.Scpi/ScpiFactory.cs": "fc8d07ea1022c796b6cbcaf4ff77f8cc99e112f50d5892c31c7e8566416733df",
+    "dotnet/src/InstrumentComponents/Scpi/ScpiFraming.cs": "f2b969aaaa5abff6fcd34ed9916b548f2cb084dc26cddfd8852821941b99c2e7",
+    "dotnet/src/InstrumentComponents/Scpi/ScpiProtocol.cs": "6064fe62ed18dd9c9eeee4a20ec10bc07779afe757a5a5a76a84156884128127",
+    "crates/instrument-core/src/scpi/framing.rs": "7186b6028a16220ce108dd458f6a0e39fe05a4dad1429597a9a549a8f6526400",
+    "crates/instrument-core/src/scpi/session.rs": "f21d52979fc51a992b68697dd7203f35b6adc2e9771ca94a1e8b59d8bb5e4652",
+    "crates/instrument-core/src/scpi/async_session.rs": "776fd687667a2f92d6b5b25ae7aa6aa96b253c9d7de2e8b09ed0799a27997b8b",
+    "crates/instrument-core/src/scpi/protocol.rs": "399f80266a47d5d542f3633e3f9a2f827a26e46715cde2cc359e967cc5c5f10f"
+  },
+  "publicProbeEvidenceSha256": {
+    "member-A-probes/advisory-A.json": "b998f0fd8990a62b1b052d5d0fcc764abb9903e42b6d85c94b59a563bec2417f",
+    "advisory-B.json": "d92e8a27a2f8c5d8be36726dfa99b3dfc884e749ff736e10a4d725edcf37f664",
+    "advisory-C.json": "c18ce77c90fc948705b1e8e014d0985ce3c6d08641c005709ff63536b7d843b4"
+  },
+  "evidencePaths": "Detailed actual public probes/logs, public archive/native audits and source test logs retained in task handoff; no registry/account/hardware mutation in this audit"
+}

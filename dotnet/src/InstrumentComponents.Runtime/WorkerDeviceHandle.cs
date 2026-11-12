@@ -10,6 +10,7 @@ public sealed partial class DriverRegistry
     public async Task<WorkerDeviceHandle> OpenWorkerAsync(DeviceCandidate candidate, DriverSelection? selection = null,
         IEnumerable<Operation>? required = null, ConnectionOwnership ownership = ConnectionOwnership.Owned, CancellationToken cancellationToken = default)
     {
+        ValidateOwnership(ownership);
         cancellationToken.ThrowIfCancellationRequested();
         var evidence = Select(candidate, selection); var registration = _registrations[evidence.DriverId];
         if (!registration.Modes.Contains(ExecutionMode.WorkerAsync)) throw Error(DriverErrorKind.UnsupportedExecutionMode, "Worker mode unavailable.");

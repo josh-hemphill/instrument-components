@@ -76,6 +76,13 @@ Check(workerTrace.Base.Closes == 1 && workerTrace.Affinity.All(e => e.Thread == 
 Console.WriteLine("PASS Native AOT native/worker modes: async values, cancellation quarantine, mixed worker frontends, recovery, shutdown, affinity");
 await ScpiProof.Run();
 await EndpointProof.Run();
+foreach(var malformed in new[]{"#2-1","#2+1X","#2 1X","#20 X","#1A","#x1X"})
+{
+    try{InstrumentComponents.Scpi.ScpiFraming.ExtractResponse(System.Text.Encoding.UTF8.GetBytes(malformed),"\n");throw new InvalidOperationException("Malformed block header accepted");}
+    catch(InstrumentComponents.Errors.ParseException){}
+}
+Check(InstrumentComponents.Scpi.ScpiProtocol.MaxWriteAttempts(true,uint.MaxValue)==uint.MaxValue);
+Console.WriteLine("PASS strict SCPI block headers and saturated retry limits in packed Native AOT facade");
 
 // Standard explicit-data helpers must also work with reflection disabled.
 var transcript=InstrumentComponents.Mock.Transcript.FromJson("{\"steps\":[{\"op\":\"write\",\"data\":\"*IDN?\"}]}");

@@ -39,6 +39,7 @@ internal sealed class EndpointProfiles
     }
     public ScpiProfile Select(DriverOpenContext context)
     {
+        if(!Enum.IsDefined(context.Ownership))throw new DriverException(DriverErrorKind.InvalidArgument,"Unknown connection ownership.");
         var profile=_routes.GetValueOrDefault(Key(context.Candidate.Endpoint),_default);
         if(context.RequiredOperations is {} required && !required.IsSubsetOf(profile.Operations))throw new DriverException(DriverErrorKind.UnsupportedOperation,"Required capability unavailable for this endpoint");
         return profile;

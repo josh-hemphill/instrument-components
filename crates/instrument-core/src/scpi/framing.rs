@@ -13,6 +13,18 @@ pub fn extract_response(buffer: &[u8], terminator: &str) -> Result<(Vec<u8>, usi
     read_terminator_response(buffer, terminator)
 }
 
+/// Incomplete frames need more bytes; malformed headers must stop the read loop.
+pub(crate) fn try_extract_response(
+    buffer: &[u8],
+    terminator: &str,
+) -> Result<Option<(Vec<u8>, usize)>> {
+    match extract_response(buffer, terminator) {
+        Ok(frame) => Ok(Some(frame)),
+        Err(Error::Timeout) => Ok(None),
+        Err(error) => Err(error),
+    }
+}
+
 fn read_block_response(buffer: &[u8]) -> Result<(Vec<u8>, usize)> {
     if buffer.len() < 2 {
         return Err(Error::Timeout);
@@ -33,8 +45,13 @@ fn read_block_response(buffer: &[u8]) -> Result<(Vec<u8>, usize)> {
         return Err(Error::Timeout);
     }
 
-    let len_str = std::str::from_utf8(&buffer[len_start..len_end])
-        .map_err(|e| Error::Parse(e.to_string()))?;
+    let length = &buffer[len_start..len_end];
+    if !length.iter().all(u8::is_ascii_digit) {
+        return Err(Error::Parse(
+            "invalid block length: ASCII digits required".into(),
+        ));
+    }
+    let len_str = std::str::from_utf8(length).map_err(|e| Error::Parse(e.to_string()))?;
     let data_len: usize = len_str
         .parse()
         .map_err(|_| Error::Parse("invalid block length".into()))?;
@@ -92,6 +109,33 @@ fn find_subslice(haystack: &[u8], needle: &[u8]) -> Option<usize> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn shared_strict_block_vectors() {
+        let data: serde_json::Value =
+            serde_json::from_str(include_str!("../../tests/framing-cases.json")).unwrap();
+        for case in data["cases"].as_array().unwrap() {
+            let wire = case["wire"].as_str().unwrap();
+            match case["error"].as_str() {
+                Some("parse") => assert!(
+                    matches!(
+                        extract_response(wire.as_bytes(), "\n"),
+                        Err(Error::Parse(_))
+                    ),
+                    "{wire:?}"
+                ),
+                Some("timeout") => assert!(
+                    matches!(extract_response(wire.as_bytes(), "\n"), Err(Error::Timeout)),
+                    "{wire:?}"
+                ),
+                _ => {
+                    let (payload, consumed) = extract_response(wire.as_bytes(), "\n").unwrap();
+                    assert_eq!(payload, case["payload"].as_str().unwrap().as_bytes());
+                    assert_eq!(consumed, case["consumed"].as_u64().unwrap() as usize);
+                }
+            }
+        }
+    }
 
     #[test]
     fn reads_definite_block_with_embedded_newline() {

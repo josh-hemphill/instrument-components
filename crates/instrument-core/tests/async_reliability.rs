@@ -141,9 +141,11 @@ async fn query_retries_after_timeout_then_succeeds() {
     ])
     .fail_writes(1);
 
-    let mut opts = ConnectOptions::default();
-    opts.retries = 1;
-    opts.retry_backoff = Duration::from_millis(1);
+    let opts = ConnectOptions {
+        retries: 1,
+        retry_backoff: Duration::from_millis(1),
+        ..ConnectOptions::default()
+    };
 
     let mut session = AsyncScpiSession::new(Box::new(transport), opts)
         .await

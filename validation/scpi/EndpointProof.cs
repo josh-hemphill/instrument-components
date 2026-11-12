@@ -25,6 +25,9 @@ internal static class EndpointProof
             endpoints.Clear(); // Caller mutation must not change a registered route.
             var registry=new DriverRegistry([factory]);var selection=new DriverSelection(AllowStandardScpi:true);var required=new HashSet<Operation>{Operation.CatalogShutdown,Operation.CatalogDcPowerSupplyChannelCount};
             var ca=new DeviceCandidate(new("scpi","known"),new());var cb=new DeviceCandidate(new("scpi","unknown"),new());
+            try{if(mode==0)registry.Open(ca,selection,ownership:(ConnectionOwnership)42);else if(mode==1)await registry.OpenNativeAsync(ca,selection,ownership:(ConnectionOwnership)42);else await registry.OpenWorkerAsync(ca,selection,ownership:(ConnectionOwnership)42);throw new InvalidOperationException("Undefined ownership accepted");}
+            catch(DriverException error)when(error.Kind==DriverErrorKind.InvalidArgument){}
+            Require(a.Opens==0&&b.Opens==0,"Undefined ownership opened IO");
             try{if(mode==0)registry.Open(cb,selection,required);else if(mode==1)await registry.OpenNativeAsync(cb,selection,required);else await registry.OpenWorkerAsync(cb,selection,required);throw new InvalidOperationException("Unknown endpoint accepted required shutdown");}
             catch(DriverException error)when(error.Kind==DriverErrorKind.UnsupportedOperation){}
             Require(b.Opens==0,"Required capability rejection opened IO");

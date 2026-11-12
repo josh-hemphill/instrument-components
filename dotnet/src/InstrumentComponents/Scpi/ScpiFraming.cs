@@ -34,9 +34,13 @@ public static class ScpiFraming
         if (buffer.Length < lenEnd)
             throw new InstrumentTimeoutException();
 
-        var lenStr = System.Text.Encoding.UTF8.GetString(buffer[lenStart..lenEnd]);
-        if (!int.TryParse(lenStr, out var dataLen))
-            throw new ParseException("invalid block length");
+        var dataLen = 0;
+        foreach (var digit in buffer[lenStart..lenEnd])
+        {
+            if (digit < (byte)'0' || digit > (byte)'9')
+                throw new ParseException("invalid block length: ASCII digits required");
+            dataLen = checked(dataLen * 10 + digit - (byte)'0');
+        }
 
         var dataStart = lenEnd;
         var dataEnd = dataStart + dataLen;

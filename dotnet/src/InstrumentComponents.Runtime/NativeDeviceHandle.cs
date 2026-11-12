@@ -9,6 +9,7 @@ public sealed partial class DriverRegistry
     public async Task<NativeDeviceHandle> OpenNativeAsync(DeviceCandidate candidate, DriverSelection? selection = null,
         IEnumerable<Operation>? required = null, ConnectionOwnership ownership = ConnectionOwnership.Owned, CancellationToken cancellationToken = default)
     {
+        ValidateOwnership(ownership);
         cancellationToken.ThrowIfCancellationRequested();
         var evidence = Select(candidate, selection); var registration = _registrations[evidence.DriverId];
         if (!registration.Modes.Contains(ExecutionMode.NativeAsync)) throw Error(DriverErrorKind.UnsupportedExecutionMode, "Native async unavailable.");

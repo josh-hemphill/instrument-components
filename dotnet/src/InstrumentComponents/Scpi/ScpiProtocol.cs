@@ -12,7 +12,7 @@ internal static class ScpiProtocol
         return command;
     }
 
-    public static uint MaxWriteAttempts(bool idempotent, uint retries) => idempotent ? retries + 1 : 1;
+    public static uint MaxWriteAttempts(bool idempotent, uint retries) => !idempotent ? 1 : retries == uint.MaxValue ? uint.MaxValue : retries + 1;
 
     public static bool IsOpcSupportedReply(string response)
     {

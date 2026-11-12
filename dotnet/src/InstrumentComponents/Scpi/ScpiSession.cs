@@ -302,7 +302,7 @@ public sealed class ScpiSession : IScpiIo
             return false;
         try
         {
-            (payload, _) = ScpiFraming.ExtractResponse(_readBuffer.ToArray(), _opts.Terminator);
+            (payload, _) = ScpiFraming.ExtractResponse(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(_readBuffer), _opts.Terminator);
             _skipBlockTerminator = _readBuffer[0] == (byte)'#' && _readBuffer.Count > 1 && _readBuffer[1] != (byte)'0';
             RecordSuccess(CommsEventKind.ReadOk, command, 1, started);
             return true;

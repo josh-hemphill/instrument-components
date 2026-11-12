@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {"wire":"#2-1","error":"parse"},
+    {"wire":"#2+1X","error":"parse"},
+    {"wire":"#2 1X","error":"parse"},
+    {"wire":"#20 X","error":"parse"},
+    {"wire":"#1A","error":"parse"},
+    {"wire":"#x1X","error":"parse"},
+    {"wire":"#12X","error":"timeout"},
+    {"wire":"#2","error":"timeout"},
+    {"wire":"#19","error":"timeout"},
+    {"wire":"#11X","payload":"X","consumed":4},
+    {"wire":"#200tail","payload":"","consumed":4},
+    {"wire":"#14\nemb\n","payload":"\nemb","consumed":7},
+    {"wire":"#0hello\n","payload":"hello","consumed":8}
+  ]
+}

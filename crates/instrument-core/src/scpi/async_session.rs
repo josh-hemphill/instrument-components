@@ -1,4 +1,4 @@
-use super::framing::extract_response;
+use super::framing::try_extract_response;
 use super::protocol::{
     is_no_error_reply, is_opc_supported_reply, is_syst_err_supported_reply, max_write_attempts,
     normalize_command, parse_f64, SessionCapabilities,
@@ -352,7 +352,8 @@ async fn read_framed_response(
         match transport.read(&mut chunk).await {
             Ok(0) => {
                 if !read_buffer.is_empty() {
-                    if let Ok((payload, _)) = extract_response(read_buffer, &opts.terminator) {
+                    if let Some((payload, _)) = try_extract_response(read_buffer, &opts.terminator)?
+                    {
                         record_success(diagnostics, CommsEventKind::ReadOk, command, 1, started);
                         *skip_block_terminator =
                             read_buffer.starts_with(b"#") && read_buffer.get(1) != Some(&b'0');
@@ -377,7 +378,7 @@ async fn read_framed_response(
                     *skip_block_terminator = false;
                     read_buffer.push(byte);
                 }
-                if let Ok((payload, _)) = extract_response(read_buffer, &opts.terminator) {
+                if let Some((payload, _)) = try_extract_response(read_buffer, &opts.terminator)? {
                     record_success(diagnostics, CommsEventKind::ReadOk, command, 1, started);
                     *skip_block_terminator =
                         read_buffer.starts_with(b"#") && read_buffer.get(1) != Some(&b'0');
@@ -386,7 +387,8 @@ async fn read_framed_response(
             }
             Err(Error::Timeout) => {
                 if !read_buffer.is_empty() {
-                    if let Ok((payload, _)) = extract_response(read_buffer, &opts.terminator) {
+                    if let Some((payload, _)) = try_extract_response(read_buffer, &opts.terminator)?
+                    {
                         record_success(diagnostics, CommsEventKind::ReadOk, command, 1, started);
                         *skip_block_terminator =
                             read_buffer.starts_with(b"#") && read_buffer.get(1) != Some(&b'0');

@@ -104,10 +104,17 @@ public sealed partial class DriverRegistry
         return first;
     }
 
+    private static void ValidateOwnership(ConnectionOwnership ownership)
+    {
+        if (!Enum.IsDefined(ownership))
+            throw Error(DriverErrorKind.InvalidArgument, "Unknown connection ownership.");
+    }
+
     public DeviceHandle Open(DeviceCandidate candidate, DriverSelection? selection = null,
         IEnumerable<Operation>? required = null, ExecutionMode mode = ExecutionMode.Sync,
         ConnectionOwnership ownership = ConnectionOwnership.Owned)
     {
+        ValidateOwnership(ownership);
         if (mode != ExecutionMode.Sync)
             throw Error(DriverErrorKind.UnsupportedExecutionMode, "Direct sync Open requires Sync; use OpenNativeAsync or OpenWorkerAsync.");
         var evidence = Select(candidate, selection);

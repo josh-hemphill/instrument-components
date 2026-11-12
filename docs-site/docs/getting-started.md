@@ -6,6 +6,8 @@ Choose the device packages your application needs and register their exported fa
 
 The SDK and all five device families are published as **0.2.0-alpha.1** on crates.io and NuGet. Pin that exact prerelease while evaluating this breaking API; `0.1` examples use the retired API.
 
+Read the [initial testing notes](initial-testing.md) for post-publication findings and the distinction between the published alpha and prepared source fixes.
+
 For Rust, use Rust 1.85 or newer and add the facade plus the device package you need:
 
 ```sh
