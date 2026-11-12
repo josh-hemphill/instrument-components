@@ -1,0 +1,11 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  InstrumentComponents.Abstractions -> /workspace/instrument-components/dotnet/src/InstrumentComponents.Abstractions/bin/Release/net8.0/InstrumentComponents.Abstractions.dll
+  InstrumentComponents.Runtime -> /workspace/instrument-components/dotnet/src/InstrumentComponents.Runtime/bin/Release/net8.0/InstrumentComponents.Runtime.dll
+  InstrumentComponents -> /workspace/instrument-components/dotnet/src/InstrumentComponents/bin/Release/net8.0/InstrumentComponents.dll
+  InstrumentComponents.OpenTap -> /workspace/instrument-components/dotnet/src/InstrumentComponents.OpenTap/bin/Release/net8.0/InstrumentComponents.OpenTap.dll
+  InstrumentComponents.OpenTap.Tests -> /workspace/instrument-components/dotnet/tests/InstrumentComponents.OpenTap.Tests/bin/Release/net8.0/InstrumentComponents.OpenTap.Tests.dll
+Test run for /workspace/instrument-components/dotnet/tests/InstrumentComponents.OpenTap.Tests/bin/Release/net8.0/InstrumentComponents.OpenTap.Tests.dll (.NETCoreApp,Version=v8.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:    30, Skipped:     0, Total:    30, Duration: 1 s - InstrumentComponents.OpenTap.Tests.dll (net8.0)

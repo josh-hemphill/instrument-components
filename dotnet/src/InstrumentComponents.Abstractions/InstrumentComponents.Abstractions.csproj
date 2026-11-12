@@ -8,6 +8,6 @@
     <Description>Experimental vendor-neutral statically composed driver contracts.</Description>
     <PackageLicenseExpression>MIT OR Apache-2.0</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/josh-hemphill/instrument-components</RepositoryUrl>
-  <PackageReadmeFile>README.md</PackageReadmeFile><PackageProjectUrl>https://github.com/josh-hemphill/instrument-components/blob/e9549a19a86428b020bf65799563a7bd5ad39a9b/docs-site/docs/getting-started.md</PackageProjectUrl></PropertyGroup>
+  <PackageReadmeFile>README.md</PackageReadmeFile><PackageProjectUrl>https://github.com/josh-hemphill/instrument-components/blob/2db0294247197a8783dd708b7341d474ea670294/docs-site/docs/getting-started.md</PackageProjectUrl></PropertyGroup>
   <ItemGroup><None Include="../../README.md" Pack="true" PackagePath="/" /></ItemGroup>
 </Project>
