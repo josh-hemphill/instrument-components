@@ -15,7 +15,7 @@
     "keysight_xseries": "instrument-components-keysight",
     "rigol_dsa": "instrument-components-rigol"
   },
-  "note": "All five repositories created and accessible; draft source-derived Rust/.NET package PRs open. Hardware evidence and public preview publication pending. Independent private proprietary packages can use the same public contracts.",
+  "note": "All five repositories created and accessible; source-derived Rust/.NET0.2.0-alpha.1 packages published from immutable tags. Implementation PRs remain draft. Physical hardware evidence and the reviewed post-publication corrections require subsequent work. Independent proprietary packages can use the same public contracts.",
   "behaviorMigration": [
     {
       "migration": "N6705 boolean sense remains unsupported; source has no validated ON/OFF mapping. No new Internal/External command is invented.",

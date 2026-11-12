@@ -44,7 +44,7 @@ public class FramingRegressionTests
         Assert.Equal(1u,ScpiProtocol.MaxWriteAttempts(true,0));
         Assert.Equal(uint.MaxValue,ScpiProtocol.MaxWriteAttempts(true,uint.MaxValue));
         Assert.Equal(1u,ScpiProtocol.MaxWriteAttempts(false,uint.MaxValue));
-        using var session=new ScpiSession(new MockTransport([new WriteStep{Data=":READ?\n"},new ReadStep{Data="1\n"}]),new ConnectOptions{Retries=uint.MaxValue});
+        using var session=new ScpiSession(new MockTransport([new WriteStep{Data=":READ?\n"},new ReadStep{Data="1\n"}]).FailWrites(1),new ConnectOptions{Retries=uint.MaxValue,ReconnectOnFailure=false,RetryBackoff=TimeSpan.Zero});
         Assert.Equal("1",session.Query(":READ?"));
     }
 }
