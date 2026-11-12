@@ -1,6 +1,6 @@
 # Device package delivery
 
-All five repositories now exist under `josh-hemphill`: `instrument-components-{keysight,keithley,rigol,siglent,tektronix}`. Each has a draft implementation PR and independently packaged Rust/.NET sources. Core production dependencies contain no external devices. Old constructor compatibility is intentionally dropped in 0.2.
+All five repositories now exist under `josh-hemphill`: `instrument-components-{keysight,keithley,rigol,siglent,tektronix}`. Each has an open, unmerged implementation PR and independently packaged Rust/.NET sources. Core production dependencies contain no external devices. Old constructor compatibility is intentionally dropped in 0.2.
 
 Implemented: static explicit factories, external model/USB hints, source-derived profiles, optional-argument plans, immutable model/endpoint bindings, honest output capabilities, shared generated Rust/C# wire cases, version-only production dependencies, generated-source and packed-consumer validation. The main facade and OpenTAP consume protocol-neutral handles. Generic SCPI interpretation and optional standards transports remain in main.
 
@@ -55,7 +55,7 @@ OIDC publication has not yet been exercised. The three existing root crates and
 all NuGet releases successfully used OIDC in this release.
 
 Release tags remain fixed at the source commits in the evidence record. The
-implementation PRs remain draft and unmerged: main PR 37 uses
+implementation PRs remain open and unmerged: main PR 37 uses
 `feat/driver-sdk-extraction`; each vendor PR 1 uses
 `feat/independent-device-drivers`. Continue cloud development on those branches,
 or merge them through the normal review process. Vendor default branches still

@@ -1,5 +1,7 @@
 # .NET getting started
 
+> Historical 0.1-era C# walkthrough. The current breaking 0.2 preview uses explicit driver factories and protocol-neutral handles; these examples are retained as history. Use the [current getting-started guide](../docs-site/docs/getting-started.md) and [initial testing notes](../docs-site/docs/initial-testing.md) for published alpha.1 and prepared corrections.
+
 C# implementation of instrument-components — discover and drive SCPI instruments **without waiting for a vendor IVI.NET class driver**. Dual-native with the Rust crates; shared TOML is the contract.
 
 Unlike IVI Shared Components (contracts that vendors must implement per model), this library talks SCPI over VISA (or a mock), classifies devices from `*IDN?` / probes / a shared model registry, and exposes SI-unit typed classes (DMM, PSU, FGen, oscilloscope, switch, counter, power meter, spectrum analyzer).

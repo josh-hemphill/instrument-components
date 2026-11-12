@@ -7,10 +7,14 @@ prepare breaking SDK and device-package previews before physical bench validatio
 with native Windows x64 and Linux x64 Rust/.NET 8+10 AOT gates. Hardware evidence
 still gates hardware support claims. Preserve all existing devices at initial
 external-package cutover; old constructor compatibility is unnecessary.
-The new independently versioned SDK is prepared at `0.2.0-alpha.1`; legacy packages
-remain at their historical versions. Nothing has been published by local pack
-validation. See [SDK](device-driver-sdk.md) and [delivery/setup](device-package-delivery.md)
-for implemented boundaries, exact repository/publisher inputs and remaining work.
+The SDK, retained standards/facade packages and all five device families are
+published as `0.2.0-alpha.1`: twelve Cargo and thirteen NuGet packages. Current
+source prepares seven post-publication correction groups; those fixes remain
+unpublished and require a new version and public-consumer validation. Read the
+[current guide](../docs-site/docs/getting-started.md),
+[known limitations](../docs-site/docs/initial-testing.md),
+[SDK](device-driver-sdk.md) and [delivery/setup](device-package-delivery.md).
+Physical bench validation remains pending.
 
 ## Historical implementation and release notes
 

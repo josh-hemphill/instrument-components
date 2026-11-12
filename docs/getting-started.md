@@ -1,5 +1,7 @@
 # Getting started (Rust)
 
+> Historical 0.1-era Rust getting started. The current breaking 0.2 preview uses explicit driver factories and protocol-neutral handles; these examples are retained as history. Use the [current getting-started guide](../docs-site/docs/getting-started.md) and [initial testing notes](../docs-site/docs/initial-testing.md) for published alpha.1 and prepared corrections.
+
 Contributor-oriented Rust walkthrough. Dual-language published docs: [docs-site getting started](https://josh-hemphill.github.io/instrument-components/getting-started/). C#: [dotnet-getting-started.md](dotnet-getting-started.md).
 
 ## Prerequisites
