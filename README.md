@@ -4,8 +4,9 @@ Rust and C# device contracts, serialized runtimes, standards tooling, and OpenTA
 
 The **0.2.0-alpha.1 API is a breaking preview**. Source-derived external drivers have software transcript coverage; physical bench validation is pending. Earlier 0.1 examples and constructors are retired.
 
-- [Published documentation](https://josh-hemphill.github.io/instrument-components/)
-- [Getting started](docs-site/docs/getting-started.md)
+- [0.2 preview getting started](docs-site/docs/getting-started.md)
+- [Public-package mock example](validation/public-preview/README.md)
+- [Published documentation site](https://josh-hemphill.github.io/instrument-components/) (currently 0.1; use the preview guide above for this release)
 - [Architecture and delivery](docs/device-driver-sdk.md)
 - [Device package delivery status](docs/device-package-delivery.md)
 - [Public alpha release evidence](spec/public-release-evidence.json)

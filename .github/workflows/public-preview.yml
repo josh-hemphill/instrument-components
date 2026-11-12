@@ -1,0 +1,47 @@
+name: Public preview getting-started
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ['validation/public-preview/**', 'tools/validate-public-preview.py', '.github/workflows/public-preview.yml', 'docs-site/docs/getting-started.md']
+permissions:
+  contents: read
+jobs:
+  consumer:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        framework: [net8.0, net10.0]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev
+      - name: Restore public packages into fresh caches and execute the documented example
+        shell: python
+        env:
+          FRAMEWORK: ${{ matrix.framework }}
+        run: |
+          import os,pathlib,subprocess,sys
+          output=pathlib.Path(os.environ['RUNNER_TEMP'])/'public-preview'
+          subprocess.run([sys.executable,'tools/validate-public-preview.py','--output',str(output),'--framework',os.environ['FRAMEWORK']],check=True)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: public-preview-${{ matrix.os }}-${{ matrix.framework }}
+          path: |
+            ${{ runner.temp }}/public-preview/*.json
+            ${{ runner.temp }}/public-preview/*.log
+            ${{ runner.temp }}/public-preview/native/Preview*
