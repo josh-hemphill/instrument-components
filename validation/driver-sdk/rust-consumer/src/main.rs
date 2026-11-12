@@ -5,6 +5,7 @@ use std::collections::BTreeSet;
 use std::sync::{atomic::Ordering, Arc};
 
 fn main() -> Result<()> {
+    checked_close_regressions()?;
     let trace = Arc::new(Trace::default());
     let registry = DriverRegistry::new([
         Arc::new(BinaryFactory::new(trace.clone())) as Arc<dyn DriverFactory>
@@ -123,6 +124,40 @@ fn main() -> Result<()> {
         .build()
         .unwrap()
         .block_on(async_proof())?;
+    Ok(())
+}
+
+fn checked_close_regressions() -> Result<()> {
+    fn open(trace: Arc<Trace>) -> Result<DeviceHandle> {
+        DriverRegistry::new([Arc::new(BinaryFactory::new(trace)) as Arc<dyn DriverFactory>])?.open(
+            &candidate(),
+            &Selection::default(),
+            &BTreeSet::new(),
+            ExecutionMode::Sync,
+            ConnectionOwnership::Owned,
+        )
+    }
+    let trace = Arc::new(Trace::default());
+    trace.fail_shutdown.store(true, Ordering::SeqCst);
+    trace.fail_close.store(true, Ordering::SeqCst);
+    let h = open(trace.clone())?;
+    for shutdown in [true, true, false] {
+        assert_eq!(h.close(shutdown).unwrap_err().kind, ErrorKind::Shutdown);
+    }
+    drop(h);
+    assert_eq!(trace.closes.load(Ordering::SeqCst), 1);
+    assert_eq!(trace.shutdowns.load(Ordering::SeqCst), 1);
+    assert_eq!(trace.disposes.load(Ordering::SeqCst), 1);
+    let trace = Arc::new(Trace::default());
+    let h = open(trace.clone())?;
+    h.close(false)?;
+    assert_eq!(h.close(true).unwrap_err().kind, ErrorKind::Shutdown);
+    h.close(false)?;
+    assert_eq!(trace.closes.load(Ordering::SeqCst), 1);
+    assert_eq!(trace.shutdowns.load(Ordering::SeqCst), 0);
+    println!(
+        "PASS Rust packed checked-close outcomes: no strengthening, no lost failure, one cleanup"
+    );
     Ok(())
 }
 

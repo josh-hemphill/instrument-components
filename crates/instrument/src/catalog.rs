@@ -17,7 +17,7 @@ impl DeviceCatalog {
         let mut endpoints = BTreeSet::new();
         if candidates.iter().any(|c| {
             !endpoints.insert((
-                c.endpoint.scheme.to_ascii_lowercase(),
+                c.endpoint.scheme.trim().to_ascii_lowercase(),
                 c.endpoint.address.clone(),
             ))
         }) {
@@ -39,7 +39,10 @@ impl DeviceCatalog {
             .candidates
             .iter()
             .find(|c| {
-                c.endpoint.scheme.eq_ignore_ascii_case(&endpoint.scheme)
+                c.endpoint
+                    .scheme
+                    .trim()
+                    .eq_ignore_ascii_case(endpoint.scheme.trim())
                     && c.endpoint.address == endpoint.address
             })
             .cloned()

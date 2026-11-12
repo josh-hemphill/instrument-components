@@ -439,7 +439,8 @@
           "error": "Shutdown"
         },
         {
-          "action": "close"
+          "action": "close",
+          "error": "Shutdown"
         }
       ],
       "closes": 1,
@@ -487,7 +488,8 @@
           "error": "Shutdown"
         },
         {
-          "action": "close"
+          "action": "close",
+          "error": "Shutdown"
         }
       ],
       "closes": 1,
@@ -665,6 +667,66 @@
       "closes": 1,
       "shutdowns": 0,
       "noIo": true
+    },
+    {
+      "id": "SAFE-no-escalate",
+      "steps": [
+        {
+          "action": "close"
+        },
+        {
+          "action": "close",
+          "shutdown": true,
+          "error": "Shutdown"
+        },
+        {
+          "action": "close"
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 0
+    },
+    {
+      "id": "SAFE-repeat-failure",
+      "steps": [
+        {
+          "action": "fail-shutdown"
+        },
+        {
+          "action": "close",
+          "shutdown": true,
+          "error": "Shutdown"
+        },
+        {
+          "action": "close",
+          "shutdown": true,
+          "error": "Shutdown"
+        },
+        {
+          "action": "close",
+          "error": "Shutdown"
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 1
+    },
+    {
+      "id": "SAFE-repeat-success",
+      "steps": [
+        {
+          "action": "close",
+          "shutdown": true
+        },
+        {
+          "action": "close",
+          "shutdown": true
+        },
+        {
+          "action": "close"
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 1
     }
   ]
 }

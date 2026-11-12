@@ -112,12 +112,13 @@ queued/new work, and preserves that flag when active work completes. It optional
 requests provider-defined shutdown and always releases resources, even if shutdown
 fails. If recovery is required and fails, shutdown is not attempted through the
 uncertain protocol state; the close reports failure and releases resources.
-For native/worker handles, repeated close shares the same result and the
+For every frontend, repeated checked close shares the same result and the
 first close fixes shutdown policy; a later stronger request reports Shutdown
 instead of claiming that shutdown occurred. Provider shutdown must attempt all
 applicable outputs and fail on unknown/partial coverage. Borrowed host I/O must survive backend close.
 Ordinary disposal/Drop releases resources without issuing implicit output/reset
 commands; use explicit checked close for shutdown outcomes.
+Sync C# `Dispose` does not replay a previously reported checked-close failure during unwinding; its first resource-release failure still reports an error. Rust `Drop` is best effort and has no returned error channel, so use explicit `close` to observe cleanup failures. Concurrent checked closers observe the first accepted shutdown policy and its retained outcome; resource cleanup runs once.
 
 ## Async cancellation and cleanup
 

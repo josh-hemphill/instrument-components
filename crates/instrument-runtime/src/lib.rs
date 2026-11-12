@@ -5,7 +5,7 @@ use instrument_api::*;
 use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::{
-    atomic::{AtomicBool, AtomicUsize, Ordering},
+    atomic::{AtomicBool, AtomicU8, AtomicUsize, Ordering},
     Arc, Mutex, MutexGuard,
 };
 
@@ -386,12 +386,13 @@ impl DriverRegistry {
         }
         Ok(DeviceHandle {
             inner: Arc::new(Inner {
-                closing: AtomicBool::new(false),
+                close_request: AtomicU8::new(0),
                 closed: AtomicBool::new(false),
                 waiting: AtomicUsize::new(0),
                 session: Mutex::new(Session {
                     backend: Some(backend),
                     needs_recovery: false,
+                    close_outcome: None,
                 }),
                 operations,
                 evidence,
@@ -403,9 +404,10 @@ impl DriverRegistry {
 struct Session {
     backend: Option<Box<dyn DeviceBackend>>,
     needs_recovery: bool,
+    close_outcome: Option<(bool, Result<()>)>,
 }
 struct Inner {
-    closing: AtomicBool,
+    close_request: AtomicU8, // 0 open; 1 resource-only close; 2 shutdown close.
     closed: AtomicBool,
     waiting: AtomicUsize,
     session: Mutex<Session>,
@@ -431,7 +433,7 @@ pub struct DeviceHandle {
 impl DeviceHandle {
     /// True as soon as close rejects new/queued work, including after close completes.
     pub fn closing_requested(&self) -> bool {
-        self.inner.closing.load(Ordering::Acquire)
+        self.inner.close_request.load(Ordering::Acquire) != 0
     }
     /// Requests waiting for the connection gate, including recovery and close.
     pub fn pending_operations(&self) -> usize {
@@ -451,7 +453,7 @@ impl DeviceHandle {
         if self.inner.closed.load(Ordering::Acquire) {
             return Err(error(ErrorKind::SessionClosed, "session closed"));
         }
-        if self.inner.closing.load(Ordering::Acquire) {
+        if self.inner.close_request.load(Ordering::Acquire) != 0 {
             return Err(error(ErrorKind::SessionClosing, "close requested"));
         }
         Ok(())
@@ -477,7 +479,7 @@ impl DeviceHandle {
         if session.backend.is_none() {
             return Err(error(ErrorKind::SessionClosed, "session closed"));
         }
-        if self.inner.closing.load(Ordering::Acquire) {
+        if self.inner.close_request.load(Ordering::Acquire) != 0 {
             return Err(error(ErrorKind::SessionClosing, "close requested"));
         }
         if session.needs_recovery {
@@ -528,7 +530,7 @@ impl DeviceHandle {
     pub fn recover(&self) -> Result<()> {
         self.lifecycle()?;
         let mut session = self.lock()?;
-        if self.inner.closing.load(Ordering::Acquire) {
+        if self.inner.close_request.load(Ordering::Acquire) != 0 {
             return Err(error(ErrorKind::SessionClosing, "close requested"));
         }
         if !session.needs_recovery {
@@ -544,19 +546,41 @@ impl DeviceHandle {
         Ok(())
     }
     /// Rejects queued work, waits for active operations, optionally shuts down, and
-    /// always closes resources even if shutdown fails. Repeated close is idempotent.
+    /// always closes resources even if shutdown fails. Repeated checked close replays
+    /// the first outcome and cannot strengthen a resource-only close into shutdown.
     pub fn close(&self, require_shutdown: bool) -> Result<()> {
         Active::check(self.id())?;
-        self.inner.closing.store(true, Ordering::Release);
+        let requested = if require_shutdown { 2 } else { 1 };
+        let first = match self.inner.close_request.compare_exchange(
+            0,
+            requested,
+            Ordering::AcqRel,
+            Ordering::Acquire,
+        ) {
+            Ok(_) => requested,
+            Err(first) => first,
+        };
+        let shutdown_requested = first == 2;
         let mut session = self.lock()?;
         let Some(mut backend) = session.backend.take() else {
-            return Ok(());
+            return match &session.close_outcome {
+                Some((_, Err(failure))) => Err(failure.clone()),
+                Some((shutdown, _)) if require_shutdown && !*shutdown => Err(error(
+                    ErrorKind::Shutdown,
+                    "cannot strengthen the first close request",
+                )),
+                Some((_, outcome)) => outcome.clone(),
+                None => Err(error(
+                    ErrorKind::DriverContractViolation,
+                    "missing close outcome",
+                )),
+            };
         };
         let _active = Active::enter(self.id());
         let mut failures = Vec::new();
-        if require_shutdown && !shutdown_supported(&self.inner.operations) {
+        if shutdown_requested && !shutdown_supported(&self.inner.operations) {
             failures.push("safe shutdown is not enabled for this session".into());
-        } else if require_shutdown {
+        } else if shutdown_requested {
             let recovered = if session.needs_recovery {
                 match backend.recover() {
                     Ok(()) => true,
@@ -599,11 +623,25 @@ impl DeviceHandle {
         if let Err(e) = backend.close() {
             failures.push(e.to_string());
         }
-        self.inner.closed.store(true, Ordering::Release);
-        if failures.is_empty() {
+        // Finish destruction while reentry is still guarded and before publishing
+        // completion. A provider's Drop must not reenter the held session mutex.
+        drop(backend);
+        let outcome = if failures.is_empty() {
             Ok(())
         } else {
             Err(error(ErrorKind::Shutdown, failures.join("; ")))
+        };
+        session.close_outcome = Some((shutdown_requested, outcome.clone()));
+        self.inner.closed.store(true, Ordering::Release);
+        if outcome.is_err() {
+            outcome
+        } else if require_shutdown && !shutdown_requested {
+            Err(error(
+                ErrorKind::Shutdown,
+                "cannot strengthen the first close request",
+            ))
+        } else {
+            outcome
         }
     }
 }

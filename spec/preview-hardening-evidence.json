@@ -35,6 +35,32 @@
         "RetryAttemptsSaturateAndStillAttemptTheOperation",
         "packed SDK Native AOT retry assertion"
       ]
+    },
+    {
+      "id": "CATALOG-ASCII",
+      "status": "SOURCE_FIXED_RELEASE_PENDING",
+      "behavior": "Shared trimmed ASCII scheme identity for catalog construction and lookup, addresses exact",
+      "tests": [
+        "shared_catalog_keys_use_trimmed_ascii_case_only",
+        "SharedCatalogKeysUseTrimmedAsciiCaseOnly",
+        "packed SDK Unicode scheme/ASCII lookup assertions"
+      ]
+    },
+    {
+      "id": "CHECKED-CLOSE-OUTCOME",
+      "status": "SOURCE_FIXED_RELEASE_PENDING",
+      "behavior": "Every checked closer observes first accepted shutdown intent/outcome; no strengthening, no repeated cleanup, sync fallback disposal does not mask prior checked failures",
+      "tests": [
+        "SAFE-no-escalate",
+        "SAFE-repeat-failure",
+        "SAFE-repeat-success",
+        "concurrent_checked_closers_retain_first_intent_and_outcome",
+        "ConcurrentCheckedClosersObserveTheFirstAcceptedIntentAndOutcome",
+        "CheckedCloseRetainsFailureButImplicitDisposeDoesNotMaskIt",
+        "packed SDK retained-close assertions",
+        "backend_drop_reentry_is_rejected_before_completed_close_is_published",
+        "ResourceCloseFailureSurvivesALaterShutdownRequest"
+      ]
     }
   ],
   "metadataCorrections": "SDK/vendor NuGet readme/source URLs prepared; published alpha metadata remains unchanged",
@@ -50,12 +76,17 @@
     "crates/instrument-core/src/scpi/framing.rs": "7186b6028a16220ce108dd458f6a0e39fe05a4dad1429597a9a549a8f6526400",
     "crates/instrument-core/src/scpi/session.rs": "f21d52979fc51a992b68697dd7203f35b6adc2e9771ca94a1e8b59d8bb5e4652",
     "crates/instrument-core/src/scpi/async_session.rs": "776fd687667a2f92d6b5b25ae7aa6aa96b253c9d7de2e8b09ed0799a27997b8b",
-    "crates/instrument-core/src/scpi/protocol.rs": "399f80266a47d5d542f3633e3f9a2f827a26e46715cde2cc359e967cc5c5f10f"
+    "crates/instrument-core/src/scpi/protocol.rs": "399f80266a47d5d542f3633e3f9a2f827a26e46715cde2cc359e967cc5c5f10f",
+    "dotnet/src/InstrumentComponents.Runtime/DeviceHandle.cs": "6ccaa13ab0218cda2d4d38ebf083bd276f354cb6955631f58c768fdc24670822",
+    "crates/instrument-runtime/src/lib.rs": "1a15f92044d0811aaba59c1ba37b1fcf303395728fb3a8364fd6aa2eeb7013bb",
+    "dotnet/src/InstrumentComponents/Catalog/DeviceCatalog.cs": "17eba6923fb5e54d3c97cc6a6442107642e210ae25ba0ab8863de6b52943723d",
+    "crates/instrument/src/catalog.rs": "bd6018882ae5194eb5d47bf288c65b980448978479639739fd86e1a8accf651c"
   },
   "publicProbeEvidenceSha256": {
     "member-A-probes/advisory-A.json": "b998f0fd8990a62b1b052d5d0fcc764abb9903e42b6d85c94b59a563bec2417f",
     "advisory-B.json": "d92e8a27a2f8c5d8be36726dfa99b3dfc884e749ff736e10a4d725edcf37f664",
     "advisory-C.json": "c18ce77c90fc948705b1e8e014d0985ce3c6d08641c005709ff63536b7d843b4"
   },
-  "evidencePaths": "Detailed actual public probes/logs, public archive/native audits and source test logs retained in task handoff; no registry/account/hardware mutation in this audit"
+  "evidencePaths": "Detailed actual public probes/logs, public archive/native audits and source test logs retained in task handoff; no registry/account/hardware mutation in this audit",
+  "explicitCloseContract": "An intentional preproduction tightening: previous sync repeated-close no-op expectations now retain failures and reject stronger requests, matching existing native/worker checked close. Shared vectors updated to the stronger contract, not weakened to ignore errors."
 }

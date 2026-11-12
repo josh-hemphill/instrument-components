@@ -26,4 +26,5 @@
 
   <ItemGroup><Using Include="InstrumentComponents.Validation"/><Compile Include="../../../validation/neutral/OpaqueDevice.cs" Link="OpaqueDevice.cs"/></ItemGroup>
   <ItemGroup><Content Include="../../../crates/instrument-core/tests/framing-cases.json" Link="framing-cases.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
+  <ItemGroup><Content Include="../../../crates/instrument/tests/catalog-identity-cases.json" Link="catalog-identity-cases.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
 </Project>

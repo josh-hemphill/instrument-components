@@ -15,4 +15,5 @@ instrument-runtime = { path = "../instrument-runtime", version = "=0.2.0-alpha.1
 default = []
 async = ["instrument-api/async", "instrument-runtime/async"]
 [dev-dependencies]
+serde_json = "1"
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }

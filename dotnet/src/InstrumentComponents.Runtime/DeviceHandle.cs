@@ -1,4 +1,5 @@
 using System.Collections.Frozen;
+using System.Runtime.ExceptionServices;
 using InstrumentComponents.Drivers;
 using static InstrumentComponents.Runtime.DriverRegistry;
 
@@ -10,9 +11,11 @@ public sealed class DeviceHandle : IDisposable, Drivers.Catalog.ICatalogExecutor
     private readonly object _gate = new();
     private IDeviceBackend? _backend;
     private bool _needsRecovery;
+    private bool _closeRequiresShutdown;
+    private ExceptionDispatchInfo? _closeFailure;
     private int _operationThread;
     private int _waiting;
-    private int _lifecycle; // 0 open, 1 closing, 2 closed; close requests survive active completion.
+    private int _lifecycle; // 0 open, 1 resource-close requested, 3 shutdown-close requested, 2 closed.
     public IReadOnlySet<Operation> Operations { get; }
     public int PendingOperations => Volatile.Read(ref _waiting);
     public bool ClosingRequested => Volatile.Read(ref _lifecycle) != 0;
@@ -31,7 +34,7 @@ public sealed class DeviceHandle : IDisposable, Drivers.Catalog.ICatalogExecutor
         CheckReentrancy();
         var state = Volatile.Read(ref _lifecycle);
         if (state == 2) throw Error(DriverErrorKind.SessionClosed, "Session closed.");
-        if (state == 1) throw Error(DriverErrorKind.SessionClosing, "Close requested.");
+        if (state != 0) throw Error(DriverErrorKind.SessionClosing, "Close requested.");
     }
 
     private void EnterGate()
@@ -95,21 +98,35 @@ public sealed class DeviceHandle : IDisposable, Drivers.Catalog.ICatalogExecutor
 
     /// <summary>Reject queued work, wait for active work, optionally shut down, always release owned resources.</summary>
     public void Close(bool requireShutdown = false)
+        => CloseCore(requireShutdown, replayOutcome: true);
+
+    private void CloseCore(bool requireShutdown, bool replayOutcome)
     {
         CheckReentrancy();
-        if (Interlocked.CompareExchange(ref _lifecycle, 1, 0) == 2) return;
+        var firstRequest = Interlocked.CompareExchange(ref _lifecycle, requireShutdown ? 3 : 1, 0) == 0;
+        var reportOutcome = replayOutcome || firstRequest;
         EnterGate();
         try
         {
-            if (_backend is not { } backend) return;
+            if (_backend is not { } backend)
+            {
+                if (reportOutcome)
+                {
+                    _closeFailure?.Throw();
+                    if (requireShutdown && !_closeRequiresShutdown)
+                        throw Error(DriverErrorKind.Shutdown, "Cannot strengthen the first close request.");
+                }
+                return;
+            }
+            _closeRequiresShutdown = Volatile.Read(ref _lifecycle) == 3;
             _backend = null;
             Volatile.Write(ref _operationThread, Environment.CurrentManagedThreadId);
             var failures = new List<Exception>();
             try
             {
-                if (requireShutdown && !(Operations.Contains(Operation.Shutdown) || Operations.Contains(Operation.CatalogShutdown)))
+                if (_closeRequiresShutdown && !(Operations.Contains(Operation.Shutdown) || Operations.Contains(Operation.CatalogShutdown)))
                     failures.Add(Error(DriverErrorKind.UnsupportedOperation, "Safe shutdown is not enabled for this session."));
-                else if (requireShutdown)
+                else if (_closeRequiresShutdown)
                 {
                     var safeToShutdown = true;
                     if (_needsRecovery)
@@ -127,15 +144,22 @@ public sealed class DeviceHandle : IDisposable, Drivers.Catalog.ICatalogExecutor
             finally
             {
                 try { backend.Dispose(); } catch (Exception ex) { failures.Add(ex); }
+                if (failures.Count > 0)
+                    _closeFailure = ExceptionDispatchInfo.Capture(new DriverException(DriverErrorKind.Shutdown, "Shutdown/resource release failed.", new AggregateException(failures)));
                 Volatile.Write(ref _lifecycle, 2);
                 Volatile.Write(ref _operationThread, 0);
             }
-            if (failures.Count > 0) throw new DriverException(DriverErrorKind.Shutdown, "Shutdown/resource release failed.", new AggregateException(failures));
+            if (reportOutcome)
+            {
+                _closeFailure?.Throw();
+                if (requireShutdown && !_closeRequiresShutdown)
+                    throw Error(DriverErrorKind.Shutdown, "Cannot strengthen the first close request.");
+            }
         }
         finally { Monitor.Exit(_gate); }
     }
     /// <summary>Resource release only: no implicit reset or output commands.</summary>
-    public void Dispose() => Close();
+    public void Dispose() => CloseCore(false, replayOutcome: false);
     internal static Measurement Validate(Measurement value)
     {
         if (!Enum.IsDefined(value.Status) || (value.Status == MeasurementStatus.Valid && !double.IsFinite(value.Value)))

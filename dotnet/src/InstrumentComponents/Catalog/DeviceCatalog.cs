@@ -6,17 +6,18 @@ namespace InstrumentComponents.Catalog;
 public sealed class DeviceCatalog
 {
     private readonly DriverRegistry _registry;
+    private static string Scheme(string value)=>string.Concat(value.Trim().Select(c=>c is >= 'A' and <= 'Z'?(char)(c+32):c));
     public IReadOnlyList<DeviceCandidate> Candidates { get; }
     public DeviceCatalog(DriverRegistry registry,IEnumerable<DeviceCandidate> candidates)
     {
         _registry=registry;var snapshot=candidates.ToArray();
-        if(snapshot.Select(c=>(c.Endpoint.Scheme.ToLowerInvariant(),c.Endpoint.Address)).Distinct().Count()!=snapshot.Length)
+        if(snapshot.Select(c=>(Scheme(c.Endpoint.Scheme),c.Endpoint.Address)).Distinct().Count()!=snapshot.Length)
             throw new DriverException(DriverErrorKind.InvalidArgument,"Duplicate catalog endpoint");
         Candidates=Array.AsReadOnly(snapshot);
     }
     public DeviceRef Device(Endpoint endpoint)
     {
-        var candidate=Candidates.SingleOrDefault(c=>StringComparer.OrdinalIgnoreCase.Equals(c.Endpoint.Scheme,endpoint.Scheme)&&c.Endpoint.Address==endpoint.Address)
+        var candidate=Candidates.SingleOrDefault(c=>Scheme(c.Endpoint.Scheme)==Scheme(endpoint.Scheme)&&c.Endpoint.Address==endpoint.Address)
             ?? throw new DriverException(DriverErrorKind.DriverNotFound,"Endpoint absent from catalog");
         return new DeviceRef(_registry,candidate);
     }

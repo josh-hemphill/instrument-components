@@ -64,6 +64,34 @@ fn check(actual: Result<CatalogReply>, example: &CatalogCase, last: bool) -> Res
     Ok(())
 }
 fn main() -> Result<()> {
+    let left = Candidate {
+        endpoint: Endpoint {
+            scheme: "k".into(),
+            address: "same".into(),
+        },
+        identity: Identity::default(),
+    };
+    let right = Candidate {
+        endpoint: Endpoint {
+            scheme: "K".into(),
+            address: "same".into(),
+        },
+        identity: Identity::default(),
+    };
+    let catalog = instrument::DeviceCatalog::new(DriverRegistry::new([])?, vec![left, right])?;
+    assert_eq!(catalog.candidates().len(), 2);
+    assert_eq!(
+        catalog
+            .device(&Endpoint {
+                scheme: " K ".into(),
+                address: "same".into()
+            })?
+            .candidate()
+            .endpoint
+            .scheme,
+        "k"
+    );
+    println!("PASS Rust packed ASCII catalog keys with distinct Unicode schemes");
     endpoint_proof::sync()?;
     generated_profiles::profiles()?;
     for (choice, example) in examples() {
@@ -109,11 +137,18 @@ fn main() -> Result<()> {
         script.assert_complete()?;
     }
     {
-        let script=typed_script();
-        let catalog=instrument::DeviceCatalog::new(DriverRegistry::new(generated_profiles::sync_factories(Arc::new(script.clone()))?)?,vec![candidate()])?;
-        let device=catalog.device(&candidate().endpoint)?;
-        let handle=device.open(&selection(),&BTreeSet::new(),ConnectionOwnership::Owned)?;
-        typed(&handle)?;handle.close(false)?;script.assert_complete()?;
+        let script = typed_script();
+        let catalog = instrument::DeviceCatalog::new(
+            DriverRegistry::new(generated_profiles::sync_factories(Arc::new(
+                script.clone(),
+            ))?)?,
+            vec![candidate()],
+        )?;
+        let device = catalog.device(&candidate().endpoint)?;
+        let handle = device.open(&selection(), &BTreeSet::new(), ConnectionOwnership::Owned)?;
+        typed(&handle)?;
+        handle.close(false)?;
+        script.assert_complete()?;
     }
     println!("PASS packaged SCPI sync: all eight typed classes and shared conformance cases");
     #[cfg(feature = "async")]
@@ -127,11 +162,33 @@ fn main() -> Result<()> {
 async fn asynchronous() -> Result<()> {
     endpoint_proof::asynchronous().await?;
     for mode in 0..3 {
-        let script=typed_script();
-        let catalog=instrument::DeviceCatalog::new(DriverRegistry::new(generated_profiles::combined_factories(Arc::new(script.clone()),Arc::new(script.clone()))?)?,vec![candidate()])?;
-        let device=catalog.device(&candidate().endpoint)?;
-        if mode==0{let handle=device.open_native(&selection(),&BTreeSet::new(),ConnectionOwnership::Owned).await?;typed_async(&handle).await?;handle.close(false).await?;}
-        else{let handle=device.open_worker(&selection(),&BTreeSet::new(),ConnectionOwnership::Owned).await?;if mode==1{typed_async(&handle).await?;}else{typed(&handle)?;}handle.close(false).await?;script.assert_thread_affinity()?;}
+        let script = typed_script();
+        let catalog = instrument::DeviceCatalog::new(
+            DriverRegistry::new(generated_profiles::combined_factories(
+                Arc::new(script.clone()),
+                Arc::new(script.clone()),
+            )?)?,
+            vec![candidate()],
+        )?;
+        let device = catalog.device(&candidate().endpoint)?;
+        if mode == 0 {
+            let handle = device
+                .open_native(&selection(), &BTreeSet::new(), ConnectionOwnership::Owned)
+                .await?;
+            typed_async(&handle).await?;
+            handle.close(false).await?;
+        } else {
+            let handle = device
+                .open_worker(&selection(), &BTreeSet::new(), ConnectionOwnership::Owned)
+                .await?;
+            if mode == 1 {
+                typed_async(&handle).await?;
+            } else {
+                typed(&handle)?;
+            }
+            handle.close(false).await?;
+            script.assert_thread_affinity()?;
+        }
         script.assert_complete()?;
     }
 

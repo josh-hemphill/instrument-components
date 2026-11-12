@@ -479,6 +479,161 @@ mod tests {
         handle.recover().unwrap();
         handle.close(false).unwrap();
     }
+
+    #[test]
+    fn concurrent_checked_closers_retain_first_intent_and_outcome() {
+        struct ReleaseOnDrop(Arc<Trace>);
+        impl Drop for ReleaseOnDrop {
+            fn drop(&mut self) {
+                self.0.block.lock().unwrap_or_else(|p| p.into_inner()).0 = false;
+                self.0.wake.notify_all();
+            }
+        }
+        for (first_shutdown, second_shutdown, fail_shutdown, fail_close) in [
+            (false, true, false, false),
+            (true, true, true, false),
+            (true, false, true, false),
+            (false, true, false, true),
+            (false, false, false, true),
+        ] {
+            let trace = Arc::new(Trace::default());
+            trace.fail_shutdown.store(fail_shutdown, Ordering::SeqCst);
+            trace.fail_close.store(fail_close, Ordering::SeqCst);
+            trace.block.lock().unwrap().0 = true;
+            let _release = ReleaseOnDrop(trace.clone());
+            let handle = DriverRegistry::new([Arc::new(BinaryFactory {
+                trace: trace.clone(),
+                descriptor: descriptor(),
+            }) as Arc<dyn DriverFactory>])
+            .unwrap()
+            .open(
+                &candidate(),
+                &Selection::default(),
+                &BTreeSet::new(),
+                ExecutionMode::Sync,
+                ConnectionOwnership::Owned,
+            )
+            .unwrap();
+            let worker = handle.clone();
+            let operation = std::thread::spawn(move || worker.dmm().measure_voltage_dc(None));
+            let deadline = std::time::Instant::now() + Duration::from_secs(5);
+            while !trace.block.lock().unwrap().1 {
+                assert!(std::time::Instant::now() < deadline);
+                std::thread::yield_now();
+            }
+            let worker = handle.clone();
+            let first = std::thread::spawn(move || worker.close(first_shutdown));
+            while !handle.closing_requested() {
+                assert!(std::time::Instant::now() < deadline);
+                std::thread::yield_now();
+            }
+            let worker = handle.clone();
+            let second = std::thread::spawn(move || worker.close(second_shutdown));
+            while handle.pending_operations() != 2 {
+                assert!(std::time::Instant::now() < deadline);
+                std::thread::yield_now();
+            }
+            trace.block.lock().unwrap().0 = false;
+            trace.wake.notify_all();
+            operation.join().unwrap().unwrap();
+            let a = first.join().unwrap();
+            let b = second.join().unwrap();
+            if fail_shutdown || fail_close {
+                let first = a.unwrap_err();
+                let second = b.unwrap_err();
+                assert_eq!(first.kind, ErrorKind::Shutdown);
+                assert_eq!(first, second);
+            } else {
+                a.unwrap();
+                assert_eq!(b.unwrap_err().kind, ErrorKind::Shutdown);
+            }
+            assert_eq!(trace.closes.load(Ordering::SeqCst), 1);
+            assert_eq!(
+                trace.shutdowns.load(Ordering::SeqCst),
+                usize::from(first_shutdown)
+            );
+            if fail_shutdown || fail_close {
+                assert_eq!(handle.close(true).unwrap_err().kind, ErrorKind::Shutdown);
+                assert_eq!(handle.close(false).unwrap_err().kind, ErrorKind::Shutdown);
+            }
+            drop(handle);
+            assert_eq!(trace.closes.load(Ordering::SeqCst), 1);
+            assert_eq!(trace.disposes.load(Ordering::SeqCst), 1);
+        }
+    }
+
+    #[test]
+    fn backend_drop_reentry_is_rejected_before_completed_close_is_published() {
+        use std::sync::{mpsc, Mutex};
+        struct DropFactory {
+            slot: Arc<Mutex<Option<DeviceHandle>>>,
+            observed: Arc<Mutex<Option<ErrorKind>>>,
+        }
+        struct DropBackend {
+            slot: Arc<Mutex<Option<DeviceHandle>>>,
+            observed: Arc<Mutex<Option<ErrorKind>>>,
+        }
+        impl DriverFactory for DropFactory {
+            fn descriptor(&self) -> DriverDescriptor {
+                DriverDescriptor {
+                    id: "synthetic.drop".into(),
+                    contract_major: CONTRACT_MAJOR,
+                    rules: descriptor().rules,
+                    operations: BTreeSet::new(),
+                }
+            }
+            fn open(&self, _: &OpenContext<'_>) -> Result<Box<dyn DeviceBackend>> {
+                Ok(Box::new(DropBackend {
+                    slot: self.slot.clone(),
+                    observed: self.observed.clone(),
+                }))
+            }
+        }
+        impl DeviceBackend for DropBackend {
+            fn operations(&self) -> BTreeSet<Operation> {
+                BTreeSet::new()
+            }
+            fn close(&mut self) -> Result<()> {
+                Ok(())
+            }
+        }
+        impl Drop for DropBackend {
+            fn drop(&mut self) {
+                if let Some(handle) = self.slot.lock().unwrap().take() {
+                    *self.observed.lock().unwrap() = Some(handle.close(false).unwrap_err().kind);
+                }
+            }
+        }
+        let slot = Arc::new(Mutex::new(None));
+        let observed = Arc::new(Mutex::new(None));
+        let registry = DriverRegistry::new([Arc::new(DropFactory {
+            slot: slot.clone(),
+            observed: observed.clone(),
+        }) as Arc<dyn DriverFactory>])
+        .unwrap();
+        let handle = registry
+            .open(
+                &candidate(),
+                &Selection::default(),
+                &BTreeSet::new(),
+                ExecutionMode::Sync,
+                ConnectionOwnership::Owned,
+            )
+            .unwrap();
+        *slot.lock().unwrap() = Some(handle.clone());
+        let (tx, rx) = mpsc::channel();
+        let worker = std::thread::spawn(move || {
+            tx.send(handle.close(false)).unwrap();
+        });
+        rx.recv_timeout(Duration::from_secs(5))
+            .expect("provider destructor reentry deadlocked")
+            .unwrap();
+        worker.join().unwrap();
+        assert_eq!(
+            *observed.lock().unwrap(),
+            Some(ErrorKind::DriverContractViolation)
+        );
+    }
 }
 
 #[cfg(all(test, feature = "async"))]

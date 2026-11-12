@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {"left":"k","right":"K","duplicate":false},
+    {"left":"é","right":"É","duplicate":false},
+    {"left":"µ","right":"Μ","duplicate":false},
+    {"left":"scpi","right":"SCPI","duplicate":true},
+    {"left":"scpi","right":" SCPI ","duplicate":true}
+  ]
+}
