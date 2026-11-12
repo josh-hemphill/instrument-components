@@ -1,0 +1,13 @@
+[package]
+name = "instrument-api"
+description = "Experimental vendor-neutral device driver contracts"
+version = "0.2.0-alpha.1"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+
+[features]
+default = []
+async = []

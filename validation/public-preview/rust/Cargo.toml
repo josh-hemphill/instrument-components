@@ -1,0 +1,19 @@
+[package]
+name = "instrument-public-preview"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[dependencies]
+instrument-components = { version = "=0.2.0-alpha.1", default-features = false }
+instrument-api = "=0.2.0-alpha.1"
+instrument-runtime = "=0.2.0-alpha.1"
+instrument-driver-keysight = "=0.2.0-alpha.1"
+instrument-testkit = "=0.2.0-alpha.1"
+tokio = { version = "1", features = ["rt"], optional = true }
+
+[features]
+default = []
+async = ["instrument-components/async", "instrument-api/async", "instrument-runtime/async", "instrument-driver-keysight/async", "instrument-testkit/async", "dep:tokio"]

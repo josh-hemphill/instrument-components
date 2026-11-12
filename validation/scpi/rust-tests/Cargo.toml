@@ -1,0 +1,16 @@
+[package]
+name = "instrument-scpi-contract-tests"
+version = "0.2.0-alpha.1"
+edition = "2021"
+publish = false
+[workspace]
+[dependencies]
+instrument-api = { path = "../../../crates/instrument-api" }
+instrument-runtime = { path = "../../../crates/instrument-runtime" }
+instrument-scpi = { path = "../../../crates/instrument-scpi" }
+instrument-testkit = { path = "../../../crates/instrument-testkit" }
+serde_json = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"], optional = true }
+[features]
+default = []
+async = ["instrument-api/async", "instrument-runtime/async", "instrument-scpi/async", "instrument-testkit/async", "dep:tokio"]

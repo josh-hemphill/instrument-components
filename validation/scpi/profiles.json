@@ -1,0 +1,1069 @@
+{
+  "schemaVersion": 1,
+  "contractMajor": 1,
+  "profiles": [
+    {
+      "id": "synthetic.scpi.all",
+      "channels": [
+        1,
+        2
+      ],
+      "outputs": [
+        {
+          "kind": "DcPowerSupply",
+          "channel": 1
+        },
+        {
+          "kind": "DcPowerSupply",
+          "channel": 2
+        },
+        {
+          "kind": "FunctionGenerator"
+        }
+      ],
+      "plans": [
+        {
+          "operation": "DmmMeasureVoltageDc",
+          "steps": [
+            {
+              "command": ":TEST:DmmMeasureVoltageDc? {range}",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {
+            "range": "AUTO"
+          }
+        },
+        {
+          "operation": "DmmMeasureVoltageAc",
+          "steps": [
+            {
+              "command": ":TEST:DmmMeasureVoltageAc? {range}",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {
+            "range": "AUTO"
+          }
+        },
+        {
+          "operation": "DmmMeasureCurrentDc",
+          "steps": [
+            {
+              "command": ":TEST:DmmMeasureCurrentDc? {range}",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {
+            "range": "AUTO"
+          }
+        },
+        {
+          "operation": "DmmMeasureCurrentAc",
+          "steps": [
+            {
+              "command": ":TEST:DmmMeasureCurrentAc? {range}",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {
+            "range": "AUTO"
+          }
+        },
+        {
+          "operation": "DmmMeasureResistance",
+          "steps": [
+            {
+              "command": ":TEST:DmmMeasureResistance? {range}",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {
+            "range": "AUTO"
+          }
+        },
+        {
+          "operation": "DmmMeasureResistance2Wire",
+          "steps": [
+            {
+              "command": ":TEST:DmmMeasureResistance2Wire? {range}",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {
+            "range": "AUTO"
+          }
+        },
+        {
+          "operation": "DmmMeasureResistance4Wire",
+          "steps": [
+            {
+              "command": ":TEST:DmmMeasureResistance4Wire? {range}",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {
+            "range": "AUTO"
+          }
+        },
+        {
+          "operation": "DmmMeasureTemperature",
+          "steps": [
+            {
+              "command": ":TEST:DmmMeasureTemperature? {range}",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {
+            "range": "AUTO"
+          },
+          "unit": "Celsius"
+        },
+        {
+          "operation": "DmmConfigureVoltageDc",
+          "steps": [
+            {
+              "command": ":TEST:DmmConfigureVoltageDc {range},{resolution}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {
+            "range": "AUTO",
+            "resolution": "AUTO"
+          }
+        },
+        {
+          "operation": "DmmConfigureVoltageAc",
+          "steps": [
+            {
+              "command": ":TEST:DmmConfigureVoltageAc {range},{resolution}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {
+            "range": "AUTO",
+            "resolution": "AUTO"
+          }
+        },
+        {
+          "operation": "DmmConfigureCurrentDc",
+          "steps": [
+            {
+              "command": ":TEST:DmmConfigureCurrentDc {range},{resolution}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {
+            "range": "AUTO",
+            "resolution": "AUTO"
+          }
+        },
+        {
+          "operation": "DmmConfigureCurrentAc",
+          "steps": [
+            {
+              "command": ":TEST:DmmConfigureCurrentAc {range},{resolution}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {
+            "range": "AUTO",
+            "resolution": "AUTO"
+          }
+        },
+        {
+          "operation": "DmmConfigureResistance",
+          "steps": [
+            {
+              "command": ":TEST:DmmConfigureResistance {range},{resolution}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {
+            "range": "AUTO",
+            "resolution": "AUTO"
+          }
+        },
+        {
+          "operation": "DmmConfigureResistance4Wire",
+          "steps": [
+            {
+              "command": ":TEST:DmmConfigureResistance4Wire {range},{resolution}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {
+            "range": "AUTO",
+            "resolution": "AUTO"
+          }
+        },
+        {
+          "operation": "DmmInitiate",
+          "steps": [
+            {
+              "command": ":TEST:DmmInitiate",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "DmmFetch",
+          "steps": [
+            {
+              "command": ":TEST:DmmFetch?",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "DmmRead",
+          "steps": [
+            {
+              "command": ":TEST:DmmRead?",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "DmmSoftwareTrigger",
+          "steps": [
+            {
+              "command": ":TEST:DmmSoftwareTrigger",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "DcPowerSupplyChannelCount",
+          "steps": [],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "DcPowerSupplySetVoltage",
+          "steps": [
+            {
+              "command": ":TEST:DcPowerSupplySetVoltage {channel},{volts}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "DcPowerSupplySetCurrentLimit",
+          "steps": [
+            {
+              "command": ":TEST:DcPowerSupplySetCurrentLimit {channel},{amps}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "DcPowerSupplyOutputEnable",
+          "steps": [
+            {
+              "command": ":TEST:DcPowerSupplyOutputEnable {channel},{enabled}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {
+            "enabled": {
+              "true": "ON",
+              "false": "OFF"
+            }
+          },
+          "defaults": {}
+        },
+        {
+          "operation": "DcPowerSupplyOutputStateQuery",
+          "steps": [
+            {
+              "command": ":TEST:DcPowerSupplyOutputStateQuery? {channel}",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "DcPowerSupplyOvpLevel",
+          "steps": [
+            {
+              "command": ":TEST:DcPowerSupplyOvpLevel {channel},{volts}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "DcPowerSupplyOvpEnable",
+          "steps": [
+            {
+              "command": ":TEST:DcPowerSupplyOvpEnable {channel},{enabled}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {
+            "enabled": {
+              "true": "ON",
+              "false": "OFF"
+            }
+          },
+          "defaults": {}
+        },
+        {
+          "operation": "DcPowerSupplyOvpQuery",
+          "steps": [
+            {
+              "command": ":TEST:DcPowerSupplyOvpQuery? {channel}",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "DcPowerSupplyReadVoltage",
+          "steps": [
+            {
+              "command": ":TEST:DcPowerSupplyReadVoltage? {channel}",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "DcPowerSupplyReadCurrent",
+          "steps": [
+            {
+              "command": ":TEST:DcPowerSupplyReadCurrent? {channel}",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "FunctionGeneratorSetWaveform",
+          "steps": [
+            {
+              "command": ":TEST:FunctionGeneratorSetWaveform {waveform}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {
+            "waveform": {
+              "Sine": "SIN",
+              "Square": "SQU",
+              "Ramp": "RAMP",
+              "Pulse": "PULS",
+              "Noise": "NOIS",
+              "Dc": "DC"
+            }
+          },
+          "defaults": {}
+        },
+        {
+          "operation": "FunctionGeneratorSetFrequency",
+          "steps": [
+            {
+              "command": ":TEST:FunctionGeneratorSetFrequency {hz}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "FunctionGeneratorSetAmplitude",
+          "steps": [
+            {
+              "command": ":TEST:FunctionGeneratorSetAmplitude {vpp}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "FunctionGeneratorSetOffset",
+          "steps": [
+            {
+              "command": ":TEST:FunctionGeneratorSetOffset {volts}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "FunctionGeneratorSetDutyCycle",
+          "steps": [
+            {
+              "command": ":TEST:FunctionGeneratorSetDutyCycle {percent}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "FunctionGeneratorSetLoad",
+          "steps": [
+            {
+              "command": ":TEST:FunctionGeneratorSetLoad {ohms}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "FunctionGeneratorOutputEnable",
+          "steps": [
+            {
+              "command": ":TEST:FunctionGeneratorOutputEnable {enabled}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {
+            "enabled": {
+              "true": "ON",
+              "false": "OFF"
+            }
+          },
+          "defaults": {}
+        },
+        {
+          "operation": "FunctionGeneratorSetBurstCount",
+          "steps": [
+            {
+              "command": ":TEST:FunctionGeneratorSetBurstCount {count}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "FunctionGeneratorSetBurstState",
+          "steps": [
+            {
+              "command": ":TEST:FunctionGeneratorSetBurstState {enabled}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {
+            "enabled": {
+              "true": "ON",
+              "false": "OFF"
+            }
+          },
+          "defaults": {}
+        },
+        {
+          "operation": "FunctionGeneratorSetBurstTriggerSource",
+          "steps": [
+            {
+              "command": ":TEST:FunctionGeneratorSetBurstTriggerSource {source}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {
+            "source": {
+              "External": "EXT",
+              "Internal": "INT",
+              "Positive": "POS",
+              "Negative": "NEG",
+              "Dc": "DC"
+            }
+          },
+          "defaults": {}
+        },
+        {
+          "operation": "FunctionGeneratorReadFrequency",
+          "steps": [
+            {
+              "command": ":TEST:FunctionGeneratorReadFrequency?",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "OscilloscopeSetTimebaseScale",
+          "steps": [
+            {
+              "command": ":TEST:OscilloscopeSetTimebaseScale {seconds_per_div}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "OscilloscopeReadTimebaseScale",
+          "steps": [
+            {
+              "command": ":TEST:OscilloscopeReadTimebaseScale?",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "OscilloscopeSetChannelScale",
+          "steps": [
+            {
+              "command": ":TEST:OscilloscopeSetChannelScale {channel},{volts_per_div}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "OscilloscopeSetChannelDisplay",
+          "steps": [
+            {
+              "command": ":TEST:OscilloscopeSetChannelDisplay {channel},{enabled}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {
+            "enabled": {
+              "true": "ON",
+              "false": "OFF"
+            }
+          },
+          "defaults": {}
+        },
+        {
+          "operation": "OscilloscopeSetChannelCoupling",
+          "steps": [
+            {
+              "command": ":TEST:OscilloscopeSetChannelCoupling {channel},{coupling}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {
+            "coupling": {
+              "External": "EXT",
+              "Internal": "INT",
+              "Positive": "POS",
+              "Negative": "NEG",
+              "Dc": "DC"
+            }
+          },
+          "defaults": {}
+        },
+        {
+          "operation": "OscilloscopeSetTriggerSource",
+          "steps": [
+            {
+              "command": ":TEST:OscilloscopeSetTriggerSource {source}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {
+            "source": {
+              "External": "EXT",
+              "Internal": "INT",
+              "Positive": "POS",
+              "Negative": "NEG",
+              "Dc": "DC"
+            }
+          },
+          "defaults": {}
+        },
+        {
+          "operation": "OscilloscopeSetTriggerLevel",
+          "steps": [
+            {
+              "command": ":TEST:OscilloscopeSetTriggerLevel {volts}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "OscilloscopeSetTriggerSlope",
+          "steps": [
+            {
+              "command": ":TEST:OscilloscopeSetTriggerSlope {slope}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {
+            "slope": {
+              "External": "EXT",
+              "Internal": "INT",
+              "Positive": "POS",
+              "Negative": "NEG",
+              "Dc": "DC"
+            }
+          },
+          "defaults": {}
+        },
+        {
+          "operation": "OscilloscopeRun",
+          "steps": [
+            {
+              "command": ":TEST:OscilloscopeRun",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "OscilloscopeStop",
+          "steps": [
+            {
+              "command": ":TEST:OscilloscopeStop",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "OscilloscopeSingle",
+          "steps": [
+            {
+              "command": ":TEST:OscilloscopeSingle",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "OscilloscopeMeasureVpp",
+          "steps": [
+            {
+              "command": ":TEST:OscilloscopeMeasureVpp? {channel}",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "OscilloscopeMeasureFrequency",
+          "steps": [
+            {
+              "command": ":TEST:OscilloscopeMeasureFrequency? {channel}",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "OscilloscopeCaptureVoltageTrace",
+          "steps": [
+            {
+              "command": ":TEST:PREAMBLE?",
+              "response": "Preamble"
+            },
+            {
+              "command": ":TEST:OscilloscopeCaptureVoltageTrace? {channel}",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "SwitchCloseRoute",
+          "steps": [
+            {
+              "command": ":TEST:SwitchCloseRoute {ch1},{ch2}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "SwitchOpenRoute",
+          "steps": [
+            {
+              "command": ":TEST:SwitchOpenRoute {ch1},{ch2}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "SwitchIsClosed",
+          "steps": [
+            {
+              "command": ":TEST:SwitchIsClosed? {ch1},{ch2}",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "SwitchOpenAll",
+          "steps": [
+            {
+              "command": ":TEST:SwitchOpenAll",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "CounterMeasureFrequency",
+          "steps": [
+            {
+              "command": ":TEST:CounterMeasureFrequency?",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "CounterMeasurePeriod",
+          "steps": [
+            {
+              "command": ":TEST:CounterMeasurePeriod?",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "CounterSetGateTime",
+          "steps": [
+            {
+              "command": ":TEST:CounterSetGateTime {seconds}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "CounterSelectChannel",
+          "steps": [
+            {
+              "command": ":TEST:CounterSelectChannel {channel}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "CounterResetTotalize",
+          "steps": [
+            {
+              "command": ":TEST:CounterResetTotalize",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "CounterReadTotalize",
+          "steps": [
+            {
+              "command": ":TEST:CounterReadTotalize?",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "PowerMeterConfigureMeasurement",
+          "steps": [
+            {
+              "command": ":TEST:PowerMeterConfigureMeasurement {unit},{auto_range},{auto_average},{correction_freq_hz},{offset_db}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {
+            "unit": {
+              "Watt": "W",
+              "Dbm": "DBM"
+            },
+            "auto_range": {
+              "true": "ON",
+              "false": "OFF"
+            },
+            "auto_average": {
+              "true": "ON",
+              "false": "OFF"
+            }
+          },
+          "defaults": {
+            "correction_freq_hz": "AUTO",
+            "offset_db": "AUTO"
+          }
+        },
+        {
+          "operation": "PowerMeterInitiate",
+          "steps": [
+            {
+              "command": ":TEST:PowerMeterInitiate",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "PowerMeterFetch",
+          "steps": [
+            {
+              "command": ":TEST:PowerMeterFetch?",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "PowerMeterRead",
+          "steps": [
+            {
+              "command": ":TEST:PowerMeterRead?",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "SpectrumAnalyzerSetCenterFrequency",
+          "steps": [
+            {
+              "command": ":TEST:SpectrumAnalyzerSetCenterFrequency {hz}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "SpectrumAnalyzerSetSpan",
+          "steps": [
+            {
+              "command": ":TEST:SpectrumAnalyzerSetSpan {hz}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "SpectrumAnalyzerSetRbw",
+          "steps": [
+            {
+              "command": ":TEST:SpectrumAnalyzerSetRbw {hz}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "SpectrumAnalyzerSetVbw",
+          "steps": [
+            {
+              "command": ":TEST:SpectrumAnalyzerSetVbw {hz}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "SpectrumAnalyzerSetRefLevel",
+          "steps": [
+            {
+              "command": ":TEST:SpectrumAnalyzerSetRefLevel {dbm}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "SpectrumAnalyzerFetchTraceAscii",
+          "steps": [
+            {
+              "command": ":TEST:SpectrumAnalyzerFetchTraceAscii?",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "SpectrumAnalyzerMarkerPeak",
+          "steps": [
+            {
+              "command": ":TEST:SpectrumAnalyzerMarkerPeak",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "SpectrumAnalyzerMarkerX",
+          "steps": [
+            {
+              "command": ":TEST:SpectrumAnalyzerMarkerX?",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "SpectrumAnalyzerMarkerY",
+          "steps": [
+            {
+              "command": ":TEST:SpectrumAnalyzerMarkerY?",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "SpectrumAnalyzerSweepContinuous",
+          "steps": [
+            {
+              "command": ":TEST:SpectrumAnalyzerSweepContinuous {enabled}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {
+            "enabled": {
+              "true": "ON",
+              "false": "OFF"
+            }
+          },
+          "defaults": {}
+        },
+        {
+          "operation": "SpectrumAnalyzerSingleSweep",
+          "steps": [
+            {
+              "command": ":TEST:SpectrumAnalyzerSingleSweep",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "SpectrumAnalyzerWaitOpc",
+          "steps": [
+            {
+              "command": ":TEST:SpectrumAnalyzerWaitOpc?",
+              "response": "Completion"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "DcPowerSupplySetSenseMode",
+          "steps": [
+            {
+              "command": ":TEST:DcPowerSupplySetSenseMode {channel},{mode}",
+              "response": "Write"
+            }
+          ],
+          "tokens": {
+            "mode": {
+              "Internal": "INT",
+              "External": "EXT"
+            }
+          },
+          "defaults": {}
+        },
+        {
+          "operation": "QueryIdentity",
+          "steps": [
+            {
+              "command": ":TEST:QueryIdentity?",
+              "response": "Value"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "Reset",
+          "steps": [
+            {
+              "command": ":TEST:Reset",
+              "response": "Write"
+            }
+          ],
+          "tokens": {},
+          "defaults": {}
+        },
+        {
+          "operation": "Shutdown",
+          "steps": [],
+          "tokens": {},
+          "defaults": {}
+        }
+      ],
+      "scheme": "scpi",
+      "rules": [
+        {
+          "manufacturer": "Synthetic",
+          "model": "All"
+        }
+      ]
+    }
+  ]
+}

@@ -1,62 +1,7 @@
-# instrument-components
+# Instrument Components
 
-High-level control for VISA / SCPI instruments in **Rust** and **C#**: auto-discovery, IVI-inspired typed classes, and mock fixtures for CI — without waiting on a vendor IVI class driver.
+Compose instrument applications from vendor-neutral contracts and explicit device packages. Rust and C# share an operation catalog, capability model and lifecycle rules. Device commands and exceptions belong in external driver repositories.
 
-## What you get
+The breaking **0.2.0-alpha.1** preview targets Linux x64 and Windows x64. Native AOT applies to the .NET SDK and statically composed applications; the OpenTAP host has separate requirements. Software/transcript tests do not establish hardware behavior. Early packages must pass release gates before bench evidence is collected.
 
-- Auto-discovery of USB, GPIB, and serial VISA resources
-- Typed instrument classes with SI units (V, A, Hz, s): DMM, DC power supply, function generator, oscilloscope, switch, counter, power meter, spectrum analyzer
-- Mock transport for hardware-free CI
-- Stable `DeviceId` for instrument replacement workflows
-- Opt-in async APIs (true async in Rust via visa-rs; sync bridge in C# today)
-
-## Choose your path
-
-| I want to… | Start here |
-|---|---|
-| First measure (mock, no VISA) | [Getting started](getting-started.md) |
-| Discover real instruments | [Discovery](discovery.md) |
-| Use a typed class | [Instrument classes](classes/dmm.md) |
-| Async I/O | [Rust async](rust/async.md) · [C# async](csharp/async.md) |
-| Author OpenTAP plans | [C# OpenTAP pack](csharp/opentap.md) |
-| See what's implemented | [Capability matrix](capability-matrix.md) |
-
-## Install
-
-=== "Rust"
-
-    ```toml
-    # Mock / CI
-    instrument-components = { version = "0.1", default-features = false }
-
-    # Hardware (VISA default)
-    instrument-components = "0.1"
-    ```
-
-    Import: `use instrument::prelude::*;`
-
-=== "C#"
-
-    Package publishing is deferred; reference projects from this repo for now:
-
-    ```bash
-    dotnet add reference path/to/InstrumentComponents.csproj
-    # Hardware also needs:
-    dotnet add reference path/to/InstrumentComponents.Visa.csproj
-    ```
-
-## Mock → volts
-
-=== "Rust"
-
-    --8<-- "snippets/rust/mock-dmm.md"
-
-=== "C#"
-
-    --8<-- "snippets/csharp/mock-dmm.md"
-
-## Source & API reference
-
-- GitHub: [josh-hemphill/instrument-components](https://github.com/josh-hemphill/instrument-components)
-- Rust API docs: [docs.rs/instrument-components](https://docs.rs/instrument-components) (after publish)
-- Agent-oriented notes (roadmap, parity) live in the repo `docs/` folder
+Start with [Getting started](getting-started.md), then [Discovery and registration](discovery.md). Use [the capability matrix](capability-matrix.md) to understand which operations require explicit inventory or device evidence.

@@ -4,11 +4,16 @@ on:
   push:
     branches: [latest]
   workflow_dispatch:
+    inputs:
+      source_ref:
+        description: Reviewed branch, commit or tag to publish (empty uses this workflow ref)
+        required: false
+        default: ''
+  pull_request:
+    paths: ['docs-site/**', '.github/workflows/docs.yml']
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
@@ -19,6 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref || github.ref }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
@@ -35,7 +42,11 @@ jobs:
 
   deploy:
     needs: build
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

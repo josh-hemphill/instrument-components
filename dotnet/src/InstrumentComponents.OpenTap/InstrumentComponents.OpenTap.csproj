@@ -8,9 +8,9 @@
     <RootNamespace>InstrumentComponents.OpenTap</RootNamespace>
     <AssemblyName>InstrumentComponents.OpenTap</AssemblyName>
     <PackageId>InstrumentComponents.OpenTap</PackageId>
-    <Version>0.1.1</Version>
+    <Version>0.2.0-alpha.1</Version>
     <Authors>josh-hemphill</Authors>
-    <Description>OpenTAP instruments and typed SCPI steps with host-injected I/O.</Description>
+    <Description>OpenTAP instruments and typed steps with host-injected neutral device handles.</Description>
     <PackageLicenseExpression>MIT OR Apache-2.0</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/josh-hemphill/instrument-components</PackageProjectUrl>
     <RepositoryUrl>https://github.com/josh-hemphill/instrument-components</RepositoryUrl>
@@ -32,4 +32,5 @@
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
+  <Import Project="../../DriverSdk.Package.targets" />
 </Project>

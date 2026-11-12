@@ -4,6 +4,7 @@ import { mkdirSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from 
  */
 const root = new URL("..", import.meta.url);
 const manifestPath = new URL("spec/opentap-operations.json", root);
+const sdkOperations = JSON.parse(readFileSync(new URL("spec/driver-operations.json",root),"utf8")).operations;
 const outputDir = new URL("dotnet/src/InstrumentComponents.OpenTap/Steps/Generated/", root);
 
 interface Parameter {
@@ -17,6 +18,7 @@ interface Parameter {
 }
 
 interface Invoke {
+  operationId: string;
   method: string;
   returns?: string;
   args?: { parameter: string }[];
@@ -35,6 +37,7 @@ interface Operation {
   description?: string;
   parameters?: Parameter[];
   invoke?: Invoke;
+  composite?: Invoke[];
   publish: { mode: string; name?: string; unit?: string; unitFrom?: string; supportsLimits?: boolean };
 }
 
@@ -93,6 +96,14 @@ function needsClassesUsing(operations: Operation[]): boolean {
 
 function emitConstructor(operation: Operation, parameters: Parameter[]): string {
   const rules: string[] = [];
+  const constraints=new Map<string,string>();
+  for(const invoke of operation.invoke ? [operation.invoke] : operation.composite ?? []) {
+    const target=sdkOperations.find((o:{id:string})=>o.id===invoke.operationId);
+    for(const [index,arg] of (invoke.args ?? []).entries()) {
+      const constraint=target?.parameters[index]?.constraint;
+      if(constraint && constraint!=="finite")constraints.set(arg.parameter,constraint);
+    }
+  }
   for (const parameter of parameters) {
     if (parameter.type === "uint") {
       rules.push(
@@ -107,6 +118,13 @@ function emitConstructor(operation: Operation, parameters: Parameter[]): string 
         `        Rules.Add(() => double.IsFinite(${parameter.name}), ${JSON.stringify(`${parameter.displayName} must be a finite number.`)}, nameof(${parameter.name}));`,
       );
     }
+  }
+  for(const parameter of parameters) {
+    const constraint=constraints.get(parameter.name);
+    if(!constraint || !["double","nullableDouble"].includes(parameter.type))continue;
+    const value=parameter.type==="nullableDouble" ? `${parameter.name}.Value` : parameter.name;
+    const condition=constraint==="positive" ? `${value} > 0` : constraint==="nonnegative" ? `${value} >= 0` : constraint==="percent" ? `${value} >= 0 && ${value} <= 100` : null;
+    if(condition)rules.push(`        Rules.Add(() => ${parameter.type==="nullableDouble" ? `${parameter.name} is null || ` : ""}(${condition}), "${parameter.displayName} violates the operation's ${constraint} constraint.", nameof(${parameter.name}));`);
   }
   const names = new Set(parameters.map((parameter) => parameter.name));
   if (names.has("Channel1") && names.has("Channel2")) {
@@ -147,14 +165,16 @@ function emitScalarStep(operation: Operation): string {
   const unit = operation.publish.unitFrom ? `instrument.${operation.accessor}.${operation.publish.unitFrom}` : JSON.stringify(operation.publish.unit ?? "");
   const args = callArgs(operation);
   const invoke = `instrument.${operation.accessor}.${operation.invoke!.method}(${args})`;
-  const valueExpr = operation.invoke!.returns === "bool" ? `${invoke} ? 1.0 : 0.0` : invoke;
+  const valueExpr = operation.invoke!.returns === "bool" ? `${invoke} ? 1.0 : 0.0` : "quantity";
+  const acquisition = operation.invoke!.returns === "bool" ? "" : `        var quantity = ${invoke};\n`;
+  const physicalUnit = operation.invoke!.returns === "bool" ? unit : "PhaseIResults.UnitSymbol(quantity.Unit)";
   return emitClass(
     operation,
     `OptionalLimitStep<${operation.instrumentType}>`,
     `        if (!TryGetInstrument(out var instrument))
             return;
 
-        PublishScalar(${JSON.stringify(resultName)}, ${valueExpr}, ${unit});`,
+${acquisition}        PublishScalar(${JSON.stringify(resultName)}, ${valueExpr}, ${physicalUnit});`,
   );
 }
 
@@ -181,9 +201,9 @@ function emitSampleTraceStep(operation: Operation): string {
             return;
 
         var samples = instrument.${operation.accessor}.${operation.invoke!.method}(${args});
-        for (var i = 0; i < samples.Count; i++)
-            PhaseIResults.PublishSample(Results, ${JSON.stringify(channel)}, i, samples[i]);
-        UpgradeVerdict(samples.All(double.IsFinite) ? Verdict.Pass : Verdict.Fail);`,
+        for (var i = 0; i < samples.Values.Count; i++)
+            PhaseIResults.PublishSample(Results, ${JSON.stringify(channel)}, i, samples.Values[i],PhaseIResults.UnitSymbol(samples.Unit));
+        UpgradeVerdict(samples.Values.All(double.IsFinite) ? Verdict.Pass : Verdict.Fail);`,
   );
 }
 
@@ -206,7 +226,7 @@ function emitOperation(operation: Operation): string {
 }
 
 function emitFile(kind: string, operations: Operation[]): string {
-  const classesUsing = needsClassesUsing(operations) ? "using InstrumentComponents.Classes;\n" : "";
+  const classesUsing = needsClassesUsing(operations) ? "using InstrumentComponents.Drivers.Catalog;\n" : "";
   const body = operations.map(emitOperation).join("\n\n");
   return `${GENERATED_HEADER}
 ${classesUsing}using OpenTap;

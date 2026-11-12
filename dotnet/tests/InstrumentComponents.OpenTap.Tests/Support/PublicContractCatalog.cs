@@ -118,7 +118,7 @@ internal static class PublicContractCatalog
         bool flag => JsonValue.Create(flag),
         Enum enumerated => JsonValue.Create(enumerated.ToString()),
         IFormattable formattable => JsonValue.Create(formattable.ToString(null, CultureInfo.InvariantCulture)),
-        ScpiIdentityFields identity => new JsonObject
+        DeviceIdentityFields identity => new JsonObject
         {
             ["manufacturer"] = identity.Manufacturer,
             ["model"] = identity.Model,

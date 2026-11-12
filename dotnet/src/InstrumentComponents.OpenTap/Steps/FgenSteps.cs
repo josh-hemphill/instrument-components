@@ -1,4 +1,4 @@
-using InstrumentComponents.Classes;
+using InstrumentComponents.Drivers.Catalog;
 using OpenTap;
 
 namespace InstrumentComponents.OpenTap;

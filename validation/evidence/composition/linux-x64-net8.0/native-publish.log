@@ -1,0 +1,5 @@
+  Determining projects to restore...
+  Restored /home/runner/work/_temp/composition-proof/app/dotnet/Composition.csproj (in 1.63 sec).
+  Composition -> /home/runner/work/_temp/composition-proof/app/dotnet/bin/Release/net8.0/linux-x64/Composition.dll
+  Generating native code
+  Composition -> /home/runner/work/_temp/composition-proof/native/

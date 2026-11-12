@@ -1,0 +1,86 @@
+name: Driver SDK conformance
+on:
+  workflow_call:
+    inputs:
+      source_repository:
+        type: string
+        default: 'josh-hemphill/instrument-components'
+        required: false
+      source_ref:
+        type: string
+        default: ''
+        required: false
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    name: SDK ${{ matrix.os }} / ${{ matrix.framework }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        framework: [net8.0, net10.0]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.source_repository }}
+          ref: ${{ inputs.source_ref }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev bubblewrap
+      - name: Validate preview and deterministic generated contracts
+        shell: bash
+        run: |
+          python tools/validate-sdk-release.py
+          python -m pip install ./tools/driver-tools
+          instrument-driver contracts --input spec/driver-operations.json --rust-output crates/instrument-api/src --dotnet-output dotnet/src/InstrumentComponents.Abstractions --check
+          instrument-driver generate --input validation/scpi/profiles.json --output-dir validation/scpi/generated --contract-major 1 --check
+          instrument-driver generate-tests --input spec/driver-scpi-cases.json --output-dir validation/scpi/generated --check
+          instrument-driver generate --input validation/scpi/choice-profiles.json --output-dir validation/scpi/choice-generated --contract-major 1 --module choice_profiles --namespace GeneratedChoice --check
+          instrument-driver generate-tests --input spec/driver-choice-cases.json --output-dir validation/scpi/choice-generated --module choice_cases --namespace GeneratedChoice --check
+          python -m unittest discover -s tools/driver-tools/tests
+      - name: SDK and existing scenario regression gates
+        shell: bash
+        run: |
+          cargo fmt --all -- --check
+          cargo clippy -p instrument-api -p instrument-runtime -p instrument-scpi -p instrument-testkit --all-features --all-targets -- -D warnings
+          cargo test -p instrument-runtime --features async
+          cargo test --manifest-path validation/driver-sdk/rust-tests/Cargo.toml --features async
+          cargo test --manifest-path validation/scpi/rust-tests/Cargo.toml --features async
+          cargo clippy --manifest-path validation/scpi/rust-tests/Cargo.toml --all-features --all-targets -- -D warnings
+          dotnet test dotnet/tests/InstrumentComponents.Runtime.Tests -c Release
+      - name: Package-only generated consumers and native publish/run
+        shell: bash
+        env:
+          PROOF_DIRECTORY: ${{ runner.temp }}/sdk-${{ matrix.framework }}
+          PROOF_FRAMEWORK: ${{ matrix.framework }}
+        run: |
+          if [ "$RUNNER_OS" = Linux ]; then
+            python tools/validate-driver-sdk.py --artifacts "$PROOF_DIRECTORY" --framework "$PROOF_FRAMEWORK" --isolate-runtime --isolation-sudo
+          else
+            python tools/validate-driver-sdk.py --artifacts "$PROOF_DIRECTORY" --framework "$PROOF_FRAMEWORK"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: driver-sdk-${{ matrix.os }}-${{ matrix.framework }}
+          path: |
+            ${{ runner.temp }}/sdk-${{ matrix.framework }}/*.json
+            ${{ runner.temp }}/sdk-${{ matrix.framework }}/*.log
+            ${{ runner.temp }}/sdk-${{ matrix.framework }}/cargo-dependencies.tar.gz
+            ${{ runner.temp }}/sdk-${{ matrix.framework }}/nuget-feed/*.nupkg
+            ${{ runner.temp }}/sdk-${{ matrix.framework }}/python-feed/instrument_driver_tools*.whl
+            ${{ runner.temp }}/sdk-${{ matrix.framework }}/cargo-target/package/*.crate
+            ${{ runner.temp }}/sdk-${{ matrix.framework }}/native/AotConsumer*

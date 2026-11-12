@@ -1,146 +1,15 @@
-# Discovery and device assignment
+# Discovery and registration
 
-How instruments are found, classified, and rebound after hardware swaps.
+A host enumerator produces passive endpoint/identity evidence. Construct `DeviceCatalog` with a `DriverRegistry` and that evidence. Catalog construction and selection perform no IO. Raw VISA resource enumeration remains optional standards tooling and is separate from driver matching.
 
-## Auto-discovery
+Each registered factory has a stable canonical ID, supported execution modes and explicit match rules. Exact manufacturer/model and USB vendor/product rules are supplied by external packages. Equal-ranked conflicting drivers fail with `AmbiguousDriver`; explicit driver selection is available. No unregistered default implementation is selected. A standard-SCPI fallback requires explicit selection permission.
 
-=== "Rust"
+Capabilities are operation-level. The factory descriptor can describe possible operations; the opened backend returns the immutable operations supported by that connection. Required operations are checked before connector open for SCPI profiles, then verified against the opened backend by the neutral runtime. Typed views share the same backend and cannot add capabilities.
 
-    Sync: `Discovery::visa()?.scan()?`  
-    Async (`tokio` feature): `AsyncDiscovery::visa()?.scan().await?`
+## Inventories
 
-=== "C#"
+Supported channel IDs and complete physical output inventory are distinct. A legacy one-channel hint is not proof of complete outputs. ChannelCount and checked Shutdown are available only when metadata and disable coverage guarantee them. Unknown output inventories do not advertise Shutdown. Closing without requesting Shutdown only closes the owned connection.
 
-    ```csharp
-    using InstrumentComponents.Visa;
+External package registration accepts model defaults and endpoint-specific connection bindings. Use `ConnectionBinding` with the canonical driver ID, endpoint and immutable `InventoryBinding`; C# passes `connections:` to `Drivers.Factories` / `NativeFactories`; Rust uses `sync_factories_for_connections`, `native_factories_for_connections` or `combined_factories_for_connections`. Endpoint scheme comparison is ASCII case-insensitive after trimming; addresses are exact. Duplicate normalized endpoints and unknown driver IDs are rejected before IO. One factory may serve two connections to the same model with different complete output sets.
 
-    var catalog = VisaDiscovery.Create().Scan();
-    ```
-
-Both enumerate (via the VISA resource manager):
-
-- `?*INSTR` (all instruments)
-- `USB?*::INSTR`
-- `GPIB?*INSTR`
-- `ASRL?*INSTR` (serial)
-
-USB and GPIB require **no manual address**. TCPIP/LXI usually does:
-
-=== "Rust"
-
-    ```rust
-    Discovery::visa()?
-        .manual_address("TCPIP0::192.168.0.42::INSTR")
-        .scan()?;
-    ```
-
-=== "C#"
-
-    ```csharp
-    using InstrumentComponents.Visa;
-
-    var catalog = VisaDiscovery.Create()
-        .ManualAddress("TCPIP0::192.168.0.42::INSTR")
-        .Scan();
-    ```
-
-## Probe policy
-
-Controls how aggressively devices are classified during scan:
-
-| Policy | Behavior |
-|---|---|
-| `ReadOnly` (default) | Registry + `*IDN?` + benign state queries |
-| `None` | Registry + `*IDN?` only |
-| `Full` | ReadOnly plus `:MEAS:VOLT:DC?` (triggers acquisition) |
-
-=== "Rust"
-
-    ```rust
-    let catalog = Discovery::visa()?
-        .probe_policy(ProbePolicy::ReadOnly)
-        .scan()?;
-    ```
-
-=== "C#"
-
-    ```csharp
-    using InstrumentComponents.Probe;
-    using InstrumentComponents.Visa;
-
-    var catalog = VisaDiscovery.Create()
-        .WithProbePolicy(ProbePolicy.ReadOnly)
-        .Scan();
-    ```
-
-## Listing devices by type
-
-=== "Rust"
-
-    ```rust
-    for dev in catalog.devices_by_kind(InstrumentKind::Dmm) {
-        println!("{} — {}", dev.device_id(), dev.address.raw);
-    }
-    ```
-
-    Serialize for a UI:
-
-    ```rust
-    let json = serde_json::to_string_pretty(catalog.devices())?;
-    ```
-
-=== "C#"
-
-    ```csharp
-    using InstrumentComponents.Kind;
-
-    foreach (var dev in catalog.DevicesByKind(InstrumentKind.Dmm))
-    {
-        Console.WriteLine($"{dev.GetDeviceId()} — {dev.Address.Raw}");
-    }
-    ```
-
-## Instrument replacement
-
-`DeviceId` is derived from manufacturer + model + serial (falls back to VISA address):
-
-=== "Rust"
-
-    ```rust
-    let id = dev.device_id();
-    // save `id` in app config
-    let device = catalog.reconnect_by_identity(&id)?;
-    let dmm = device.open_dmm()?;
-    ```
-
-=== "C#"
-
-    Persist `DeviceId` from a discovered device, rescan after a swap, and open by identity — the VISA address may change but a serial-based ID stays stable.
-    See `dotnet/examples/AssignInstruments`.
-
-## User overrides
-
-Force kinds when classification is wrong:
-
-=== "Rust"
-
-    ```rust
-    Discovery::visa()?
-        .override_kinds("GPIB0::10::INSTR", vec![InstrumentKind::Dmm])
-        .scan()?;
-    ```
-
-=== "C#"
-
-    ```csharp
-    using InstrumentComponents.Kind;
-    using InstrumentComponents.Visa;
-
-    var catalog = VisaDiscovery.Create()
-        .OverrideKinds("GPIB0::10::INSTR", [InstrumentKind.Dmm])
-        .Scan();
-    ```
-
-## Adding models to the registry
-
-Edit `crates/instrument-core/data/model_registry.toml` and regenerate shared tables. See the repo `CONTRIBUTING.md`.
+Complete output inventories drive explicit device-owned disable plans. Shutdown attempts every known output and aggregates failures. Reset is a separate requested operation. There is no implicit reset, probe, reconnect or recovery retry. Do not enable outputs to discover their inventory.

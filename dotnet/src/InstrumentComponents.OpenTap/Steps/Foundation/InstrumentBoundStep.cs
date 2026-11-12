@@ -5,7 +5,7 @@ namespace InstrumentComponents.OpenTap;
 
 /// <summary>Binds a typed OpenTAP instrument resource with shared validation and naming.</summary>
 public abstract class InstrumentBoundStep<TInstrument> : TestStep, IFormatName
-    where TInstrument : ScpiInstrument
+    where TInstrument : DeviceInstrument
 {
     [Display("Instrument", Order: 1, Description: "Instrument resource that executes this step.")]
     public TInstrument Instrument { get; set; } = null!;

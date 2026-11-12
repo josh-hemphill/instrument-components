@@ -8,7 +8,7 @@
     <RootNamespace>InstrumentComponents.OpenTap.Visa</RootNamespace>
     <AssemblyName>InstrumentComponents.OpenTap.Visa</AssemblyName>
     <PackageId>InstrumentComponents.OpenTap.Visa</PackageId>
-    <Version>0.1.1</Version>
+    <Version>0.2.0-alpha.1</Version>
     <Authors>josh-hemphill</Authors>
     <Description>Optional VISA I/O provider for standalone InstrumentComponents OpenTAP execution.</Description>
     <PackageLicenseExpression>MIT OR Apache-2.0</PackageLicenseExpression>
@@ -20,10 +20,12 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
+  <ItemGroup><ProjectReference Include="../InstrumentComponents.Scpi/InstrumentComponents.Scpi.csproj" /></ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\InstrumentComponents.OpenTap\InstrumentComponents.OpenTap.csproj" />
     <ProjectReference Include="..\InstrumentComponents.Visa\InstrumentComponents.Visa.csproj" />
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
+  <Import Project="../../DriverSdk.Package.targets" />
 </Project>

@@ -1,0 +1,1583 @@
+{
+  "schemaVersion": 1,
+  "contractMajor": 1,
+  "classes": [
+    "Dmm",
+    "DcPowerSupply",
+    "FunctionGenerator",
+    "Oscilloscope",
+    "Switch",
+    "Counter",
+    "PowerMeter",
+    "SpectrumAnalyzer"
+  ],
+  "units": [
+    "Volt",
+    "Ampere",
+    "Ohm",
+    "Celsius",
+    "Hertz",
+    "Second",
+    "Watt",
+    "Dbm",
+    "Count",
+    "Unknown",
+    "Kelvin",
+    "Temperature"
+  ],
+  "enums": {
+    "waveform": {
+      "Sine": "Sine",
+      "Square": "Square",
+      "Ramp": "Ramp",
+      "Pulse": "Pulse",
+      "Noise": "Noise",
+      "Dc": "Dc"
+    },
+    "power_unit": {
+      "Watt": "Watt",
+      "Dbm": "Dbm"
+    },
+    "sense_mode": {
+      "Internal": "Internal",
+      "External": "External"
+    }
+  },
+  "operations": [
+    {
+      "id": "DmmMeasureVoltageDc",
+      "kind": "Dmm",
+      "method": "measure_voltage_dc",
+      "parameters": [
+        {
+          "name": "range",
+          "type": "optional_number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "quantity",
+      "unit": "Volt",
+      "source": {
+        "path": "crates/instrument/src/classes/dmm.rs",
+        "symbol": "measure_voltage_dc",
+        "line": 41
+      },
+      "setsUnit": "Volt"
+    },
+    {
+      "id": "DmmMeasureVoltageAc",
+      "kind": "Dmm",
+      "method": "measure_voltage_ac",
+      "parameters": [
+        {
+          "name": "range",
+          "type": "optional_number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "quantity",
+      "unit": "Volt",
+      "source": {
+        "path": "crates/instrument/src/classes/dmm.rs",
+        "symbol": "measure_voltage_ac",
+        "line": 51
+      },
+      "setsUnit": "Volt"
+    },
+    {
+      "id": "DmmMeasureCurrentDc",
+      "kind": "Dmm",
+      "method": "measure_current_dc",
+      "parameters": [
+        {
+          "name": "range",
+          "type": "optional_number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "quantity",
+      "unit": "Ampere",
+      "source": {
+        "path": "crates/instrument/src/classes/dmm.rs",
+        "symbol": "measure_current_dc",
+        "line": 61
+      },
+      "setsUnit": "Ampere"
+    },
+    {
+      "id": "DmmMeasureCurrentAc",
+      "kind": "Dmm",
+      "method": "measure_current_ac",
+      "parameters": [
+        {
+          "name": "range",
+          "type": "optional_number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "quantity",
+      "unit": "Ampere",
+      "source": {
+        "path": "crates/instrument/src/classes/dmm.rs",
+        "symbol": "measure_current_ac",
+        "line": 71
+      },
+      "setsUnit": "Ampere"
+    },
+    {
+      "id": "DmmMeasureResistance",
+      "kind": "Dmm",
+      "method": "measure_resistance",
+      "parameters": [
+        {
+          "name": "range",
+          "type": "optional_number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "quantity",
+      "unit": "Ohm",
+      "source": {
+        "path": "crates/instrument/src/classes/dmm.rs",
+        "symbol": "measure_resistance",
+        "line": 81
+      },
+      "setsUnit": "Ohm"
+    },
+    {
+      "id": "DmmMeasureResistance2Wire",
+      "kind": "Dmm",
+      "method": "measure_resistance_2wire",
+      "parameters": [
+        {
+          "name": "range",
+          "type": "optional_number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "quantity",
+      "unit": "Ohm",
+      "source": {
+        "path": "crates/instrument/src/classes/dmm.rs",
+        "symbol": "measure_resistance_2wire",
+        "line": 86
+      },
+      "setsUnit": "Ohm"
+    },
+    {
+      "id": "DmmMeasureResistance4Wire",
+      "kind": "Dmm",
+      "method": "measure_resistance_4wire",
+      "parameters": [
+        {
+          "name": "range",
+          "type": "optional_number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "quantity",
+      "unit": "Ohm",
+      "source": {
+        "path": "crates/instrument/src/classes/dmm.rs",
+        "symbol": "measure_resistance_4wire",
+        "line": 96
+      },
+      "setsUnit": "Ohm"
+    },
+    {
+      "id": "DmmMeasureTemperature",
+      "kind": "Dmm",
+      "method": "measure_temperature",
+      "parameters": [
+        {
+          "name": "range",
+          "type": "optional_number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "quantity",
+      "unit": "Temperature",
+      "source": {
+        "path": "crates/instrument/src/classes/dmm.rs",
+        "symbol": "measure_temperature",
+        "line": 106
+      },
+      "setsUnit": "Temperature"
+    },
+    {
+      "id": "DmmConfigureVoltageDc",
+      "kind": "Dmm",
+      "method": "configure_voltage_dc",
+      "parameters": [
+        {
+          "name": "range",
+          "type": "optional_number",
+          "constraint": "positive"
+        },
+        {
+          "name": "resolution",
+          "type": "optional_number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "unit",
+      "unit": "Volt",
+      "source": {
+        "path": "crates/instrument/src/classes/dmm.rs",
+        "symbol": "configure_voltage_dc",
+        "line": 116
+      },
+      "setsUnit": "Volt"
+    },
+    {
+      "id": "DmmConfigureVoltageAc",
+      "kind": "Dmm",
+      "method": "configure_voltage_ac",
+      "parameters": [
+        {
+          "name": "range",
+          "type": "optional_number",
+          "constraint": "positive"
+        },
+        {
+          "name": "resolution",
+          "type": "optional_number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "unit",
+      "unit": "Volt",
+      "source": {
+        "path": "crates/instrument/src/classes/dmm.rs",
+        "symbol": "configure_voltage_ac",
+        "line": 130
+      },
+      "setsUnit": "Volt"
+    },
+    {
+      "id": "DmmConfigureCurrentDc",
+      "kind": "Dmm",
+      "method": "configure_current_dc",
+      "parameters": [
+        {
+          "name": "range",
+          "type": "optional_number",
+          "constraint": "positive"
+        },
+        {
+          "name": "resolution",
+          "type": "optional_number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "unit",
+      "unit": "Ampere",
+      "source": {
+        "path": "crates/instrument/src/classes/dmm.rs",
+        "symbol": "configure_current_dc",
+        "line": 144
+      },
+      "setsUnit": "Ampere"
+    },
+    {
+      "id": "DmmConfigureCurrentAc",
+      "kind": "Dmm",
+      "method": "configure_current_ac",
+      "parameters": [
+        {
+          "name": "range",
+          "type": "optional_number",
+          "constraint": "positive"
+        },
+        {
+          "name": "resolution",
+          "type": "optional_number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "unit",
+      "unit": "Ampere",
+      "source": {
+        "path": "crates/instrument/src/classes/dmm.rs",
+        "symbol": "configure_current_ac",
+        "line": 158
+      },
+      "setsUnit": "Ampere"
+    },
+    {
+      "id": "DmmConfigureResistance",
+      "kind": "Dmm",
+      "method": "configure_resistance",
+      "parameters": [
+        {
+          "name": "range",
+          "type": "optional_number",
+          "constraint": "positive"
+        },
+        {
+          "name": "resolution",
+          "type": "optional_number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "unit",
+      "unit": "Ohm",
+      "source": {
+        "path": "crates/instrument/src/classes/dmm.rs",
+        "symbol": "configure_resistance",
+        "line": 172
+      },
+      "setsUnit": "Ohm"
+    },
+    {
+      "id": "DmmConfigureResistance4Wire",
+      "kind": "Dmm",
+      "method": "configure_resistance_4wire",
+      "parameters": [
+        {
+          "name": "range",
+          "type": "optional_number",
+          "constraint": "positive"
+        },
+        {
+          "name": "resolution",
+          "type": "optional_number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "unit",
+      "unit": "Ohm",
+      "source": {
+        "path": "crates/instrument/src/classes/dmm.rs",
+        "symbol": "configure_resistance_4wire",
+        "line": 186
+      },
+      "setsUnit": "Ohm"
+    },
+    {
+      "id": "DmmInitiate",
+      "kind": "Dmm",
+      "method": "initiate",
+      "parameters": [],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/dmm.rs",
+        "symbol": "initiate",
+        "line": 200
+      }
+    },
+    {
+      "id": "DmmFetch",
+      "kind": "Dmm",
+      "method": "fetch",
+      "parameters": [],
+      "result": "quantity",
+      "unit": "ConfiguredDmm",
+      "source": {
+        "path": "crates/instrument/src/classes/dmm.rs",
+        "symbol": "fetch",
+        "line": 206
+      }
+    },
+    {
+      "id": "DmmRead",
+      "kind": "Dmm",
+      "method": "read",
+      "parameters": [],
+      "result": "quantity",
+      "unit": "ConfiguredDmm",
+      "source": {
+        "path": "crates/instrument/src/classes/dmm.rs",
+        "symbol": "read",
+        "line": 215
+      }
+    },
+    {
+      "id": "DmmSoftwareTrigger",
+      "kind": "Dmm",
+      "method": "software_trigger",
+      "parameters": [],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/dmm.rs",
+        "symbol": "software_trigger",
+        "line": 224
+      }
+    },
+    {
+      "id": "DcPowerSupplyChannelCount",
+      "kind": "DcPowerSupply",
+      "method": "channel_count",
+      "parameters": [],
+      "result": "count",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/dc_psu.rs",
+        "symbol": "channel_count",
+        "line": 35
+      }
+    },
+    {
+      "id": "DcPowerSupplySetVoltage",
+      "kind": "DcPowerSupply",
+      "method": "set_voltage",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "finite"
+        },
+        {
+          "name": "volts",
+          "type": "number",
+          "constraint": "finite"
+        }
+      ],
+      "result": "unit",
+      "unit": "Volt",
+      "source": {
+        "path": "crates/instrument/src/classes/dc_psu.rs",
+        "symbol": "set_voltage",
+        "line": 40
+      }
+    },
+    {
+      "id": "DcPowerSupplySetCurrentLimit",
+      "kind": "DcPowerSupply",
+      "method": "set_current_limit",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "finite"
+        },
+        {
+          "name": "amps",
+          "type": "number",
+          "constraint": "nonnegative"
+        }
+      ],
+      "result": "unit",
+      "unit": "Ampere",
+      "source": {
+        "path": "crates/instrument/src/classes/dc_psu.rs",
+        "symbol": "set_current_limit",
+        "line": 53
+      }
+    },
+    {
+      "id": "DcPowerSupplyOutputEnable",
+      "kind": "DcPowerSupply",
+      "method": "output_enable",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "finite"
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "constraint": "finite"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/dc_psu.rs",
+        "symbol": "output_enable",
+        "line": 66
+      }
+    },
+    {
+      "id": "DcPowerSupplyOutputStateQuery",
+      "kind": "DcPowerSupply",
+      "method": "output_state_query",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "finite"
+        }
+      ],
+      "result": "boolean",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/dc_psu.rs",
+        "symbol": "output_state_query",
+        "line": 77
+      }
+    },
+    {
+      "id": "DcPowerSupplyOvpLevel",
+      "kind": "DcPowerSupply",
+      "method": "ovp_level",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "finite"
+        },
+        {
+          "name": "volts",
+          "type": "number",
+          "constraint": "finite"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/dc_psu.rs",
+        "symbol": "ovp_level",
+        "line": 88
+      }
+    },
+    {
+      "id": "DcPowerSupplyOvpEnable",
+      "kind": "DcPowerSupply",
+      "method": "ovp_enable",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "finite"
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "constraint": "finite"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/dc_psu.rs",
+        "symbol": "ovp_enable",
+        "line": 101
+      }
+    },
+    {
+      "id": "DcPowerSupplyOvpQuery",
+      "kind": "DcPowerSupply",
+      "method": "ovp_query",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "finite"
+        }
+      ],
+      "result": "boolean",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/dc_psu.rs",
+        "symbol": "ovp_query",
+        "line": 112
+      }
+    },
+    {
+      "id": "DcPowerSupplyReadVoltage",
+      "kind": "DcPowerSupply",
+      "method": "read_voltage",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "finite"
+        }
+      ],
+      "result": "quantity",
+      "unit": "Volt",
+      "source": {
+        "path": "crates/instrument/src/classes/dc_psu.rs",
+        "symbol": "read_voltage",
+        "line": 139
+      }
+    },
+    {
+      "id": "DcPowerSupplyReadCurrent",
+      "kind": "DcPowerSupply",
+      "method": "read_current",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "finite"
+        }
+      ],
+      "result": "quantity",
+      "unit": "Ampere",
+      "source": {
+        "path": "crates/instrument/src/classes/dc_psu.rs",
+        "symbol": "read_current",
+        "line": 150
+      }
+    },
+    {
+      "id": "FunctionGeneratorSetWaveform",
+      "kind": "FunctionGenerator",
+      "method": "set_waveform",
+      "parameters": [
+        {
+          "name": "waveform",
+          "type": "waveform",
+          "constraint": "finite"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/fgen.rs",
+        "symbol": "set_waveform",
+        "line": 59
+      }
+    },
+    {
+      "id": "FunctionGeneratorSetFrequency",
+      "kind": "FunctionGenerator",
+      "method": "set_frequency",
+      "parameters": [
+        {
+          "name": "hz",
+          "type": "number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "unit",
+      "unit": "Hertz",
+      "source": {
+        "path": "crates/instrument/src/classes/fgen.rs",
+        "symbol": "set_frequency",
+        "line": 70
+      }
+    },
+    {
+      "id": "FunctionGeneratorSetAmplitude",
+      "kind": "FunctionGenerator",
+      "method": "set_amplitude",
+      "parameters": [
+        {
+          "name": "vpp",
+          "type": "number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/fgen.rs",
+        "symbol": "set_amplitude",
+        "line": 80
+      }
+    },
+    {
+      "id": "FunctionGeneratorSetOffset",
+      "kind": "FunctionGenerator",
+      "method": "set_offset",
+      "parameters": [
+        {
+          "name": "volts",
+          "type": "number",
+          "constraint": "finite"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/fgen.rs",
+        "symbol": "set_offset",
+        "line": 90
+      }
+    },
+    {
+      "id": "FunctionGeneratorSetDutyCycle",
+      "kind": "FunctionGenerator",
+      "method": "set_duty_cycle",
+      "parameters": [
+        {
+          "name": "percent",
+          "type": "number",
+          "constraint": "percent"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/fgen.rs",
+        "symbol": "set_duty_cycle",
+        "line": 100
+      }
+    },
+    {
+      "id": "FunctionGeneratorSetLoad",
+      "kind": "FunctionGenerator",
+      "method": "set_load",
+      "parameters": [
+        {
+          "name": "ohms",
+          "type": "number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/fgen.rs",
+        "symbol": "set_load",
+        "line": 110
+      }
+    },
+    {
+      "id": "FunctionGeneratorOutputEnable",
+      "kind": "FunctionGenerator",
+      "method": "output_enable",
+      "parameters": [
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "constraint": "finite"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/fgen.rs",
+        "symbol": "output_enable",
+        "line": 120
+      }
+    },
+    {
+      "id": "FunctionGeneratorSetBurstCount",
+      "kind": "FunctionGenerator",
+      "method": "set_burst_count",
+      "parameters": [
+        {
+          "name": "count",
+          "type": "count",
+          "constraint": "positive"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/fgen.rs",
+        "symbol": "set_burst_count",
+        "line": 131
+      }
+    },
+    {
+      "id": "FunctionGeneratorSetBurstState",
+      "kind": "FunctionGenerator",
+      "method": "set_burst_state",
+      "parameters": [
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "constraint": "finite"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/fgen.rs",
+        "symbol": "set_burst_state",
+        "line": 141
+      }
+    },
+    {
+      "id": "FunctionGeneratorSetBurstTriggerSource",
+      "kind": "FunctionGenerator",
+      "method": "set_burst_trigger_source",
+      "parameters": [
+        {
+          "name": "source",
+          "type": "symbol",
+          "constraint": "finite"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/fgen.rs",
+        "symbol": "set_burst_trigger_source",
+        "line": 152
+      }
+    },
+    {
+      "id": "FunctionGeneratorReadFrequency",
+      "kind": "FunctionGenerator",
+      "method": "read_frequency",
+      "parameters": [],
+      "result": "quantity",
+      "unit": "Hertz",
+      "source": {
+        "path": "crates/instrument/src/classes/fgen.rs",
+        "symbol": "read_frequency",
+        "line": 162
+      }
+    },
+    {
+      "id": "OscilloscopeSetTimebaseScale",
+      "kind": "Oscilloscope",
+      "method": "set_timebase_scale",
+      "parameters": [
+        {
+          "name": "seconds_per_div",
+          "type": "number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/scope.rs",
+        "symbol": "set_timebase_scale",
+        "line": 44
+      }
+    },
+    {
+      "id": "OscilloscopeReadTimebaseScale",
+      "kind": "Oscilloscope",
+      "method": "read_timebase_scale",
+      "parameters": [],
+      "result": "quantity",
+      "unit": "Second",
+      "source": {
+        "path": "crates/instrument/src/classes/scope.rs",
+        "symbol": "read_timebase_scale",
+        "line": 54
+      }
+    },
+    {
+      "id": "OscilloscopeSetChannelScale",
+      "kind": "Oscilloscope",
+      "method": "set_channel_scale",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "finite"
+        },
+        {
+          "name": "volts_per_div",
+          "type": "number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/scope.rs",
+        "symbol": "set_channel_scale",
+        "line": 65
+      }
+    },
+    {
+      "id": "OscilloscopeSetChannelDisplay",
+      "kind": "Oscilloscope",
+      "method": "set_channel_display",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "finite"
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "constraint": "finite"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/scope.rs",
+        "symbol": "set_channel_display",
+        "line": 78
+      }
+    },
+    {
+      "id": "OscilloscopeSetChannelCoupling",
+      "kind": "Oscilloscope",
+      "method": "set_channel_coupling",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "finite"
+        },
+        {
+          "name": "coupling",
+          "type": "symbol",
+          "constraint": "finite"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/scope.rs",
+        "symbol": "set_channel_coupling",
+        "line": 89
+      }
+    },
+    {
+      "id": "OscilloscopeSetTriggerSource",
+      "kind": "Oscilloscope",
+      "method": "set_trigger_source",
+      "parameters": [
+        {
+          "name": "source",
+          "type": "symbol",
+          "constraint": "finite"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/scope.rs",
+        "symbol": "set_trigger_source",
+        "line": 102
+      }
+    },
+    {
+      "id": "OscilloscopeSetTriggerLevel",
+      "kind": "Oscilloscope",
+      "method": "set_trigger_level",
+      "parameters": [
+        {
+          "name": "volts",
+          "type": "number",
+          "constraint": "finite"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/scope.rs",
+        "symbol": "set_trigger_level",
+        "line": 112
+      }
+    },
+    {
+      "id": "OscilloscopeSetTriggerSlope",
+      "kind": "Oscilloscope",
+      "method": "set_trigger_slope",
+      "parameters": [
+        {
+          "name": "slope",
+          "type": "symbol",
+          "constraint": "finite"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/scope.rs",
+        "symbol": "set_trigger_slope",
+        "line": 122
+      }
+    },
+    {
+      "id": "OscilloscopeRun",
+      "kind": "Oscilloscope",
+      "method": "run",
+      "parameters": [],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/scope.rs",
+        "symbol": "run",
+        "line": 132
+      }
+    },
+    {
+      "id": "OscilloscopeStop",
+      "kind": "Oscilloscope",
+      "method": "stop",
+      "parameters": [],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/scope.rs",
+        "symbol": "stop",
+        "line": 138
+      }
+    },
+    {
+      "id": "OscilloscopeSingle",
+      "kind": "Oscilloscope",
+      "method": "single",
+      "parameters": [],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/scope.rs",
+        "symbol": "single",
+        "line": 144
+      }
+    },
+    {
+      "id": "OscilloscopeMeasureVpp",
+      "kind": "Oscilloscope",
+      "method": "measure_vpp",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "finite"
+        }
+      ],
+      "result": "quantity",
+      "unit": "Volt",
+      "source": {
+        "path": "crates/instrument/src/classes/scope.rs",
+        "symbol": "measure_vpp",
+        "line": 150
+      }
+    },
+    {
+      "id": "OscilloscopeMeasureFrequency",
+      "kind": "Oscilloscope",
+      "method": "measure_frequency",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "finite"
+        }
+      ],
+      "result": "quantity",
+      "unit": "Hertz",
+      "source": {
+        "path": "crates/instrument/src/classes/scope.rs",
+        "symbol": "measure_frequency",
+        "line": 161
+      }
+    },
+    {
+      "id": "OscilloscopeCaptureVoltageTrace",
+      "kind": "Oscilloscope",
+      "method": "capture_voltage_trace",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "finite"
+        }
+      ],
+      "result": "trace",
+      "unit": "Volt",
+      "source": {
+        "path": "crates/instrument/src/classes/scope.rs",
+        "symbol": "capture_voltage_trace",
+        "line": 172
+      }
+    },
+    {
+      "id": "SwitchCloseRoute",
+      "kind": "Switch",
+      "method": "close_route",
+      "parameters": [
+        {
+          "name": "ch1",
+          "type": "channel",
+          "constraint": "finite"
+        },
+        {
+          "name": "ch2",
+          "type": "channel",
+          "constraint": "finite"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/switch.rs",
+        "symbol": "close_route",
+        "line": 44
+      }
+    },
+    {
+      "id": "SwitchOpenRoute",
+      "kind": "Switch",
+      "method": "open_route",
+      "parameters": [
+        {
+          "name": "ch1",
+          "type": "channel",
+          "constraint": "finite"
+        },
+        {
+          "name": "ch2",
+          "type": "channel",
+          "constraint": "finite"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/switch.rs",
+        "symbol": "open_route",
+        "line": 54
+      }
+    },
+    {
+      "id": "SwitchIsClosed",
+      "kind": "Switch",
+      "method": "is_closed",
+      "parameters": [
+        {
+          "name": "ch1",
+          "type": "channel",
+          "constraint": "finite"
+        },
+        {
+          "name": "ch2",
+          "type": "channel",
+          "constraint": "finite"
+        }
+      ],
+      "result": "boolean",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/switch.rs",
+        "symbol": "is_closed",
+        "line": 64
+      }
+    },
+    {
+      "id": "SwitchOpenAll",
+      "kind": "Switch",
+      "method": "open_all",
+      "parameters": [],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/switch.rs",
+        "symbol": "open_all",
+        "line": 75
+      }
+    },
+    {
+      "id": "CounterMeasureFrequency",
+      "kind": "Counter",
+      "method": "measure_frequency",
+      "parameters": [],
+      "result": "quantity",
+      "unit": "Hertz",
+      "source": {
+        "path": "crates/instrument/src/classes/counter.rs",
+        "symbol": "measure_frequency",
+        "line": 35
+      }
+    },
+    {
+      "id": "CounterMeasurePeriod",
+      "kind": "Counter",
+      "method": "measure_period",
+      "parameters": [],
+      "result": "quantity",
+      "unit": "Second",
+      "source": {
+        "path": "crates/instrument/src/classes/counter.rs",
+        "symbol": "measure_period",
+        "line": 44
+      }
+    },
+    {
+      "id": "CounterSetGateTime",
+      "kind": "Counter",
+      "method": "set_gate_time",
+      "parameters": [
+        {
+          "name": "seconds",
+          "type": "number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/counter.rs",
+        "symbol": "set_gate_time",
+        "line": 53
+      }
+    },
+    {
+      "id": "CounterSelectChannel",
+      "kind": "Counter",
+      "method": "select_channel",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "finite"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/counter.rs",
+        "symbol": "select_channel",
+        "line": 63
+      }
+    },
+    {
+      "id": "CounterResetTotalize",
+      "kind": "Counter",
+      "method": "reset_totalize",
+      "parameters": [],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/counter.rs",
+        "symbol": "reset_totalize",
+        "line": 73
+      }
+    },
+    {
+      "id": "CounterReadTotalize",
+      "kind": "Counter",
+      "method": "read_totalize",
+      "parameters": [],
+      "result": "quantity",
+      "unit": "Count",
+      "source": {
+        "path": "crates/instrument/src/classes/counter.rs",
+        "symbol": "read_totalize",
+        "line": 83
+      }
+    },
+    {
+      "id": "PowerMeterConfigureMeasurement",
+      "kind": "PowerMeter",
+      "method": "configure_measurement",
+      "parameters": [
+        {
+          "name": "unit",
+          "type": "power_unit",
+          "constraint": "finite"
+        },
+        {
+          "name": "auto_range",
+          "type": "boolean",
+          "constraint": "finite"
+        },
+        {
+          "name": "auto_average",
+          "type": "boolean",
+          "constraint": "finite"
+        },
+        {
+          "name": "correction_freq_hz",
+          "type": "optional_number",
+          "constraint": "positive"
+        },
+        {
+          "name": "offset_db",
+          "type": "optional_number",
+          "constraint": "finite"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/power_meter.rs",
+        "symbol": "configure_measurement",
+        "line": 56
+      },
+      "setsUnit": "PowerArgument"
+    },
+    {
+      "id": "PowerMeterInitiate",
+      "kind": "PowerMeter",
+      "method": "initiate",
+      "parameters": [],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/power_meter.rs",
+        "symbol": "initiate",
+        "line": 78
+      }
+    },
+    {
+      "id": "PowerMeterFetch",
+      "kind": "PowerMeter",
+      "method": "fetch",
+      "parameters": [],
+      "result": "quantity",
+      "unit": "ConfiguredPower",
+      "source": {
+        "path": "crates/instrument/src/classes/power_meter.rs",
+        "symbol": "fetch",
+        "line": 84
+      }
+    },
+    {
+      "id": "PowerMeterRead",
+      "kind": "PowerMeter",
+      "method": "read",
+      "parameters": [],
+      "result": "quantity",
+      "unit": "ConfiguredPower",
+      "source": {
+        "path": "crates/instrument/src/classes/power_meter.rs",
+        "symbol": "read",
+        "line": 89
+      }
+    },
+    {
+      "id": "SpectrumAnalyzerSetCenterFrequency",
+      "kind": "SpectrumAnalyzer",
+      "method": "set_center_frequency",
+      "parameters": [
+        {
+          "name": "hz",
+          "type": "number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "unit",
+      "unit": "Hertz",
+      "source": {
+        "path": "crates/instrument/src/classes/spectrum_analyzer.rs",
+        "symbol": "set_center_frequency",
+        "line": 40
+      }
+    },
+    {
+      "id": "SpectrumAnalyzerSetSpan",
+      "kind": "SpectrumAnalyzer",
+      "method": "set_span",
+      "parameters": [
+        {
+          "name": "hz",
+          "type": "number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/spectrum_analyzer.rs",
+        "symbol": "set_span",
+        "line": 45
+      }
+    },
+    {
+      "id": "SpectrumAnalyzerSetRbw",
+      "kind": "SpectrumAnalyzer",
+      "method": "set_rbw",
+      "parameters": [
+        {
+          "name": "hz",
+          "type": "number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/spectrum_analyzer.rs",
+        "symbol": "set_rbw",
+        "line": 50
+      }
+    },
+    {
+      "id": "SpectrumAnalyzerSetVbw",
+      "kind": "SpectrumAnalyzer",
+      "method": "set_vbw",
+      "parameters": [
+        {
+          "name": "hz",
+          "type": "number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/spectrum_analyzer.rs",
+        "symbol": "set_vbw",
+        "line": 55
+      }
+    },
+    {
+      "id": "SpectrumAnalyzerSetRefLevel",
+      "kind": "SpectrumAnalyzer",
+      "method": "set_ref_level",
+      "parameters": [
+        {
+          "name": "dbm",
+          "type": "number",
+          "constraint": "finite"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/spectrum_analyzer.rs",
+        "symbol": "set_ref_level",
+        "line": 60
+      }
+    },
+    {
+      "id": "SpectrumAnalyzerFetchTraceAscii",
+      "kind": "SpectrumAnalyzer",
+      "method": "fetch_trace_ascii",
+      "parameters": [],
+      "result": "samples",
+      "unit": "Dbm",
+      "source": {
+        "path": "crates/instrument/src/classes/spectrum_analyzer.rs",
+        "symbol": "fetch_trace_ascii",
+        "line": 65
+      }
+    },
+    {
+      "id": "SpectrumAnalyzerMarkerPeak",
+      "kind": "SpectrumAnalyzer",
+      "method": "marker_peak",
+      "parameters": [],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/spectrum_analyzer.rs",
+        "symbol": "marker_peak",
+        "line": 70
+      }
+    },
+    {
+      "id": "SpectrumAnalyzerMarkerX",
+      "kind": "SpectrumAnalyzer",
+      "method": "marker_x",
+      "parameters": [],
+      "result": "quantity",
+      "unit": "Hertz",
+      "source": {
+        "path": "crates/instrument/src/classes/spectrum_analyzer.rs",
+        "symbol": "marker_x",
+        "line": 76
+      }
+    },
+    {
+      "id": "SpectrumAnalyzerMarkerY",
+      "kind": "SpectrumAnalyzer",
+      "method": "marker_y",
+      "parameters": [],
+      "result": "quantity",
+      "unit": "Dbm",
+      "source": {
+        "path": "crates/instrument/src/classes/spectrum_analyzer.rs",
+        "symbol": "marker_y",
+        "line": 82
+      }
+    },
+    {
+      "id": "SpectrumAnalyzerSweepContinuous",
+      "kind": "SpectrumAnalyzer",
+      "method": "sweep_continuous",
+      "parameters": [
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "constraint": "finite"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/spectrum_analyzer.rs",
+        "symbol": "sweep_continuous",
+        "line": 88
+      }
+    },
+    {
+      "id": "SpectrumAnalyzerSingleSweep",
+      "kind": "SpectrumAnalyzer",
+      "method": "single_sweep",
+      "parameters": [],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/spectrum_analyzer.rs",
+        "symbol": "single_sweep",
+        "line": 94
+      }
+    },
+    {
+      "id": "SpectrumAnalyzerWaitOpc",
+      "kind": "SpectrumAnalyzer",
+      "method": "wait_opc",
+      "parameters": [],
+      "result": "unit",
+      "unit": "Unknown",
+      "source": {
+        "path": "crates/instrument/src/classes/spectrum_analyzer.rs",
+        "symbol": "wait_opc",
+        "line": 100
+      }
+    },
+    {
+      "id": "DcPowerSupplySetSenseMode",
+      "kind": "DcPowerSupply",
+      "method": "set_sense_mode",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "positive"
+        },
+        {
+          "name": "mode",
+          "type": "sense_mode",
+          "constraint": "enum"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown",
+      "replaces": "sense_enable; no automatic bool translation"
+    },
+    {
+      "id": "QueryIdentity",
+      "kind": "Common",
+      "method": "query_identity",
+      "parameters": [],
+      "result": "identity",
+      "unit": "Unknown"
+    },
+    {
+      "id": "Reset",
+      "kind": "Common",
+      "method": "reset",
+      "parameters": [],
+      "result": "unit",
+      "unit": "Unknown",
+      "invalidatesState": true
+    },
+    {
+      "id": "Shutdown",
+      "kind": "Common",
+      "method": "shutdown",
+      "parameters": [],
+      "result": "unit",
+      "unit": "Unknown"
+    }
+  ],
+  "removedStructuralSymbols": [
+    "new",
+    "from_session",
+    "session",
+    "session_mut",
+    "Session",
+    "write_dialect_command",
+    "WriteDialectCommand",
+    "path_label",
+    "PathLabel",
+    "ScpiName"
+  ],
+  "semantics": "All subsystem command templates/tokens are explicit provider profile inputs. Missing support never falls back. Catalogue hints are not device validation."
+}

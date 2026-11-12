@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "overlap",
+      "mutation": "overlap"
+    },
+    {
+      "id": "unknown-presence",
+      "mutation": "unknown"
+    },
+    {
+      "id": "nonoptional-presence",
+      "mutation": "nonoptional"
+    },
+    {
+      "id": "ignored-present",
+      "mutation": "ignored"
+    },
+    {
+      "id": "absent-without-default",
+      "mutation": "absent"
+    },
+    {
+      "id": "missing-value-query",
+      "mutation": "no-value"
+    },
+    {
+      "id": "duplicate-value-query",
+      "mutation": "two-values"
+    },
+    {
+      "id": "wrong-unit-dimension",
+      "mutation": "unit"
+    },
+    {
+      "id": "excessive-branches",
+      "mutation": "excessive"
+    }
+  ]
+}

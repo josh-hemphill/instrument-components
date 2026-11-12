@@ -66,6 +66,7 @@ public sealed class FgenSetDutyCycleStep : InstrumentBoundStep<FunctionGenerator
     public FgenSetDutyCycleStep()
     {
         Rules.Add(() => double.IsFinite(Percent), "Duty cycle must be a finite number.", nameof(Percent));
+        Rules.Add(() => (Percent >= 0 && Percent <= 100), "Duty cycle violates the operation's percent constraint.", nameof(Percent));
     }
 
     public override void Run()
@@ -88,6 +89,7 @@ public sealed class FgenSetLoadStep : InstrumentBoundStep<FunctionGeneratorInstr
     public FgenSetLoadStep()
     {
         Rules.Add(() => double.IsFinite(Ohms), "Load must be a finite number.", nameof(Ohms));
+        Rules.Add(() => (Ohms > 0), "Load violates the operation's positive constraint.", nameof(Ohms));
     }
 
     public override void Run()

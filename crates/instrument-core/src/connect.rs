@@ -31,6 +31,8 @@ pub struct ConnectOptions {
     pub read_timeout: Duration,
     pub write_timeout: Duration,
     pub per_op_timeout: Option<Duration>,
+    /// Maximum response payload bytes, excluding SCPI framing. None leaves the raw adapter unbounded.
+    pub max_response_bytes: Option<usize>,
     pub terminator: String,
     pub access_mode: AccessMode,
     pub reset_on_connect: bool,
@@ -51,6 +53,7 @@ impl Default for ConnectOptions {
             read_timeout: Duration::from_secs(10),
             write_timeout: Duration::from_secs(10),
             per_op_timeout: None,
+            max_response_bytes: None,
             terminator: "\n".to_string(),
             access_mode: AccessMode::NO_LOCK,
             reset_on_connect: false,
@@ -85,9 +88,11 @@ mod tests {
 
     #[test]
     fn io_timeout_uses_max_of_read_and_write() {
-        let mut opts = ConnectOptions::default();
-        opts.read_timeout = Duration::from_secs(2);
-        opts.write_timeout = Duration::from_secs(7);
+        let mut opts = ConnectOptions {
+            read_timeout: Duration::from_secs(2),
+            write_timeout: Duration::from_secs(7),
+            ..ConnectOptions::default()
+        };
         assert_eq!(opts.io_timeout(), Duration::from_secs(7));
         opts.per_op_timeout = Some(Duration::from_millis(50));
         assert_eq!(opts.io_timeout(), Duration::from_millis(50));

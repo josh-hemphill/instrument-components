@@ -4,7 +4,7 @@ namespace InstrumentComponents.OpenTap;
 
 /// <summary>Acquires abort-safe sample rows into the Phase I Sample table.</summary>
 public abstract class SampleMeasurementStep<TInstrument> : InstrumentBoundStep<TInstrument>
-    where TInstrument : ScpiInstrument
+    where TInstrument : DeviceInstrument
 {
     [Display("Channel", Order: 2, Description: "Result channel label.")]
     public string Channel { get; set; } = "CH";
@@ -22,15 +22,16 @@ public abstract class SampleMeasurementStep<TInstrument> : InstrumentBoundStep<T
         Rules.Add(() => IntervalMs >= 0, "Interval must be zero or positive.", nameof(IntervalMs));
     }
 
-    protected void AcquireSamples(Func<double> measure)
+    protected void AcquireSamples(Func<InstrumentComponents.Drivers.Catalog.Quantity> measure)
     {
         var count = Math.Max(1, SampleCount);
         for (var i = 0; i < count; i++)
         {
             TapThread.ThrowIfAborted();
-            var value = measure();
-            PhaseIResults.PublishSample(Results, Channel, i, value);
-            if (!double.IsFinite(value)) UpgradeVerdict(Verdict.Fail);
+            var measurement = measure();
+            var value=measurement.Value;
+            PhaseIResults.PublishSample(Results, Channel, i, measurement);
+            if (!double.IsFinite(value) || measurement.Status!=InstrumentComponents.Drivers.MeasurementStatus.Valid) UpgradeVerdict(Verdict.Fail);
             if (IntervalMs > 0 && i < count - 1)
                 TapThread.Sleep(IntervalMs);
         }

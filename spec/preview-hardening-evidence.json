@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "review": "premerge-candidate-v1 (original public-release review preserved separately)",
+  "affectedPublishedVersion": "0.2.0-alpha.1",
+  "publishedArchivesUnchanged": true,
+  "patchedVersionPublished": false,
+  "scope": "Prepared source corrections and initial-user evidence; source fixes do not relabel immutable published packages",
+  "issues": [
+    {
+      "id": "FRAME-ASCII",
+      "status": "SOURCE_FIXED_RELEASE_PENDING",
+      "behavior": "Strict ASCII block lengths and typed parse propagation",
+      "tests": [
+        "shared_strict_block_vectors",
+        "sync_sessions_propagate_malformed_headers_without_reading_again",
+        "async_sessions_propagate_malformed_headers_without_reading_again",
+        "SharedBlockVectorsAndSessionsUseStrictTypedErrors"
+      ]
+    },
+    {
+      "id": "OWNERSHIP-ENUM",
+      "status": "SOURCE_FIXED_RELEASE_PENDING",
+      "behavior": "Undefined ownership rejects before any provider IO",
+      "tests": [
+        "UndefinedOwnershipNeverInvokesAnyProvider",
+        "packed SDK EndpointProof invalid ownership pre-open"
+      ]
+    },
+    {
+      "id": "RETRY-SATURATION",
+      "status": "SOURCE_FIXED_RELEASE_PENDING",
+      "behavior": "Maximum initial-attempt calculation saturates in Rust/C#",
+      "tests": [
+        "retry_attempts_saturate_without_skipping_the_first_attempt",
+        "RetryAttemptsSaturateAndStillAttemptTheOperation",
+        "packed SDK Native AOT retry assertion"
+      ]
+    },
+    {
+      "id": "CATALOG-ASCII",
+      "status": "SOURCE_FIXED_RELEASE_PENDING",
+      "behavior": "Shared trimmed ASCII scheme identity for catalog construction and lookup, addresses exact",
+      "tests": [
+        "shared_catalog_keys_use_trimmed_ascii_case_only",
+        "SharedCatalogKeysUseTrimmedAsciiCaseOnly",
+        "packed SDK Unicode scheme/ASCII lookup assertions"
+      ]
+    },
+    {
+      "id": "CHECKED-CLOSE-OUTCOME",
+      "status": "SOURCE_FIXED_RELEASE_PENDING",
+      "behavior": "Every checked closer observes first accepted shutdown intent/outcome; no strengthening, no repeated cleanup, sync fallback disposal does not mask prior checked failures",
+      "tests": [
+        "SAFE-no-escalate",
+        "SAFE-repeat-failure",
+        "SAFE-repeat-success",
+        "concurrent_checked_closers_retain_first_intent_and_outcome",
+        "ConcurrentCheckedClosersObserveTheFirstAcceptedIntentAndOutcome",
+        "CheckedCloseRetainsFailureButImplicitDisposeDoesNotMaskIt",
+        "packed SDK retained-close assertions",
+        "backend_drop_reentry_is_rejected_before_completed_close_is_published",
+        "ResourceCloseFailureSurvivesALaterShutdownRequest"
+      ]
+    },
+    {
+      "id": "DRAIN-BOUNDED",
+      "status": "SOURCE_FIXED_RELEASE_PENDING",
+      "behavior": "100ms total drain/full50ms quiet, original cancellation and strict successful-cleanup timeout restoration; no query retry after failed cleanup",
+      "tests": [
+        "continuous_sync_drain_is_bounded_and_failed_cleanup_does_not_retry",
+        "continuous_async_drain_is_bounded_and_failed_cleanup_does_not_retry",
+        "failed_sync_timeout_restoration_is_not_successful_cleanup",
+        "failed_async_timeout_restoration_is_not_successful_cleanup",
+        "QueryRecoveryPreservesCancellation",
+        "FailedTimeoutRestorationIsNotSuccessfulCleanup",
+        "packed Native AOT ByteSessionProof"
+      ]
+    },
+    {
+      "id": "ADAPTER-RESPONSE-LIMIT",
+      "status": "SOURCE_FIXED_RELEASE_PENDING",
+      "behavior": "Configurable response payload byte cap in both languages; own VISA/bench adapters use existing1MiB SDK policy, typed Parse errors and no body read for oversized declared blocks",
+      "tests": [
+        "shared_payload_limit_vectors",
+        "sync_sessions_enforce_shared_payload_limits_before_reading_oversize_bodies",
+        "async_sessions_enforce_shared_payload_limits_before_reading_oversize_bodies",
+        "SharedPayloadLimitsApplyBeforeAllocationInAllFramingsAndFrontends",
+        "OversizeBlockFailsBeforeBodyReadWithTypedParseAndQuarantinesHandle",
+        "bench CheckBoundedConnector fake-opener self-test",
+        "packed Native AOT ByteSessionProof"
+      ]
+    }
+  ],
+  "metadataCorrections": "SDK/vendor NuGet readme/source URLs prepared; published alpha metadata remains unchanged",
+  "publicDocumentation": "Existing live Pages site still0.1; corrected0.2 source and PR-onlybuild prepared, deployment pending",
+  "additionalHardening": "Optional payload cap defaultsNone/null for raw byte helpers, zero allows only empty payloads; built-in SDK message adapters explicitly use1MiB, framing excluded, failures never silently truncate/retry. Drain budget100ms/fullquiet50ms assumes cooperative transport timeout/cancellation.",
+  "sourceFileSha256": {
+    "dotnet/src/InstrumentComponents.Runtime/DriverRegistry.cs": "901f392d006c4212e44d3ce2f80e07d9aa1985315b014d07a60cb1c6897e2ec7",
+    "dotnet/src/InstrumentComponents.Runtime/NativeDeviceHandle.cs": "2ab7d3bd9f6b589f9e1885ae67da09ba9267a35592db18443d8b2798e9605e9f",
+    "dotnet/src/InstrumentComponents.Runtime/WorkerDeviceHandle.cs": "2beb5e0704e480401203155e6997b5172812924cd156af37dadf48fdd28bca73",
+    "dotnet/src/InstrumentComponents.Scpi/ScpiFactory.cs": "fc8d07ea1022c796b6cbcaf4ff77f8cc99e112f50d5892c31c7e8566416733df",
+    "dotnet/src/InstrumentComponents/Scpi/ScpiFraming.cs": "619e2bc6e436b73074d865cded219f9151f562d226d1cf902d0683bdb2f771cd",
+    "dotnet/src/InstrumentComponents/Scpi/ScpiProtocol.cs": "6064fe62ed18dd9c9eeee4a20ec10bc07779afe757a5a5a76a84156884128127",
+    "crates/instrument-core/src/scpi/framing.rs": "b637722e7293687e42d23a1ddc9ad62000f35d06f1efaea978655d3cc823716f",
+    "crates/instrument-core/src/scpi/session.rs": "ea8d01ccb767abc58021fa3d8a012c7a250d3f1cc4de91aae173a015b5582562",
+    "crates/instrument-core/src/scpi/async_session.rs": "8de19468b1426542f0c8da1a4f2ad795c5b40eb969c1ac1d8556dbc70a2fa7cc",
+    "crates/instrument-core/src/scpi/protocol.rs": "399f80266a47d5d542f3633e3f9a2f827a26e46715cde2cc359e967cc5c5f10f",
+    "dotnet/src/InstrumentComponents.Runtime/DeviceHandle.cs": "6ccaa13ab0218cda2d4d38ebf083bd276f354cb6955631f58c768fdc24670822",
+    "crates/instrument-runtime/src/lib.rs": "1a15f92044d0811aaba59c1ba37b1fcf303395728fb3a8364fd6aa2eeb7013bb",
+    "dotnet/src/InstrumentComponents/Catalog/DeviceCatalog.cs": "17eba6923fb5e54d3c97cc6a6442107642e210ae25ba0ab8863de6b52943723d",
+    "crates/instrument/src/catalog.rs": "bd6018882ae5194eb5d47bf288c65b980448978479639739fd86e1a8accf651c",
+    "crates/instrument-core/src/connect.rs": "596e86310dde4c7939d4b80a0222012d3154992fdb03f702aa69489be8a229c0",
+    "dotnet/src/InstrumentComponents/Connect/ConnectOptions.cs": "97e53d2aeaea0bd974a06212a3aad6e786e4671850c6fbe2e52833558d0edd9d",
+    "dotnet/src/InstrumentComponents/Scpi/ScpiSession.cs": "d02344d3e567776fdd837013b2d66065d4bd30122edbc355adc4af5349bbfb9a",
+    "dotnet/src/InstrumentComponents/Scpi/AsyncScpiSession.cs": "a4ba19b277c8d83b177a6b359183df69b8c4316c5687a2069e14ef35053f3595",
+    "dotnet/src/InstrumentComponents.OpenTap.Visa/OpenTapVisa.cs": "530b660e74c38a8aac5da46ecf0fc74dd07d052d3fbc01f2df5afaed74eb6c5a",
+    "tools/driver-tools/src/instrument_driver_tools/__init__.py": "177f2100271ad42e24d1b02f834cb036cbe654a7f43960564f801cb3f6d91668",
+    "tools/driver-tools/src/instrument_driver_tools/feeds.py": "de2ae8dafc8bfd57c8767db291240d8782c66567b5e71a2bf4e125f93562eddd",
+    "tools/validate-sdk-release.py": "45ed90525d225fa50068ae2ca6f1fa8e74c8709633fba20f5d5defc4cb22272f",
+    "tools/validate-driver-sdk.py": "208e70750f306412629ea5d4fa5785824c91fa2e83d1eded164dffadded80940"
+  },
+  "publicProbeEvidenceSha256": {
+    "member-A-probes/advisory-A.json": "b998f0fd8990a62b1b052d5d0fcc764abb9903e42b6d85c94b59a563bec2417f",
+    "advisory-B.json": "d92e8a27a2f8c5d8be36726dfa99b3dfc884e749ff736e10a4d725edcf37f664",
+    "advisory-C.json": "c18ce77c90fc948705b1e8e014d0985ce3c6d08641c005709ff63536b7d843b4"
+  },
+  "evidencePaths": "Detailed actual public probes/logs, public archive/native audits and source test logs retained in task handoff; no registry/account/hardware mutation in this audit",
+  "explicitCloseContract": "An intentional preproduction tightening: previous sync repeated-close no-op expectations now retain failures and reject stronger requests, matching existing native/worker checked close. Shared vectors updated to the stronger contract, not weakened to ignore errors.",
+  "releaseIdentityCorrections": "Feed VERSION derives from checked tool runtime; wheel normalization and SDK consumer manifests/archive identities derive from checked declarations. Isolated futurealpha2 source fixture builds real tooling wheel and rejects mixed-version feed; actual currentcandidate remainsunpublished alpha1-source, identified by hashes."
+}

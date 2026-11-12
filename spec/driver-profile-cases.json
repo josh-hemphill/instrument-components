@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "unknown-boolean",
+      "operation": "FunctionGeneratorOutputEnable",
+      "parameter": "enabled",
+      "tokens": {
+        "bogus": "OFF"
+      },
+      "shutdown": false,
+      "accept": false
+    },
+    {
+      "id": "unknown-waveform",
+      "operation": "FunctionGeneratorSetWaveform",
+      "parameter": "waveform",
+      "tokens": {
+        "Triangle": "TRI"
+      },
+      "shutdown": false,
+      "accept": false
+    },
+    {
+      "id": "unknown-power-unit",
+      "operation": "PowerMeterConfigureMeasurement",
+      "parameter": "unit",
+      "tokens": {
+        "Volt": "V"
+      },
+      "shutdown": false,
+      "accept": false
+    },
+    {
+      "id": "unknown-sense-mode",
+      "operation": "DcPowerSupplySetSenseMode",
+      "parameter": "mode",
+      "tokens": {
+        "On": "ON"
+      },
+      "shutdown": false,
+      "accept": false
+    },
+    {
+      "id": "shutdown-requires-false",
+      "operation": "FunctionGeneratorOutputEnable",
+      "parameter": "enabled",
+      "tokens": {
+        "true": "ON"
+      },
+      "shutdown": true,
+      "accept": false
+    },
+    {
+      "id": "partial-boolean-without-shutdown",
+      "operation": "FunctionGeneratorOutputEnable",
+      "parameter": "enabled",
+      "tokens": {
+        "true": "ON"
+      },
+      "shutdown": false,
+      "accept": true
+    },
+    {
+      "id": "partial-waveform",
+      "operation": "FunctionGeneratorSetWaveform",
+      "parameter": "waveform",
+      "tokens": {
+        "Sine": "SIN"
+      },
+      "shutdown": false,
+      "accept": true
+    },
+    {
+      "id": "complete-shutdown",
+      "operation": "FunctionGeneratorOutputEnable",
+      "parameter": "enabled",
+      "tokens": {
+        "true": "ON",
+        "false": "OFF"
+      },
+      "shutdown": true,
+      "accept": true
+    },
+    {
+      "id": "preamble-must-precede-data",
+      "operation": "OscilloscopeCaptureVoltageTrace",
+      "steps": [
+        {
+          "command": ":DATA? {channel}",
+          "response": "Value"
+        },
+        {
+          "command": ":PRE?",
+          "response": "Preamble"
+        }
+      ],
+      "shutdown": false,
+      "accept": false
+    }
+  ]
+}

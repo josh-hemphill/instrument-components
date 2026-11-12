@@ -1366,7 +1366,7 @@
       },
       {
         "name": "Waveform",
-        "type": "InstrumentComponents.Classes.Waveform",
+        "type": "InstrumentComponents.Drivers.Catalog.Waveform",
         "displayName": "Waveform",
         "order": 2,
         "group": [],
@@ -1673,11 +1673,11 @@
       "Instrument Components",
       "Identity"
     ],
-    "description": "Query instrument *IDN?.",
+    "description": "Query identity through the selected driver.",
     "settings": [
       {
         "name": "Instrument",
-        "type": "InstrumentComponents.OpenTap.ScpiInstrument",
+        "type": "InstrumentComponents.OpenTap.DeviceInstrument",
         "displayName": "Instrument",
         "order": 1,
         "group": [],
@@ -1725,7 +1725,7 @@
       },
       {
         "name": "Unit",
-        "type": "InstrumentComponents.Classes.PowerUnit",
+        "type": "InstrumentComponents.Drivers.Catalog.PowerUnit",
         "displayName": "Unit",
         "order": 2,
         "group": [],
@@ -2597,11 +2597,11 @@
       "Instrument Components",
       "Safety"
     ],
-    "description": "Output off, then *RST.",
+    "description": "Driver shutdown, then a separate reset.",
     "settings": [
       {
         "name": "Instrument",
-        "type": "InstrumentComponents.OpenTap.ScpiInstrument",
+        "type": "InstrumentComponents.OpenTap.DeviceInstrument",
         "displayName": "Instrument",
         "order": 1,
         "group": [],
@@ -3385,7 +3385,7 @@
         "displayName": "Center frequency",
         "order": 2,
         "group": [],
-        "defaultValue": "0"
+        "defaultValue": "1000000000"
       },
       {
         "name": "Enabled",
@@ -3433,7 +3433,7 @@
         "displayName": "RBW",
         "order": 2,
         "group": [],
-        "defaultValue": "0"
+        "defaultValue": "1000"
       },
       {
         "name": "Enabled",
@@ -3529,7 +3529,7 @@
         "displayName": "Span",
         "order": 2,
         "group": [],
-        "defaultValue": "0"
+        "defaultValue": "1000000"
       },
       {
         "name": "Enabled",
@@ -3577,7 +3577,7 @@
         "displayName": "VBW",
         "order": 2,
         "group": [],
-        "defaultValue": "0"
+        "defaultValue": "1000"
       },
       {
         "name": "Enabled",

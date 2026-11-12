@@ -23,4 +23,5 @@
     <ProjectReference Include="..\..\src\InstrumentComponents.OpenTap\InstrumentComponents.OpenTap.csproj" />
   </ItemGroup>
 
+  <ItemGroup><Using Include="InstrumentComponents.Validation"/><Compile Include="../../../validation/neutral/OpaqueDevice.cs" Link="OpaqueDevice.cs"/></ItemGroup>
 </Project>

@@ -1,14 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+    <IsAotCompatible>true</IsAotCompatible>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>InstrumentComponents</RootNamespace>
     <AssemblyName>InstrumentComponents</AssemblyName>
     <PackageId>InstrumentComponents</PackageId>
-    <Version>0.1.1</Version>
+    <Version>0.2.0-alpha.1</Version>
     <Authors>josh-hemphill</Authors>
     <Description>High-level instrument discovery and typed IVI-inspired classes — VISA-agnostic core with mock fixtures for CI.</Description>
     <PackageLicenseExpression>MIT OR Apache-2.0</PackageLicenseExpression>
@@ -20,16 +21,16 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="8.0.5" />
-  </ItemGroup>
+
+
+  <ItemGroup><ProjectReference Include="../InstrumentComponents.Runtime/InstrumentComponents.Runtime.csproj" /></ItemGroup>
+  <Import Project="../../DriverSdk.Package.targets" />
 
   <ItemGroup>
     <InternalsVisibleTo Include="InstrumentComponents.Tests" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Data\model_registry.json" LogicalName="InstrumentComponents.Data.model_registry.json" />
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 

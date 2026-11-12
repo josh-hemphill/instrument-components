@@ -12,9 +12,9 @@ public sealed class SpectrumAnalyzerFetchTraceStep : InstrumentBoundStep<Spectru
             return;
 
         var samples = instrument.Analyzer.FetchTraceAscii();
-        for (var i = 0; i < samples.Count; i++)
-            PhaseIResults.PublishSample(Results, "Trace", i, samples[i]);
-        UpgradeVerdict(samples.All(double.IsFinite) ? Verdict.Pass : Verdict.Fail);
+        for (var i = 0; i < samples.Values.Count; i++)
+            PhaseIResults.PublishSample(Results, "Trace", i, samples.Values[i],PhaseIResults.UnitSymbol(samples.Unit));
+        UpgradeVerdict(samples.Values.All(double.IsFinite) ? Verdict.Pass : Verdict.Fail);
     }
 }
 
@@ -23,11 +23,12 @@ public sealed class SpectrumAnalyzerSetCenterFrequencyStep : InstrumentBoundStep
 {
     [Display("Center frequency", Order: 2)]
     [Unit("Hz")]
-    public double Hertz { get; set; }
+    public double Hertz { get; set; } = 1000000000;
 
     public SpectrumAnalyzerSetCenterFrequencyStep()
     {
         Rules.Add(() => double.IsFinite(Hertz), "Center frequency must be a finite number.", nameof(Hertz));
+        Rules.Add(() => (Hertz > 0), "Center frequency violates the operation's positive constraint.", nameof(Hertz));
     }
 
     public override void Run()
@@ -45,11 +46,12 @@ public sealed class SpectrumAnalyzerSetRbwStep : InstrumentBoundStep<SpectrumAna
 {
     [Display("RBW", Order: 2)]
     [Unit("Hz")]
-    public double Hertz { get; set; }
+    public double Hertz { get; set; } = 1000;
 
     public SpectrumAnalyzerSetRbwStep()
     {
         Rules.Add(() => double.IsFinite(Hertz), "RBW must be a finite number.", nameof(Hertz));
+        Rules.Add(() => (Hertz > 0), "RBW violates the operation's positive constraint.", nameof(Hertz));
     }
 
     public override void Run()
@@ -89,11 +91,12 @@ public sealed class SpectrumAnalyzerSetSpanStep : InstrumentBoundStep<SpectrumAn
 {
     [Display("Span", Order: 2)]
     [Unit("Hz")]
-    public double Hertz { get; set; }
+    public double Hertz { get; set; } = 1000000;
 
     public SpectrumAnalyzerSetSpanStep()
     {
         Rules.Add(() => double.IsFinite(Hertz), "Span must be a finite number.", nameof(Hertz));
+        Rules.Add(() => (Hertz > 0), "Span violates the operation's positive constraint.", nameof(Hertz));
     }
 
     public override void Run()
@@ -111,11 +114,12 @@ public sealed class SpectrumAnalyzerSetVbwStep : InstrumentBoundStep<SpectrumAna
 {
     [Display("VBW", Order: 2)]
     [Unit("Hz")]
-    public double Hertz { get; set; }
+    public double Hertz { get; set; } = 1000;
 
     public SpectrumAnalyzerSetVbwStep()
     {
         Rules.Add(() => double.IsFinite(Hertz), "VBW must be a finite number.", nameof(Hertz));
+        Rules.Add(() => (Hertz > 0), "VBW violates the operation's positive constraint.", nameof(Hertz));
     }
 
     public override void Run()

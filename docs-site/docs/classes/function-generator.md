@@ -1,45 +1,7 @@
 # Function generator
 
-Standard waveform, frequency, amplitude, offset, and output enable.
+Use the `FunctionGenerator` typed view over an already opened protocol-neutral handle. Rust views borrow the handle; C# views retain its shared reference. Async views use the corresponding async handle. A view does not open another connection or introduce device-specific fallback behavior.
 
-See [capability matrix](../capability-matrix.md#functiongenerator).
+Inspect the handle's operation set and request required operations at open. Device packages own literal commands, supported arguments, channel domains and any model exceptions. An unsupported operation fails without issuing IO; class membership alone does not guarantee every method.
 
-## Open
-
-=== "Rust"
-
-    ```rust
-    let mut fgen = catalog.open_function_generator(&address)?;
-    ```
-
-=== "C#"
-
-    ```csharp
-    var fgen = catalog.OpenFunctionGenerator(address);
-    ```
-
-## Configure output
-
-=== "Rust"
-
-    ```rust
-    fgen.set_waveform(Waveform::Sine)?;
-    fgen.set_frequency(1_000.0)?;      // Hz
-    fgen.set_amplitude(2.0)?;          // Vpp
-    fgen.set_offset(0.0)?;             // V
-    fgen.output_enable(true)?;
-    let hz = fgen.read_frequency()?;
-    ```
-
-=== "C#"
-
-    ```csharp
-    fgen.SetWaveform(Waveform.Sine);
-    fgen.SetFrequency(1000.0);   // Hz
-    fgen.SetAmplitude(2.0);      // Vpp
-    fgen.SetOffset(0.0);         // V
-    fgen.OutputEnable(true);
-    var hz = fgen.ReadFrequency();
-    ```
-
-Burst, duty cycle, and arbitrary waveforms are tracked in the capability matrix (todo / deferred).
+Measurement results preserve units and status. See [capabilities](../capability-matrix.md), [composition](../getting-started.md) and [errors](../csharp/errors.md). The authoritative operation signatures are generated from `spec/driver-operations.json` in the main repository. External package provenance links source behavior to exact transcript cases. Hardware confirmation remains pending.

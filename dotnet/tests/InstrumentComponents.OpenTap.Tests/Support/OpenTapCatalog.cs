@@ -60,7 +60,7 @@ internal static class OpenTapCatalog
     }
 
     private static IEnumerable<Type> ConcretePublicTypes() =>
-        typeof(ScpiInstrument).Assembly
+        typeof(DeviceInstrument).Assembly
             .GetTypes()
             .Where(type => type.IsPublic && type.IsClass && !type.IsAbstract && type.Namespace == Namespace);
 

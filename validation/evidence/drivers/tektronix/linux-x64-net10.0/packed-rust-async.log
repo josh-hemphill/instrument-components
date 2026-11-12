@@ -1,0 +1,5 @@
+[1m[92m   Compiling[0m instrument-driver-tektronix v0.2.0-alpha.1
+[1m[92m   Compiling[0m tektronix-package-proof v0.0.0 (/home/runner/work/_temp/driver-proof/consumer-packed/validation/rust)
+[1m[92m    Finished[0m `release` profile [optimized] target(s) in 3.08s
+[1m[92m     Running[0m `/home/runner/work/_temp/driver-proof/cargo-target/release/tektronix-package-proof`
+PASS Tektronix package: 118 independent cases; exact traffic, values, units, errors and resource lifetime

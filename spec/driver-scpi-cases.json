@@ -1,0 +1,3061 @@
+{
+  "schemaVersion": 1,
+  "contractMajor": 1,
+  "description": "Synthetic explicit SCPI profiles, not vendor/hardware support. Cases cover every current typed operation and all four execution frontends.",
+  "cases": [
+    {
+      "id": "SCPI-DmmMeasureVoltageDc",
+      "calls": [
+        {
+          "operation": "DmmMeasureVoltageDc",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:DmmMeasureVoltageDc? 2.5",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Volt"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DmmMeasureVoltageDc-range",
+      "calls": [
+        {
+          "operation": "DmmMeasureVoltageDc",
+          "arguments": {
+            "range": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-DmmMeasureVoltageAc",
+      "calls": [
+        {
+          "operation": "DmmMeasureVoltageAc",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:DmmMeasureVoltageAc? 2.5",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Volt"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DmmMeasureVoltageAc-range",
+      "calls": [
+        {
+          "operation": "DmmMeasureVoltageAc",
+          "arguments": {
+            "range": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-DmmMeasureCurrentDc",
+      "calls": [
+        {
+          "operation": "DmmMeasureCurrentDc",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:DmmMeasureCurrentDc? 2.5",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Ampere"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DmmMeasureCurrentDc-range",
+      "calls": [
+        {
+          "operation": "DmmMeasureCurrentDc",
+          "arguments": {
+            "range": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-DmmMeasureCurrentAc",
+      "calls": [
+        {
+          "operation": "DmmMeasureCurrentAc",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:DmmMeasureCurrentAc? 2.5",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Ampere"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DmmMeasureCurrentAc-range",
+      "calls": [
+        {
+          "operation": "DmmMeasureCurrentAc",
+          "arguments": {
+            "range": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-DmmMeasureResistance",
+      "calls": [
+        {
+          "operation": "DmmMeasureResistance",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:DmmMeasureResistance? 2.5",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Ohm"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DmmMeasureResistance-range",
+      "calls": [
+        {
+          "operation": "DmmMeasureResistance",
+          "arguments": {
+            "range": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-DmmMeasureResistance2Wire",
+      "calls": [
+        {
+          "operation": "DmmMeasureResistance2Wire",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:DmmMeasureResistance2Wire? 2.5",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Ohm"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DmmMeasureResistance2Wire-range",
+      "calls": [
+        {
+          "operation": "DmmMeasureResistance2Wire",
+          "arguments": {
+            "range": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-DmmMeasureResistance4Wire",
+      "calls": [
+        {
+          "operation": "DmmMeasureResistance4Wire",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:DmmMeasureResistance4Wire? 2.5",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Ohm"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DmmMeasureResistance4Wire-range",
+      "calls": [
+        {
+          "operation": "DmmMeasureResistance4Wire",
+          "arguments": {
+            "range": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-DmmMeasureTemperature",
+      "calls": [
+        {
+          "operation": "DmmMeasureTemperature",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:DmmMeasureTemperature? 2.5",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Celsius"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DmmMeasureTemperature-range",
+      "calls": [
+        {
+          "operation": "DmmMeasureTemperature",
+          "arguments": {
+            "range": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-DmmConfigureVoltageDc",
+      "calls": [
+        {
+          "operation": "DmmConfigureVoltageDc",
+          "arguments": {
+            "range": 2.5,
+            "resolution": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:DmmConfigureVoltageDc 2.5,2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DmmConfigureVoltageDc-range",
+      "calls": [
+        {
+          "operation": "DmmConfigureVoltageDc",
+          "arguments": {
+            "range": 0,
+            "resolution": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-DmmConfigureVoltageAc",
+      "calls": [
+        {
+          "operation": "DmmConfigureVoltageAc",
+          "arguments": {
+            "range": 2.5,
+            "resolution": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:DmmConfigureVoltageAc 2.5,2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DmmConfigureVoltageAc-range",
+      "calls": [
+        {
+          "operation": "DmmConfigureVoltageAc",
+          "arguments": {
+            "range": 0,
+            "resolution": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-DmmConfigureCurrentDc",
+      "calls": [
+        {
+          "operation": "DmmConfigureCurrentDc",
+          "arguments": {
+            "range": 2.5,
+            "resolution": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:DmmConfigureCurrentDc 2.5,2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DmmConfigureCurrentDc-range",
+      "calls": [
+        {
+          "operation": "DmmConfigureCurrentDc",
+          "arguments": {
+            "range": 0,
+            "resolution": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-DmmConfigureCurrentAc",
+      "calls": [
+        {
+          "operation": "DmmConfigureCurrentAc",
+          "arguments": {
+            "range": 2.5,
+            "resolution": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:DmmConfigureCurrentAc 2.5,2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DmmConfigureCurrentAc-range",
+      "calls": [
+        {
+          "operation": "DmmConfigureCurrentAc",
+          "arguments": {
+            "range": 0,
+            "resolution": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-DmmConfigureResistance",
+      "calls": [
+        {
+          "operation": "DmmConfigureResistance",
+          "arguments": {
+            "range": 2.5,
+            "resolution": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:DmmConfigureResistance 2.5,2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DmmConfigureResistance-range",
+      "calls": [
+        {
+          "operation": "DmmConfigureResistance",
+          "arguments": {
+            "range": 0,
+            "resolution": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-DmmConfigureResistance4Wire",
+      "calls": [
+        {
+          "operation": "DmmConfigureResistance4Wire",
+          "arguments": {
+            "range": 2.5,
+            "resolution": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:DmmConfigureResistance4Wire 2.5,2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DmmConfigureResistance4Wire-range",
+      "calls": [
+        {
+          "operation": "DmmConfigureResistance4Wire",
+          "arguments": {
+            "range": 0,
+            "resolution": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-DmmInitiate",
+      "calls": [
+        {
+          "operation": "DmmInitiate",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:DmmInitiate"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-DmmFetch",
+      "calls": [
+        {
+          "operation": "DmmConfigureVoltageDc",
+          "arguments": {
+            "range": 2.5,
+            "resolution": 2.5
+          }
+        },
+        {
+          "operation": "DmmFetch",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:DmmConfigureVoltageDc 2.5,2.5"
+        },
+        {
+          "kind": "query",
+          "message": ":TEST:DmmFetch?",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Volt"
+      }
+    },
+    {
+      "id": "SCPI-DmmRead",
+      "calls": [
+        {
+          "operation": "DmmConfigureVoltageDc",
+          "arguments": {
+            "range": 2.5,
+            "resolution": 2.5
+          }
+        },
+        {
+          "operation": "DmmRead",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:DmmConfigureVoltageDc 2.5,2.5"
+        },
+        {
+          "kind": "query",
+          "message": ":TEST:DmmRead?",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Volt"
+      }
+    },
+    {
+      "id": "SCPI-DmmSoftwareTrigger",
+      "calls": [
+        {
+          "operation": "DmmSoftwareTrigger",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:DmmSoftwareTrigger"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-DcPowerSupplyChannelCount",
+      "calls": [
+        {
+          "operation": "DcPowerSupplyChannelCount",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "count",
+        "value": 2
+      }
+    },
+    {
+      "id": "SCPI-DcPowerSupplySetVoltage",
+      "calls": [
+        {
+          "operation": "DcPowerSupplySetVoltage",
+          "arguments": {
+            "channel": 1,
+            "volts": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:DcPowerSupplySetVoltage 1,2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DcPowerSupplySetVoltage-channel",
+      "calls": [
+        {
+          "operation": "DcPowerSupplySetVoltage",
+          "arguments": {
+            "channel": 0,
+            "volts": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-DcPowerSupplySetCurrentLimit",
+      "calls": [
+        {
+          "operation": "DcPowerSupplySetCurrentLimit",
+          "arguments": {
+            "channel": 1,
+            "amps": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:DcPowerSupplySetCurrentLimit 1,2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DcPowerSupplySetCurrentLimit-channel",
+      "calls": [
+        {
+          "operation": "DcPowerSupplySetCurrentLimit",
+          "arguments": {
+            "channel": 0,
+            "amps": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-DcPowerSupplyOutputEnable",
+      "calls": [
+        {
+          "operation": "DcPowerSupplyOutputEnable",
+          "arguments": {
+            "channel": 1,
+            "enabled": true
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:DcPowerSupplyOutputEnable 1,ON"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DcPowerSupplyOutputEnable-channel",
+      "calls": [
+        {
+          "operation": "DcPowerSupplyOutputEnable",
+          "arguments": {
+            "channel": 0,
+            "enabled": true
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-DcPowerSupplyOutputStateQuery",
+      "calls": [
+        {
+          "operation": "DcPowerSupplyOutputStateQuery",
+          "arguments": {
+            "channel": 1
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:DcPowerSupplyOutputStateQuery? 1",
+          "response": "ON"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "boolean",
+        "value": true
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DcPowerSupplyOutputStateQuery-channel",
+      "calls": [
+        {
+          "operation": "DcPowerSupplyOutputStateQuery",
+          "arguments": {
+            "channel": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-DcPowerSupplyOvpLevel",
+      "calls": [
+        {
+          "operation": "DcPowerSupplyOvpLevel",
+          "arguments": {
+            "channel": 1,
+            "volts": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:DcPowerSupplyOvpLevel 1,2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DcPowerSupplyOvpLevel-channel",
+      "calls": [
+        {
+          "operation": "DcPowerSupplyOvpLevel",
+          "arguments": {
+            "channel": 0,
+            "volts": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-DcPowerSupplyOvpEnable",
+      "calls": [
+        {
+          "operation": "DcPowerSupplyOvpEnable",
+          "arguments": {
+            "channel": 1,
+            "enabled": true
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:DcPowerSupplyOvpEnable 1,ON"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DcPowerSupplyOvpEnable-channel",
+      "calls": [
+        {
+          "operation": "DcPowerSupplyOvpEnable",
+          "arguments": {
+            "channel": 0,
+            "enabled": true
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-DcPowerSupplyOvpQuery",
+      "calls": [
+        {
+          "operation": "DcPowerSupplyOvpQuery",
+          "arguments": {
+            "channel": 1
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:DcPowerSupplyOvpQuery? 1",
+          "response": "ON"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "boolean",
+        "value": true
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DcPowerSupplyOvpQuery-channel",
+      "calls": [
+        {
+          "operation": "DcPowerSupplyOvpQuery",
+          "arguments": {
+            "channel": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-DcPowerSupplyReadVoltage",
+      "calls": [
+        {
+          "operation": "DcPowerSupplyReadVoltage",
+          "arguments": {
+            "channel": 1
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:DcPowerSupplyReadVoltage? 1",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Volt"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DcPowerSupplyReadVoltage-channel",
+      "calls": [
+        {
+          "operation": "DcPowerSupplyReadVoltage",
+          "arguments": {
+            "channel": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-DcPowerSupplyReadCurrent",
+      "calls": [
+        {
+          "operation": "DcPowerSupplyReadCurrent",
+          "arguments": {
+            "channel": 1
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:DcPowerSupplyReadCurrent? 1",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Ampere"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DcPowerSupplyReadCurrent-channel",
+      "calls": [
+        {
+          "operation": "DcPowerSupplyReadCurrent",
+          "arguments": {
+            "channel": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-FunctionGeneratorSetWaveform",
+      "calls": [
+        {
+          "operation": "FunctionGeneratorSetWaveform",
+          "arguments": {
+            "waveform": "Sine"
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:FunctionGeneratorSetWaveform SIN"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-FunctionGeneratorSetFrequency",
+      "calls": [
+        {
+          "operation": "FunctionGeneratorSetFrequency",
+          "arguments": {
+            "hz": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:FunctionGeneratorSetFrequency 2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-FunctionGeneratorSetFrequency-hz",
+      "calls": [
+        {
+          "operation": "FunctionGeneratorSetFrequency",
+          "arguments": {
+            "hz": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-FunctionGeneratorSetAmplitude",
+      "calls": [
+        {
+          "operation": "FunctionGeneratorSetAmplitude",
+          "arguments": {
+            "vpp": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:FunctionGeneratorSetAmplitude 2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-FunctionGeneratorSetAmplitude-vpp",
+      "calls": [
+        {
+          "operation": "FunctionGeneratorSetAmplitude",
+          "arguments": {
+            "vpp": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-FunctionGeneratorSetOffset",
+      "calls": [
+        {
+          "operation": "FunctionGeneratorSetOffset",
+          "arguments": {
+            "volts": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:FunctionGeneratorSetOffset 2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-FunctionGeneratorSetDutyCycle",
+      "calls": [
+        {
+          "operation": "FunctionGeneratorSetDutyCycle",
+          "arguments": {
+            "percent": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:FunctionGeneratorSetDutyCycle 2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-FunctionGeneratorSetLoad",
+      "calls": [
+        {
+          "operation": "FunctionGeneratorSetLoad",
+          "arguments": {
+            "ohms": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:FunctionGeneratorSetLoad 2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-FunctionGeneratorSetLoad-ohms",
+      "calls": [
+        {
+          "operation": "FunctionGeneratorSetLoad",
+          "arguments": {
+            "ohms": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-FunctionGeneratorOutputEnable",
+      "calls": [
+        {
+          "operation": "FunctionGeneratorOutputEnable",
+          "arguments": {
+            "enabled": true
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:FunctionGeneratorOutputEnable ON"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-FunctionGeneratorSetBurstCount",
+      "calls": [
+        {
+          "operation": "FunctionGeneratorSetBurstCount",
+          "arguments": {
+            "count": 100
+          }
+        },
+        {
+          "operation": "FunctionGeneratorSetBurstCount",
+          "arguments": {
+            "count": 4294967295
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:FunctionGeneratorSetBurstCount 100"
+        },
+        {
+          "kind": "write",
+          "message": ":TEST:FunctionGeneratorSetBurstCount 4294967295"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-FunctionGeneratorSetBurstCount-count",
+      "calls": [
+        {
+          "operation": "FunctionGeneratorSetBurstCount",
+          "arguments": {
+            "count": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-FunctionGeneratorSetBurstState",
+      "calls": [
+        {
+          "operation": "FunctionGeneratorSetBurstState",
+          "arguments": {
+            "enabled": true
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:FunctionGeneratorSetBurstState ON"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-FunctionGeneratorSetBurstTriggerSource",
+      "calls": [
+        {
+          "operation": "FunctionGeneratorSetBurstTriggerSource",
+          "arguments": {
+            "source": "External"
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:FunctionGeneratorSetBurstTriggerSource EXT"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-FunctionGeneratorReadFrequency",
+      "calls": [
+        {
+          "operation": "FunctionGeneratorReadFrequency",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:FunctionGeneratorReadFrequency?",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Hertz"
+      }
+    },
+    {
+      "id": "SCPI-OscilloscopeSetTimebaseScale",
+      "calls": [
+        {
+          "operation": "OscilloscopeSetTimebaseScale",
+          "arguments": {
+            "seconds_per_div": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:OscilloscopeSetTimebaseScale 2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-OscilloscopeSetTimebaseScale-seconds_per_div",
+      "calls": [
+        {
+          "operation": "OscilloscopeSetTimebaseScale",
+          "arguments": {
+            "seconds_per_div": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-OscilloscopeReadTimebaseScale",
+      "calls": [
+        {
+          "operation": "OscilloscopeReadTimebaseScale",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:OscilloscopeReadTimebaseScale?",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Second"
+      }
+    },
+    {
+      "id": "SCPI-OscilloscopeSetChannelScale",
+      "calls": [
+        {
+          "operation": "OscilloscopeSetChannelScale",
+          "arguments": {
+            "channel": 1,
+            "volts_per_div": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:OscilloscopeSetChannelScale 1,2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-OscilloscopeSetChannelScale-channel",
+      "calls": [
+        {
+          "operation": "OscilloscopeSetChannelScale",
+          "arguments": {
+            "channel": 0,
+            "volts_per_div": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-OscilloscopeSetChannelDisplay",
+      "calls": [
+        {
+          "operation": "OscilloscopeSetChannelDisplay",
+          "arguments": {
+            "channel": 1,
+            "enabled": true
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:OscilloscopeSetChannelDisplay 1,ON"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-OscilloscopeSetChannelDisplay-channel",
+      "calls": [
+        {
+          "operation": "OscilloscopeSetChannelDisplay",
+          "arguments": {
+            "channel": 0,
+            "enabled": true
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-OscilloscopeSetChannelCoupling",
+      "calls": [
+        {
+          "operation": "OscilloscopeSetChannelCoupling",
+          "arguments": {
+            "channel": 1,
+            "coupling": "External"
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:OscilloscopeSetChannelCoupling 1,EXT"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-OscilloscopeSetChannelCoupling-channel",
+      "calls": [
+        {
+          "operation": "OscilloscopeSetChannelCoupling",
+          "arguments": {
+            "channel": 0,
+            "coupling": "External"
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-OscilloscopeSetTriggerSource",
+      "calls": [
+        {
+          "operation": "OscilloscopeSetTriggerSource",
+          "arguments": {
+            "source": "External"
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:OscilloscopeSetTriggerSource EXT"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-OscilloscopeSetTriggerLevel",
+      "calls": [
+        {
+          "operation": "OscilloscopeSetTriggerLevel",
+          "arguments": {
+            "volts": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:OscilloscopeSetTriggerLevel 2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-OscilloscopeSetTriggerSlope",
+      "calls": [
+        {
+          "operation": "OscilloscopeSetTriggerSlope",
+          "arguments": {
+            "slope": "External"
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:OscilloscopeSetTriggerSlope EXT"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-OscilloscopeRun",
+      "calls": [
+        {
+          "operation": "OscilloscopeRun",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:OscilloscopeRun"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-OscilloscopeStop",
+      "calls": [
+        {
+          "operation": "OscilloscopeStop",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:OscilloscopeStop"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-OscilloscopeSingle",
+      "calls": [
+        {
+          "operation": "OscilloscopeSingle",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:OscilloscopeSingle"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-OscilloscopeMeasureVpp",
+      "calls": [
+        {
+          "operation": "OscilloscopeMeasureVpp",
+          "arguments": {
+            "channel": 1
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:OscilloscopeMeasureVpp? 1",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Volt"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-OscilloscopeMeasureVpp-channel",
+      "calls": [
+        {
+          "operation": "OscilloscopeMeasureVpp",
+          "arguments": {
+            "channel": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-OscilloscopeMeasureFrequency",
+      "calls": [
+        {
+          "operation": "OscilloscopeMeasureFrequency",
+          "arguments": {
+            "channel": 1
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:OscilloscopeMeasureFrequency? 1",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Hertz"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-OscilloscopeMeasureFrequency-channel",
+      "calls": [
+        {
+          "operation": "OscilloscopeMeasureFrequency",
+          "arguments": {
+            "channel": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-OscilloscopeCaptureVoltageTrace",
+      "calls": [
+        {
+          "operation": "OscilloscopeCaptureVoltageTrace",
+          "arguments": {
+            "channel": 1
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:PREAMBLE?",
+          "response": "0,0,3,1,0.5"
+        },
+        {
+          "kind": "query",
+          "message": ":TEST:OscilloscopeCaptureVoltageTrace? 1",
+          "response": "1,2,3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "trace",
+        "values": [
+          1.0,
+          2.0,
+          3.0
+        ],
+        "unit": "Volt",
+        "interval": 0.5
+      }
+    },
+    {
+      "id": "SCPI-INVALID-OscilloscopeCaptureVoltageTrace-channel",
+      "calls": [
+        {
+          "operation": "OscilloscopeCaptureVoltageTrace",
+          "arguments": {
+            "channel": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-SwitchCloseRoute",
+      "calls": [
+        {
+          "operation": "SwitchCloseRoute",
+          "arguments": {
+            "ch1": 1,
+            "ch2": 1
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:SwitchCloseRoute 1,1"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-SwitchCloseRoute-ch1",
+      "calls": [
+        {
+          "operation": "SwitchCloseRoute",
+          "arguments": {
+            "ch1": 0,
+            "ch2": 1
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-SwitchOpenRoute",
+      "calls": [
+        {
+          "operation": "SwitchOpenRoute",
+          "arguments": {
+            "ch1": 1,
+            "ch2": 1
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:SwitchOpenRoute 1,1"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-SwitchOpenRoute-ch1",
+      "calls": [
+        {
+          "operation": "SwitchOpenRoute",
+          "arguments": {
+            "ch1": 0,
+            "ch2": 1
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-SwitchIsClosed",
+      "calls": [
+        {
+          "operation": "SwitchIsClosed",
+          "arguments": {
+            "ch1": 1,
+            "ch2": 1
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:SwitchIsClosed? 1,1",
+          "response": "ON"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "boolean",
+        "value": true
+      }
+    },
+    {
+      "id": "SCPI-INVALID-SwitchIsClosed-ch1",
+      "calls": [
+        {
+          "operation": "SwitchIsClosed",
+          "arguments": {
+            "ch1": 0,
+            "ch2": 1
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-SwitchOpenAll",
+      "calls": [
+        {
+          "operation": "SwitchOpenAll",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:SwitchOpenAll"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-CounterMeasureFrequency",
+      "calls": [
+        {
+          "operation": "CounterMeasureFrequency",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:CounterMeasureFrequency?",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Hertz"
+      }
+    },
+    {
+      "id": "SCPI-CounterMeasurePeriod",
+      "calls": [
+        {
+          "operation": "CounterMeasurePeriod",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:CounterMeasurePeriod?",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Second"
+      }
+    },
+    {
+      "id": "SCPI-CounterSetGateTime",
+      "calls": [
+        {
+          "operation": "CounterSetGateTime",
+          "arguments": {
+            "seconds": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:CounterSetGateTime 2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-CounterSetGateTime-seconds",
+      "calls": [
+        {
+          "operation": "CounterSetGateTime",
+          "arguments": {
+            "seconds": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-CounterSelectChannel",
+      "calls": [
+        {
+          "operation": "CounterSelectChannel",
+          "arguments": {
+            "channel": 1
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:CounterSelectChannel 1"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-CounterSelectChannel-channel",
+      "calls": [
+        {
+          "operation": "CounterSelectChannel",
+          "arguments": {
+            "channel": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-CounterResetTotalize",
+      "calls": [
+        {
+          "operation": "CounterResetTotalize",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:CounterResetTotalize"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-CounterReadTotalize",
+      "calls": [
+        {
+          "operation": "CounterReadTotalize",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:CounterReadTotalize?",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Count"
+      }
+    },
+    {
+      "id": "SCPI-PowerMeterConfigureMeasurement",
+      "calls": [
+        {
+          "operation": "PowerMeterConfigureMeasurement",
+          "arguments": {
+            "unit": "Watt",
+            "auto_range": true,
+            "auto_average": true,
+            "correction_freq_hz": 2.5,
+            "offset_db": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:PowerMeterConfigureMeasurement W,ON,ON,2.5,2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-PowerMeterConfigureMeasurement-correction_freq_hz",
+      "calls": [
+        {
+          "operation": "PowerMeterConfigureMeasurement",
+          "arguments": {
+            "unit": "Watt",
+            "auto_range": true,
+            "auto_average": true,
+            "correction_freq_hz": 0,
+            "offset_db": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-PowerMeterInitiate",
+      "calls": [
+        {
+          "operation": "PowerMeterInitiate",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:PowerMeterInitiate"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-PowerMeterFetch",
+      "calls": [
+        {
+          "operation": "PowerMeterConfigureMeasurement",
+          "arguments": {
+            "unit": "Watt",
+            "auto_range": true,
+            "auto_average": true,
+            "correction_freq_hz": 2.5,
+            "offset_db": 2.5
+          }
+        },
+        {
+          "operation": "PowerMeterFetch",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:PowerMeterConfigureMeasurement W,ON,ON,2.5,2.5"
+        },
+        {
+          "kind": "query",
+          "message": ":TEST:PowerMeterFetch?",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Watt"
+      }
+    },
+    {
+      "id": "SCPI-PowerMeterRead",
+      "calls": [
+        {
+          "operation": "PowerMeterConfigureMeasurement",
+          "arguments": {
+            "unit": "Watt",
+            "auto_range": true,
+            "auto_average": true,
+            "correction_freq_hz": 2.5,
+            "offset_db": 2.5
+          }
+        },
+        {
+          "operation": "PowerMeterRead",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:PowerMeterConfigureMeasurement W,ON,ON,2.5,2.5"
+        },
+        {
+          "kind": "query",
+          "message": ":TEST:PowerMeterRead?",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Watt"
+      }
+    },
+    {
+      "id": "SCPI-SpectrumAnalyzerSetCenterFrequency",
+      "calls": [
+        {
+          "operation": "SpectrumAnalyzerSetCenterFrequency",
+          "arguments": {
+            "hz": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:SpectrumAnalyzerSetCenterFrequency 2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-SpectrumAnalyzerSetCenterFrequency-hz",
+      "calls": [
+        {
+          "operation": "SpectrumAnalyzerSetCenterFrequency",
+          "arguments": {
+            "hz": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-SpectrumAnalyzerSetSpan",
+      "calls": [
+        {
+          "operation": "SpectrumAnalyzerSetSpan",
+          "arguments": {
+            "hz": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:SpectrumAnalyzerSetSpan 2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-SpectrumAnalyzerSetSpan-hz",
+      "calls": [
+        {
+          "operation": "SpectrumAnalyzerSetSpan",
+          "arguments": {
+            "hz": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-SpectrumAnalyzerSetRbw",
+      "calls": [
+        {
+          "operation": "SpectrumAnalyzerSetRbw",
+          "arguments": {
+            "hz": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:SpectrumAnalyzerSetRbw 2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-SpectrumAnalyzerSetRbw-hz",
+      "calls": [
+        {
+          "operation": "SpectrumAnalyzerSetRbw",
+          "arguments": {
+            "hz": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-SpectrumAnalyzerSetVbw",
+      "calls": [
+        {
+          "operation": "SpectrumAnalyzerSetVbw",
+          "arguments": {
+            "hz": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:SpectrumAnalyzerSetVbw 2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-SpectrumAnalyzerSetVbw-hz",
+      "calls": [
+        {
+          "operation": "SpectrumAnalyzerSetVbw",
+          "arguments": {
+            "hz": 0
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-SpectrumAnalyzerSetRefLevel",
+      "calls": [
+        {
+          "operation": "SpectrumAnalyzerSetRefLevel",
+          "arguments": {
+            "dbm": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:SpectrumAnalyzerSetRefLevel 2.5"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-SpectrumAnalyzerFetchTraceAscii",
+      "calls": [
+        {
+          "operation": "SpectrumAnalyzerFetchTraceAscii",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:SpectrumAnalyzerFetchTraceAscii?",
+          "response": "1,2,3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "samples",
+        "values": [
+          1.0,
+          2.0,
+          3.0
+        ],
+        "unit": "Dbm",
+        "interval": null
+      }
+    },
+    {
+      "id": "SCPI-SpectrumAnalyzerMarkerPeak",
+      "calls": [
+        {
+          "operation": "SpectrumAnalyzerMarkerPeak",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:SpectrumAnalyzerMarkerPeak"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-SpectrumAnalyzerMarkerX",
+      "calls": [
+        {
+          "operation": "SpectrumAnalyzerMarkerX",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:SpectrumAnalyzerMarkerX?",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Hertz"
+      }
+    },
+    {
+      "id": "SCPI-SpectrumAnalyzerMarkerY",
+      "calls": [
+        {
+          "operation": "SpectrumAnalyzerMarkerY",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:SpectrumAnalyzerMarkerY?",
+          "response": "3.3"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 3.3,
+        "unit": "Dbm"
+      }
+    },
+    {
+      "id": "SCPI-SpectrumAnalyzerSweepContinuous",
+      "calls": [
+        {
+          "operation": "SpectrumAnalyzerSweepContinuous",
+          "arguments": {
+            "enabled": true
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:SpectrumAnalyzerSweepContinuous ON"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-SpectrumAnalyzerSingleSweep",
+      "calls": [
+        {
+          "operation": "SpectrumAnalyzerSingleSweep",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:SpectrumAnalyzerSingleSweep"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-SpectrumAnalyzerWaitOpc",
+      "calls": [
+        {
+          "operation": "SpectrumAnalyzerWaitOpc",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:SpectrumAnalyzerWaitOpc?",
+          "response": "1"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-DcPowerSupplySetSenseMode",
+      "calls": [
+        {
+          "operation": "DcPowerSupplySetSenseMode",
+          "arguments": {
+            "channel": 1,
+            "mode": "External"
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:DcPowerSupplySetSenseMode 1,EXT"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-INVALID-DcPowerSupplySetSenseMode-channel",
+      "calls": [
+        {
+          "operation": "DcPowerSupplySetSenseMode",
+          "arguments": {
+            "channel": 0,
+            "mode": "External"
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-QueryIdentity",
+      "calls": [
+        {
+          "operation": "QueryIdentity",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:QueryIdentity?",
+          "response": "Synthetic,All,serial,1"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "identity",
+        "manufacturer": "Synthetic",
+        "model": "All",
+        "serial": "serial",
+        "revision": "1"
+      }
+    },
+    {
+      "id": "SCPI-Reset",
+      "calls": [
+        {
+          "operation": "Reset",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:Reset"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-Shutdown",
+      "calls": [
+        {
+          "operation": "Shutdown",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "write",
+          "message": ":TEST:DcPowerSupplyOutputEnable 1,OFF"
+        },
+        {
+          "kind": "write",
+          "message": ":TEST:DcPowerSupplyOutputEnable 2,OFF"
+        },
+        {
+          "kind": "write",
+          "message": ":TEST:FunctionGeneratorOutputEnable OFF"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "SCPI-PARSE-128",
+      "calls": [
+        {
+          "operation": "DmmMeasureVoltageDc",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:DmmMeasureVoltageDc? 2.5",
+          "response": "NaN"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "Parse"
+    },
+    {
+      "id": "SCPI-PARSE-129",
+      "calls": [
+        {
+          "operation": "DmmMeasureVoltageDc",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:DmmMeasureVoltageDc? 2.5",
+          "response": "Infinity"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "Parse"
+    },
+    {
+      "id": "SCPI-PARSE-130",
+      "calls": [
+        {
+          "operation": "DmmMeasureVoltageDc",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:DmmMeasureVoltageDc? 2.5",
+          "response": "1e999"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "Parse"
+    },
+    {
+      "id": "SCPI-PARSE-131",
+      "calls": [
+        {
+          "operation": "DmmMeasureVoltageDc",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:DmmMeasureVoltageDc? 2.5",
+          "response": "3.3 junk"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "Parse"
+    },
+    {
+      "id": "SCPI-PARSE-132",
+      "calls": [
+        {
+          "operation": "DmmMeasureVoltageDc",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:DmmMeasureVoltageDc? 2.5",
+          "response": "1,2"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "Parse"
+    },
+    {
+      "id": "SCPI-PARSE-133",
+      "calls": [
+        {
+          "operation": "DmmMeasureVoltageDc",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:DmmMeasureVoltageDc? 2.5",
+          "response": ""
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "Parse"
+    },
+    {
+      "id": "SCPI-SYMBOL-InvalidArgument",
+      "calls": [
+        {
+          "operation": "OscilloscopeSetTriggerSource",
+          "arguments": {
+            "source": "External;*RST"
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-SYMBOL-UnsupportedOperation",
+      "calls": [
+        {
+          "operation": "OscilloscopeSetTriggerSource",
+          "arguments": {
+            "source": "Unmapped"
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "UnsupportedOperation"
+    },
+    {
+      "id": "SCPI-UNCONFIGURED-DmmRead",
+      "calls": [
+        {
+          "operation": "DmmRead",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-UNCONFIGURED-PowerMeterRead",
+      "calls": [
+        {
+          "operation": "PowerMeterRead",
+          "arguments": {}
+        }
+      ],
+      "script": [
+        {
+          "kind": "close"
+        }
+      ],
+      "expectedError": "InvalidArgument"
+    },
+    {
+      "id": "SCPI-LARGE-FINITE-NO-ASSUMED-OVERLOAD",
+      "calls": [
+        {
+          "operation": "DmmMeasureVoltageDc",
+          "arguments": {
+            "range": 2.5
+          }
+        }
+      ],
+      "script": [
+        {
+          "kind": "query",
+          "message": ":TEST:DmmMeasureVoltageDc? 2.5",
+          "response": "9.9e37"
+        },
+        {
+          "kind": "close"
+        }
+      ],
+      "expected": {
+        "kind": "quantity",
+        "value": 9.9e+37,
+        "unit": "Volt",
+        "status": "Valid"
+      }
+    }
+  ]
+}

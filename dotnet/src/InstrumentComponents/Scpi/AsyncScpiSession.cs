@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Buffers;
 using System.Text;
 using InstrumentComponents.Connect;
@@ -12,7 +13,7 @@ public sealed class AsyncScpiSession : IDisposable
 {
     private readonly IAsyncTransport _transport;
     private readonly ConnectOptions _opts;
-    private readonly List<byte> _readBuffer = new(4096);
+    private readonly List<byte> _readBuffer = new();
     private readonly SemaphoreSlim _operationGate = new(1, 1);
     private bool _disposed;
     private string? _pendingErrorReply;
@@ -76,27 +77,38 @@ public sealed class AsyncScpiSession : IDisposable
 
     private async Task FlushAsyncCore(CancellationToken cancellationToken = default)
     {
-        await _transport.SetReadTimeoutAsync(TimeSpan.FromMilliseconds(50), cancellationToken).ConfigureAwait(false);
+        var started = Stopwatch.GetTimestamp();
+        var quiet = TimeSpan.FromMilliseconds(50);
+        var budget = quiet * 2;
         var chunk = ArrayPool<byte>.Shared.Rent(256);
+        var clean = false;
         try
         {
             while (true)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+                var remaining = budget - Stopwatch.GetElapsedTime(started);
+                if (remaining <= TimeSpan.Zero)
+                    throw new InstrumentTimeoutException();
+                var readTimeout = remaining < quiet ? remaining : quiet;
+                await _transport.SetReadTimeoutAsync(readTimeout, cancellationToken).ConfigureAwait(false);
                 try
                 {
                     var n = await _transport.ReadAsync(chunk, cancellationToken).ConfigureAwait(false);
                     if (n == 0) break;
                 }
-                catch (InstrumentTimeoutException)
+                catch (InstrumentTimeoutException) when (readTimeout == quiet)
                 {
                     break;
                 }
             }
+            clean = true;
         }
         finally
         {
             ArrayPool<byte>.Shared.Return(chunk);
-            await RestoreIoTimeoutAsync().ConfigureAwait(false);
+            if (clean) await _transport.SetReadTimeoutAsync(_opts.IoTimeout(), CancellationToken.None).ConfigureAwait(false);
+            else await RestoreIoTimeoutAsync().ConfigureAwait(false);
         }
         _readBuffer.Clear();
     }
@@ -137,14 +149,14 @@ public sealed class AsyncScpiSession : IDisposable
             }
             catch (InstrumentTimeoutException) when (attempts < maxAttempts)
             {
-                try { await FlushAsyncCore(CancellationToken.None).ConfigureAwait(false); } catch { }
+                await FlushAsyncCore(cancellationToken).ConfigureAwait(false);
                 if (_opts.ReconnectOnFailure)
                     await TryReconnectAsync(cancellationToken).ConfigureAwait(false);
                 await Task.Delay(_opts.RetryBackoff * (int)attempts, cancellationToken).ConfigureAwait(false);
             }
             catch (InstrumentTimeoutException)
             {
-                try { await FlushAsyncCore(CancellationToken.None).ConfigureAwait(false); } catch { }
+                try { await FlushAsyncCore(cancellationToken).ConfigureAwait(false); } catch (OperationCanceledException) { throw; } catch { }
                 throw;
             }
         }
@@ -232,7 +244,7 @@ public sealed class AsyncScpiSession : IDisposable
                 {
                     if (_skipBlockTerminator && (chunk[i] == '\r' || chunk[i] == '\n')) continue;
                     _skipBlockTerminator = false;
-                    _readBuffer.Add(chunk[i]);
+                    ScpiFraming.AppendResponseByte(_readBuffer, chunk[i], _opts.Terminator, _opts.MaxResponseBytes);
                 }
                 if (TryCompleteBufferedFrame(command, started, out var payload))
                     return payload;
@@ -252,7 +264,7 @@ public sealed class AsyncScpiSession : IDisposable
             return false;
         try
         {
-            (payload, _) = ScpiFraming.ExtractResponse(_readBuffer.ToArray(), _opts.Terminator);
+            (payload, _) = ScpiFraming.ExtractResponse(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(_readBuffer), _opts.Terminator, _opts.MaxResponseBytes);
             _skipBlockTerminator = _readBuffer[0] == (byte)'#' && _readBuffer.Count > 1 && _readBuffer[1] != (byte)'0';
             RecordSuccess(CommsEventKind.ReadOk, command, 1, started);
             return true;
@@ -390,7 +402,7 @@ public sealed class AsyncScpiSession : IDisposable
             EnsureOpcAvailable();
             await WriteWithRetryAsync("*OPC?", false, cancellationToken).ConfigureAwait(false);
             try { return Encoding.UTF8.GetString(await ReadResponseAsync(timeout, cancellationToken).ConfigureAwait(false)).Trim(); }
-            catch (InstrumentTimeoutException) { try { await FlushAsyncCore(CancellationToken.None).ConfigureAwait(false); } catch { } throw; }
+            catch (InstrumentTimeoutException) { try { await FlushAsyncCore(cancellationToken).ConfigureAwait(false); } catch (OperationCanceledException) { throw; } catch { } throw; }
         }
         finally { _operationGate.Release(); }
     }

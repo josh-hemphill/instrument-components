@@ -1,8 +1,0 @@
-{
-  "steps": [
-    { "op": "write", "data": ":VOLT 3.3, (@1)\n" },
-    { "op": "write", "data": ":OUTP ON, (@1)\n" },
-    { "op": "write", "data": ":MEAS:VOLT? (@1)\n" },
-    { "op": "read", "data": "3.300\n" }
-  ]
-}

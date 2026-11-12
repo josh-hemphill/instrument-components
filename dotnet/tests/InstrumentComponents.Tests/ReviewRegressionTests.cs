@@ -2,7 +2,6 @@ using System.Text;
 using System.Text.Json;
 using InstrumentComponents.Address;
 using InstrumentComponents.Classifier;
-using InstrumentComponents.Classes;
 using InstrumentComponents.Connect;
 using InstrumentComponents.Enumerator;
 using InstrumentComponents.Errors;
@@ -160,20 +159,6 @@ public class ReviewRegressionTests
         Assert.True(await session.ProbeOpcAsync());
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void DiscoveryReleasesSessionsOnSuccessAndConfigurationFailure(bool failConfigure)
-    {
-        var transport = new CountingTransport { FailConfigure = failConfigure };
-        var opener = new Opener(transport);
-        var catalog = new global::InstrumentComponents.Discovery.Discovery(StaticEnumerator.FromAddresses(["mock://review"]), opener, ModelRegistry.Embedded())
-            .WithProbePolicy(ProbePolicy.None).ConnectOptions(Options).Scan();
-        Assert.Equal(!failConfigure, catalog.Devices.Single().Reachable);
-        Assert.Equal(1, transport.Disposals);
-        if (!failConfigure) { using var reopened = catalog.Device("mock://review").OpenSession(); }
-    }
-
     [Fact]
     public async Task AsyncConstructionFailureReleasesTransport()
     {
@@ -224,38 +209,11 @@ public class ReviewRegressionTests
         Assert.Equal(Enumerable.Range(0, 30).Select(i => $"{i}?"), results);
     }
 
-    [Fact]
-    public void PsuShutdownIncludesPreviouslyEnabledChannelsAcrossViewsAndContinuesOnFailure()
-    {
-        var io = new MessageIo();
-        using var session = InstrumentSession.FromIo(ResourceAddress.Parse("mock://psu"), io, new DeviceIdentity());
-        new DcPowerSupply(session).OutputEnable(2, true);
-        io.FailChannelOneOff = true;
-        Assert.Throws<AggregateException>(() => new DcPowerSupply(session).OutputOff());
-        Assert.Contains(":OUTP2 OFF", io.Writes);
-        session.PowerSupplyChannelCount = 3; io.FailChannelOneOff = false;
-        new DcPowerSupply(session).OutputOff();
-        Assert.Contains(":OUTP3 OFF", io.Writes);
-    }
 
-    [Fact]
-    public async Task AsyncPsuShutdownIncludesEnabledChannels()
-    {
-        var transport = new MockTransport([new WriteStep { Data = ":OUTP2 ON" }, new WriteStep { Data = ":OUTP1 OFF" }, new WriteStep { Data = ":OUTP2 OFF" }]);
-        using var session = await AsyncInstrumentSession.CreateAsync(ResourceAddress.Parse("mock://psu"), transport, Options, new DeviceIdentity());
-        session.PowerSupplyChannelCount = 2;
-        await new AsyncDcPowerSupply(session).OutputEnableAsync(2, true);
-        await new AsyncDcPowerSupply(session).OutputOffAsync();
-    }
 
-    [Fact]
-    public void N6705RemoteSenseFailsBeforeWritingInvalidCommand()
-    {
-        var io = new MessageIo();
-        using var session = InstrumentSession.FromIo(ResourceAddress.Parse("mock://psu"), io, new DeviceIdentity { Manufacturer = "Keysight", Model = "N6705C" });
-        Assert.Throws<InstrumentUnsupportedException>(() => new DcPowerSupply(session).SenseEnable(1, true));
-        Assert.Empty(io.Writes);
-    }
+
+
+
 
     [Theory]
     [InlineData(false)]
@@ -280,26 +238,9 @@ public class ReviewRegressionTests
         Assert.Equal(1, transport.Writes);
     }
 
-    [Fact]
-    public void UnknownPsuCountDisablesKnownOutputsThenReportsIncompleteShutdown()
-    {
-        var io = new MessageIo();
-        using var session = InstrumentSession.FromIo(ResourceAddress.Parse("mock://psu"), io, new DeviceIdentity());
-        new DcPowerSupply(session).OutputEnable(2, true);
-        Assert.Throws<InstrumentUnsupportedException>(() => new DcPowerSupply(session).OutputOff());
-        Assert.Contains(":OUTP2 OFF", io.Writes);
-    }
 
-    [Fact]
-    public async Task MalformedPsuStateUsesLibraryParseException()
-    {
-        using var session = InstrumentSession.FromIo(ResourceAddress.Parse("mock://psu"), new MessageIo { Reply = "invalid" }, new DeviceIdentity());
-        Assert.Throws<ParseException>(() => new DcPowerSupply(session).OutputStateQuery(1));
-        Assert.Throws<ParseException>(() => new DcPowerSupply(session).OvpQuery(1));
-        using var asyncSession = await AsyncInstrumentSession.CreateAsync(ResourceAddress.Parse("mock://psu"),
-            new MockTransport([new WriteStep { Data = ":OUTP1?" }, new ReadStep { Data = "invalid\n" }]), Options, new DeviceIdentity());
-        await Assert.ThrowsAsync<ParseException>(() => new AsyncDcPowerSupply(asyncSession).OutputStateQueryAsync(1));
-    }
+
+
 
     [Theory]
     [InlineData(true)]
@@ -347,19 +288,7 @@ public class ReviewRegressionTests
         public override void SetReadTimeout(TimeSpan timeout) { }
     }
 
-    [Fact]
-    public async Task CatalogAndSeparateReferencesShareConsistentHealthCounters()
-    {
-        var address = ResourceAddress.Parse("mock://health");
-        var catalog = global::InstrumentComponents.Catalog.DeviceCatalog.FromDevices(new EchoOpener(),
-            [new DiscoveredDevice { Address = address, Identity = new DeviceIdentity(), SupportedKinds = [], Classification = [], Reachable = true }]);
-        var first = catalog.Device(address.Raw); var second = catalog.Device(address.Raw);
-        using var a = await first.OpenSessionAsync(); using var b = await second.OpenSessionAsync();
-        await Task.WhenAll(Enumerable.Range(0, 100).Select(i => (i % 2 == 0 ? a : b).Scpi.QueryAsync($"{i}?")));
-        Assert.Equal(200ul, catalog.Health(address.Raw).TotalOperations);
-        Assert.Equal(catalog.Health(address.Raw).TotalOperations, first.Health().TotalOperations);
-        Assert.Equal(first.Health().TotalOperations, second.Health().TotalOperations);
-    }
+
 
     [Fact]
     public async Task PoolCallbackHoldsSessionLockAcrossMultipleOperations()
@@ -437,9 +366,9 @@ public class ReviewRegressionTests
     }
     private sealed class MessageIo : IScpiIo
     {
-        public List<string> Writes { get; } = []; public bool FailChannelOneOff; public string Reply = "1";
+        public List<string> Writes { get; } = []; public string Reply = "1";
         public TimeSpan IoTimeout { get; set; }
-        public void Write(string command) { Writes.Add(command); if (FailChannelOneOff && command == ":OUTP1 OFF") throw new TransportException("failed"); }
+        public void Write(string command) { Writes.Add(command); }
         public string Query(string command) => Reply;
         public void Dispose() { }
     }

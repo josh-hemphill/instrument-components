@@ -1,0 +1,4 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+/home/runner/work/_temp/driver-proof/consumer-packed/validation/dotnet/Program.cs(45,277): error IL2026: Using member 'WarningProbe.Trigger()' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. intentional diagnostic gate. [/home/runner/work/_temp/driver-proof/consumer-packed/validation/dotnet/DriverProof.csproj]
+/home/runner/work/_temp/driver-proof/consumer-packed/validation/dotnet/Program.cs(45,277): error IL3050: Using member 'WarningProbe.Trigger()' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. intentional AOT diagnostic gate. [/home/runner/work/_temp/driver-proof/consumer-packed/validation/dotnet/DriverProof.csproj]

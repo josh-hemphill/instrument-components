@@ -17,6 +17,12 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  driver-sdk:
+    name: Driver SDK and native package proofs
+    uses: ./.github/workflows/driver-sdk.yml
+    with:
+      source_ref: ${{ inputs.source_ref }}
+
   test:
     name: Test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
@@ -40,11 +46,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 26
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python tools/device-extraction-index.py
+      - run: python -m unittest discover -s tools/publisher-setup -p 'test_*.py'
       - run: node --test tools/validate-release_test.ts
       - run: node tools/gen-shared-tables.ts
-      - run: node tools/gen-dialects.ts
-      - run: rustfmt crates/instrument-core/src/classifier/probes.rs crates/instrument-core/src/scpi_commands.rs crates/instrument-core/src/dialect.rs
-      - run: git diff --exit-code -- crates/instrument-core/src/classifier/probes.rs crates/instrument-core/src/scpi_commands.rs crates/instrument-core/src/dialect.rs dotnet/src/InstrumentComponents/Classifier/CapabilityProbes.cs dotnet/src/InstrumentComponents/Classes/ScpiCommands.cs dotnet/src/InstrumentComponents/Dialects/DialectRegistry.cs
+      - run: rustfmt crates/instrument-core/src/classifier/probes.rs
+      - run: git diff --exit-code -- crates/instrument-core/src/classifier/probes.rs dotnet/src/InstrumentComponents/Classifier/CapabilityProbes.cs
       - run: cargo doc --no-deps --workspace --no-default-features
         env:
           RUSTDOCFLAGS: -D warnings
@@ -84,7 +94,18 @@ jobs:
         with:
           components: clippy
       - uses: Swatinem/rust-cache@v2
-      - run: cargo check -p instrument-components --features visa,tokio
+      - run: cargo check -p instrument-components --all-features
+      - run: cargo check -p instrument-visa --features cross-compile,tokio
       - run: cargo clippy -p instrument-core --features async -- -D warnings
       - run: cargo test -p instrument-core --features async
-      - run: cargo test -p instrument-components --features tokio --no-default-features
+      - run: cargo test -p instrument-components --all-features
+
+  msrv:
+    name: Rust 1.85 minimum
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref }}
+      - uses: dtolnay/rust-toolchain@1.85.0
+      - run: cargo check --workspace --all-features --locked

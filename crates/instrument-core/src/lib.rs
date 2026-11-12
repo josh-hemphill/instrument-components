@@ -16,7 +16,6 @@ pub mod async_transport;
 pub mod classifier;
 pub mod connect;
 pub mod diagnostics;
-pub mod dialect;
 pub mod enumerator;
 pub mod error;
 pub mod identity;
@@ -26,7 +25,6 @@ pub mod mock;
 pub mod probe_policy;
 pub mod registry;
 pub mod scpi;
-pub mod scpi_commands;
 pub mod session;
 pub mod transport;
 
@@ -48,7 +46,6 @@ pub use classifier::{
 pub use classifier::{classify_deep_async, classify_with_policy_async};
 pub use connect::{AccessMode, ConnectOptions};
 pub use diagnostics::{CommsEvent, CommsEventKind, CommsObserver, DeviceHealth, Diagnostics};
-pub use dialect::{resolve_dialect, DialectProfile, DIALECT_PROFILES};
 pub use enumerator::{RawResource, ResourceEnumerator, StaticEnumerator};
 pub use error::{Error, Result, TransportError};
 pub use identity::{DeviceId, DeviceIdentity, Idn};

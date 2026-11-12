@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "instrument-driver-tools"
+version = "0.2.0a1"
+description = "Versioned generators and validators for independent Instrument Components drivers"
+requires-python = ">=3.11"
+dependencies = ["jsonschema==4.26.0"]
+license = {text = "MIT OR Apache-2.0"}
+
+[project.scripts]
+instrument-driver = "instrument_driver_tools.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+instrument_driver_tools = ["schemas/*.json"]

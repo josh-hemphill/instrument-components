@@ -39,6 +39,8 @@ async function main() {
   const required = [
     "InstrumentComponents.OpenTap.dll",
     "InstrumentComponents.dll",
+    "InstrumentComponents.Abstractions.dll",
+    "InstrumentComponents.Runtime.dll",
     "Packages/InstrumentComponents.OpenTap/package.xml",
   ];
   for (const name of required) {

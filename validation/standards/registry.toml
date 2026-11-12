@@ -1,0 +1,22 @@
+[[entry]]
+manufacturer="Example Instruments"
+model="TestCombined"
+kinds=["Dmm","DcPowerSupply"]
+[[entry]]
+manufacturer="Example Instruments"
+model="TestSpectrum"
+kinds=["SpectrumAnalyzer"]
+[[entry]]
+manufacturer="Example Instruments"
+model="TestSensor"
+kinds=["PowerMeter"]
+[[entry]]
+manufacturer="Example Instruments"
+model="TestScope"
+kinds=["Oscilloscope"]
+[[usb_entry]]
+vid="1111"
+pid="2222"
+manufacturer="Example Instruments"
+model="TestDmm"
+kinds=["Dmm"]

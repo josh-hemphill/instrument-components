@@ -1,0 +1,327 @@
+{
+  "schemaVersion": 1,
+  "matrix": [
+    {
+      "provider": "binary",
+      "mode": "Sync",
+      "suite": "driver-contract-cases.json",
+      "required": true
+    },
+    {
+      "provider": "native-binary",
+      "mode": "NativeAsync",
+      "operations": [
+        "MeasureVoltageDc",
+        "SetVoltage",
+        "ReadVoltage",
+        "OutputEnable",
+        "Reset",
+        "Shutdown"
+      ]
+    },
+    {
+      "provider": "local-sdk",
+      "mode": "WorkerAsync",
+      "operations": [
+        "MeasureVoltageDc",
+        "SetVoltage",
+        "ReadVoltage",
+        "OutputEnable",
+        "Reset",
+        "Shutdown"
+      ],
+      "syncFrontend": true
+    }
+  ],
+  "cases": [
+    {
+      "id": "ASYNC-VALUE",
+      "steps": [
+        {
+          "action": "measure",
+          "value": 3.3
+        },
+        {
+          "action": "set",
+          "value": 4.2
+        },
+        {
+          "action": "read",
+          "value": 4.2
+        },
+        {
+          "action": "output"
+        },
+        {
+          "action": "reset"
+        },
+        {
+          "action": "close",
+          "shutdown": true
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 1,
+      "recoveries": 0
+    },
+    {
+      "id": "ASYNC-RECOVERY",
+      "failMeasure": true,
+      "steps": [
+        {
+          "action": "measure",
+          "error": "Timeout"
+        },
+        {
+          "action": "measure",
+          "error": "SessionNeedsRecovery"
+        },
+        {
+          "action": "recover"
+        },
+        {
+          "action": "measure",
+          "value": 3.3
+        },
+        {
+          "action": "close",
+          "shutdown": true
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 1,
+      "recoveries": 1
+    },
+    {
+      "id": "ASYNC-DISABLED-SHUTDOWN",
+      "disableShutdown": true,
+      "steps": [
+        {
+          "action": "close",
+          "shutdown": true,
+          "error": "Shutdown"
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 0,
+      "recoveries": 0
+    },
+    {
+      "id": "ASYNC-VALIDATION",
+      "steps": [
+        {
+          "action": "bad-range",
+          "error": "InvalidArgument"
+        },
+        {
+          "action": "sense",
+          "error": "UnsupportedOperation"
+        },
+        {
+          "action": "close"
+        },
+        {
+          "action": "close",
+          "shutdown": true,
+          "error": "Shutdown"
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 0,
+      "recoveries": 0,
+      "noIo": true
+    },
+    {
+      "id": "ASYNC-SHUTDOWN-FAILURE",
+      "failShutdown": true,
+      "steps": [
+        {
+          "action": "output"
+        },
+        {
+          "action": "close",
+          "shutdown": true,
+          "error": "Shutdown"
+        },
+        {
+          "action": "close",
+          "error": "Shutdown"
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 1,
+      "recoveries": 0
+    },
+    {
+      "id": "ASYNC-BORROWED",
+      "borrowed": true,
+      "steps": [
+        {
+          "action": "measure",
+          "value": 3.3
+        },
+        {
+          "action": "close"
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 0,
+      "recoveries": 0,
+      "disposes": 0
+    },
+    {
+      "id": "ASYNC-OPEN-FAILURE",
+      "failOpen": true,
+      "openError": "Device",
+      "steps": [],
+      "closes": 1,
+      "shutdowns": 0,
+      "recoveries": 0
+    },
+    {
+      "id": "ASYNC-OPEN-INVALID",
+      "missingDmm": true,
+      "openError": "DriverContractViolation",
+      "steps": [],
+      "closes": 1,
+      "shutdowns": 0,
+      "recoveries": 0
+    },
+    {
+      "id": "ASYNC-OPEN-CLEANUP-FAILURE",
+      "missingDmm": true,
+      "failClose": true,
+      "openError": "DriverContractViolation",
+      "steps": [],
+      "closes": 1,
+      "shutdowns": 0,
+      "recoveries": 0
+    },
+    {
+      "id": "ASYNC-UNKNOWN-OUTPUTS",
+      "unknownInventory": true,
+      "steps": [
+        {
+          "action": "output"
+        },
+        {
+          "action": "close",
+          "shutdown": true,
+          "error": "Shutdown"
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 1,
+      "recoveries": 0
+    },
+    {
+      "id": "ASYNC-INVALID-BORROWED",
+      "borrowed": true,
+      "missingDmm": true,
+      "openError": "DriverContractViolation",
+      "steps": [],
+      "closes": 1,
+      "shutdowns": 0,
+      "recoveries": 0,
+      "disposes": 0
+    },
+    {
+      "id": "ASYNC-PARTIAL-OPEN-CLEANUP-FAILURE",
+      "failOpen": true,
+      "failClose": true,
+      "openError": "Device",
+      "steps": [],
+      "closes": 1,
+      "shutdowns": 0,
+      "recoveries": 0
+    },
+    {
+      "id": "ASYNC-PROVIDER-SESSIONCLOSED",
+      "failMeasure": true,
+      "measureError": "SessionClosed",
+      "steps": [
+        {
+          "action": "measure",
+          "error": "SessionClosed"
+        },
+        {
+          "action": "measure",
+          "error": "SessionNeedsRecovery"
+        },
+        {
+          "action": "recover"
+        },
+        {
+          "action": "measure",
+          "value": 3.3
+        },
+        {
+          "action": "close",
+          "shutdown": true
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 1,
+      "recoveries": 1
+    },
+    {
+      "id": "ASYNC-PROVIDER-SESSIONCLOSING",
+      "failMeasure": true,
+      "measureError": "SessionClosing",
+      "steps": [
+        {
+          "action": "measure",
+          "error": "SessionClosing"
+        },
+        {
+          "action": "measure",
+          "error": "SessionNeedsRecovery"
+        },
+        {
+          "action": "recover"
+        },
+        {
+          "action": "measure",
+          "value": 3.3
+        },
+        {
+          "action": "close",
+          "shutdown": true
+        }
+      ],
+      "closes": 1,
+      "shutdowns": 1,
+      "recoveries": 1
+    }
+  ],
+  "ownershipCases": [
+    "NATIVE-QUEUED-CANCEL",
+    "NATIVE-RUNNING-CANCEL",
+    "NATIVE-CLOSE-WAITER-CANCEL",
+    "NATIVE-OPEN-CANCEL",
+    "NATIVE-COMPLETED-OPEN-DROP",
+    "NATIVE-REENTRY",
+    "EXECUTOR-OPEN",
+    "EXECUTOR-OPERATION",
+    "EXECUTOR-RECOVERY",
+    "EXECUTOR-CLOSE-UNPOLLED",
+    "EXECUTOR-CLOSE-RECOVERY",
+    "EXECUTOR-CLOSE-SHUTDOWN",
+    "EXECUTOR-UNLOCK-HANDOFF",
+    "WORKER-QUEUED-CANCEL",
+    "WORKER-RUNNING-CANCEL-DRAIN",
+    "WORKER-CLOSE-WAITER-CANCEL",
+    "WORKER-OPEN-CANCEL",
+    "WORKER-COMPLETED-OPEN-DROP",
+    "WORKER-AFFINITY",
+    "WORKER-REENTRY",
+    "DOTNET-TASK-ABANDONMENT",
+    "WORKER-RECOVERY-CANCEL-BEFORE-DISPATCH",
+    "WORKER-RECOVERY-CANCEL-AFTER-DISPATCH"
+  ],
+  "unsupported": [
+    "RemoteSense on fixtures",
+    "NativeAsync on worker provider",
+    "direct Sync open on native/worker providers"
+  ]
+}

@@ -7,6 +7,13 @@ public sealed class ConnectOptions
     public TimeSpan ReadTimeout { get; set; } = TimeSpan.FromSeconds(10);
     public TimeSpan WriteTimeout { get; set; } = TimeSpan.FromSeconds(10);
     public TimeSpan? PerOpTimeout { get; set; }
+    private int? _maxResponseBytes;
+    /// <summary>Maximum response payload bytes, excluding SCPI framing; null leaves the raw adapter unbounded. Zero permits only empty payloads.</summary>
+    public int? MaxResponseBytes
+    {
+        get => _maxResponseBytes;
+        set { if (value < 0) throw new ArgumentOutOfRangeException(nameof(value)); _maxResponseBytes = value; }
+    }
     public string Terminator { get; set; } = "\n";
     public AccessMode AccessMode { get; set; } = AccessMode.NoLock;
     public bool ResetOnConnect { get; set; }

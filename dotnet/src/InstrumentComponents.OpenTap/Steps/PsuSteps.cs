@@ -64,6 +64,6 @@ public sealed class PsuReadbackStep : InstrumentBoundStep<DcPowerSupplyInstrumen
         PhaseIResults.PublishSample(Results, $"CH{Channel}.I", 0, amps);
         PhaseIResults.PublishScalar(Results, $"CH{Channel}.V", volts, "V");
         PhaseIResults.PublishScalar(Results, $"CH{Channel}.I", amps, "A");
-        UpgradeVerdict(Verdict.Pass);
+        UpgradeVerdict(volts.Status==InstrumentComponents.Drivers.MeasurementStatus.Valid && amps.Status==InstrumentComponents.Drivers.MeasurementStatus.Valid ? Verdict.Pass : Verdict.Fail);
     }
 }

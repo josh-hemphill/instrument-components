@@ -4,7 +4,8 @@
     "columns": [
       "Channel",
       "Index",
-      "Value"
+      "Value",
+      "Unit"
     ]
   },
   "scalar": {

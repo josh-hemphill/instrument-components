@@ -19,7 +19,7 @@ pub(crate) fn normalize_command(command: &str, terminator: &str) -> String {
 /// Returns the maximum write attempts for a command.
 pub(crate) fn max_write_attempts(idempotent: bool, retries: u32) -> u32 {
     if idempotent {
-        retries + 1
+        retries.saturating_add(1)
     } else {
         1
     }
@@ -86,6 +86,13 @@ pub fn parse_f64_csv(response: &str) -> Result<Vec<f64>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn retry_attempts_saturate_without_skipping_the_first_attempt() {
+        assert_eq!(max_write_attempts(true, 0), 1);
+        assert_eq!(max_write_attempts(true, u32::MAX), u32::MAX);
+        assert_eq!(max_write_attempts(false, u32::MAX), 1);
+    }
 
     #[test]
     fn parse_f64_csv_handles_spaces_and_trailing_comma() {

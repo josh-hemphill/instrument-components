@@ -7,8 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Prepare post-alpha.1 corrections for strict SCPI block lengths, invalid C# ownership, retry-count saturation, ASCII catalog identity and retained checked-close outcomes. Published alpha.1 archives remain unchanged; delivery requires a new preview.
+- Bound byte-session recovery drains, preserve async cancellation and require successful cleanup before retries. Add optional Rust/C# response payload limits and apply the existing 1 MiB policy in built-in VISA/bench message adapters.
+- Derive package-feed, wheel and validation-harness identities from checked version declarations, with future-preview fixtures. Validate all five independent drivers and their static application against the corrected SDK producer.
+
 ### Added
 
+Earlier step-count bullets below record implementation milestones. The current OpenTAP catalog contains **74 steps** across all eight instrument classes.
+
+- Independently packaged driver SDK: eight typed instrument classes, optional SCPI interpreter, Rust/C# generator and development TestKit, with Windows/Linux x64 .NET 8/10 Native AOT gates. All five device families were published as `0.2.0-alpha.1` from immutable source tags; this branch contains later unpublished corrections. Physical hardware validation remains pending.
+- Experimental vendor-neutral Rust/.NET driver contracts and sync/native-async/worker runtimes, shared matching/lifecycle scenarios, cancellation and thread-affine ownership checks, and an isolated synthetic-package Native AOT proof (see `docs/device-driver-sdk.md`). The facade now composes explicit driver factories and shared typed handles. All 47 identity hints plus USB and 83 operations have moved into five external driver packages; no old-constructor compatibility is promised.
 - Contributor contract for HardwareTest / OpenTAP consumption (`docs/opentap-consumer.md`): session injection, OpenTAP pack with all eight instrument types, and explicit non-goals
 - C# `IScpiIo` message session plus `InstrumentSession.FromIo` so a host can inject Write/Query without wrapping VISA as `ITransport`
 - `QueryIdn` / `OutputOff` / `Reset` on all eight typed classes (`IInstrumentIdentity`, `IInstrumentShutdown`)

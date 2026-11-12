@@ -1,41 +1,7 @@
 # Switch
 
-Matrix-style close / open / query for channel pairs, plus open-all.
+Use the `Switch` typed view over an already opened protocol-neutral handle. Rust views borrow the handle; C# views retain its shared reference. Async views use the corresponding async handle. A view does not open another connection or introduce device-specific fallback behavior.
 
-See [capability matrix](../capability-matrix.md#switch).
+Inspect the handle's operation set and request required operations at open. Device packages own literal commands, supported arguments, channel domains and any model exceptions. An unsupported operation fails without issuing IO; class membership alone does not guarantee every method.
 
-## Open
-
-=== "Rust"
-
-    ```rust
-    let mut sw = catalog.open_switch(&address)?;
-    ```
-
-=== "C#"
-
-    ```csharp
-    var sw = catalog.OpenSwitch(address);
-    ```
-
-## Routes
-
-=== "Rust"
-
-    ```rust
-    sw.close_route(101, 201)?;
-    let closed = sw.is_closed(101, 201)?;
-    sw.open_route(101, 201)?;
-    sw.open_all()?;
-    ```
-
-=== "C#"
-
-    ```csharp
-    sw.CloseRoute(101, 201);
-    var closed = sw.IsClosed(101, 201);
-    sw.OpenRoute(101, 201);
-    sw.OpenAll();
-    ```
-
-Path naming helpers and scan lists are tracked as todo / deferred.
+Measurement results preserve units and status. See [capabilities](../capability-matrix.md), [composition](../getting-started.md) and [errors](../csharp/errors.md). The authoritative operation signatures are generated from `spec/driver-operations.json` in the main repository. External package provenance links source behavior to exact transcript cases. Hardware confirmation remains pending.

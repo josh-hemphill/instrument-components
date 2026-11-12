@@ -1,0 +1,140 @@
+name: Independent driver conformance
+on:
+  workflow_call:
+    inputs:
+      tool_wheel_url:
+        description: Immutable released wheel URL; paired SHA256 is mandatory
+        required: true
+        type: string
+      tool_wheel_sha256:
+        required: true
+        type: string
+      profile_manifest:
+        required: true
+        type: string
+      scenario_manifest:
+        required: true
+        type: string
+      generated_directory:
+        required: true
+        type: string
+      rust_manifest:
+        required: true
+        type: string
+      dotnet_tests:
+        required: true
+        type: string
+      dotnet_aot_consumer:
+        required: true
+        type: string
+      aot_executable_name:
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  conformance:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        framework: [net8.0, net10.0]
+    runs-on: ${{ matrix.os }}
+    env:
+      TOOL_URL: ${{ inputs.tool_wheel_url }}
+      TOOL_SHA256: ${{ inputs.tool_wheel_sha256 }}
+      PROFILE_MANIFEST: ${{ inputs.profile_manifest }}
+      SCENARIO_MANIFEST: ${{ inputs.scenario_manifest }}
+      GENERATED_DIRECTORY: ${{ inputs.generated_directory }}
+      RUST_MANIFEST: ${{ inputs.rust_manifest }}
+      DOTNET_TESTS: ${{ inputs.dotnet_tests }}
+      AOT_CONSUMER: ${{ inputs.dotnet_aot_consumer }}
+      TARGET_FRAMEWORK: ${{ matrix.framework }}
+      AOT_EXECUTABLE_NAME: ${{ inputs.aot_executable_name }}
+    steps:
+      # Checkout is the CALLER driver repo, not instrument-components.
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Use fresh package caches
+        shell: python
+        run: |
+          import os, pathlib
+          with open(os.environ['GITHUB_ENV'], 'a') as env:
+              for name, directory in [('NUGET_PACKAGES','driver-nuget-cache'),('CARGO_HOME','driver-cargo-cache')]:
+                  env.write(name + '=' + str(pathlib.Path(os.environ['RUNNER_TEMP']) / directory) + '\n')
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev
+      - name: Install exact released tooling
+        shell: python
+        run: |
+          import hashlib, os, pathlib, re, subprocess, sys, urllib.parse, urllib.request
+          url = os.environ['TOOL_URL']; expected = os.environ['TOOL_SHA256']
+          if urllib.parse.urlsplit(url).scheme != 'https' or not re.fullmatch('[0-9a-fA-F]{64}', expected):
+              raise SystemExit('HTTPS wheel URL and SHA256 required')
+          name = pathlib.PurePosixPath(urllib.parse.urlsplit(url).path).name
+          if not name.startswith('instrument_driver_tools-') or not name.endswith('.whl'):
+              raise SystemExit('Expected instrument-driver-tools wheel')
+          target = pathlib.Path(os.environ['RUNNER_TEMP']) / name
+          urllib.request.urlretrieve(url, target)
+          if hashlib.sha256(target.read_bytes()).hexdigest().lower() != expected.lower():
+              raise SystemExit('Tool wheel checksum mismatch')
+          subprocess.run([sys.executable, '-m', 'pip', 'install', str(target)], check=True)
+      - name: Validate generated artifacts and run language conformance
+        shell: bash
+        run: |
+          instrument-driver generate --input "$PROFILE_MANIFEST" --output-dir "$GENERATED_DIRECTORY" --contract-major 1 --check
+          instrument-driver generate-tests --input "$SCENARIO_MANIFEST" --output-dir "$GENERATED_DIRECTORY" --check
+          cargo test --manifest-path "$RUST_MANIFEST" --locked
+          cargo test --manifest-path "$RUST_MANIFEST" --all-features --locked
+          dotnet test "$DOTNET_TESTS" -c Release
+      - name: Publish and execute driver Native AOT consumer
+        shell: python
+        run: |
+          import json, os, pathlib, re, subprocess
+          rid = 'win-x64' if os.name == 'nt' else 'linux-x64'
+          output = pathlib.Path(os.environ['RUNNER_TEMP']) / 'driver-native'
+          framework = os.environ['TARGET_FRAMEWORK']
+          # Explicit restore also supports a caller's single-target project when
+          # exercising the other required framework through a global property.
+          subprocess.run(['dotnet', 'restore', os.environ['AOT_CONSUMER'], '-r', rid,
+                          '-p:TargetFramework=' + framework], check=True)
+          command = ['dotnet', 'publish', os.environ['AOT_CONSUMER'], '-c', 'Release', '-r', rid,
+                     '--no-restore', '--framework', framework, '--self-contained', 'true',
+                     '-p:PublishAot=true', '-p:PublishTrimmed=true', '-p:IsAotCompatible=true',
+                     '-p:JsonSerializerIsReflectionEnabledByDefault=false', '-p:TrimmerSingleWarn=false',
+                     '-p:ILLinkTreatWarningsAsErrors=true', '-p:IlcTreatWarningsAsErrors=true',
+                     '-p:TreatWarningsAsErrors=true', '-o', str(output)]
+          # Caller must assert scenario results and return nonzero on mismatch.
+          result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+          print(result.stdout)
+          (pathlib.Path(os.environ['RUNNER_TEMP']) / 'driver-native-publish.log').write_text(result.stdout)
+          if result.returncode or re.search(r'\bwarning IL\d+\b', result.stdout, re.I):
+              raise SystemExit('Native AOT publication or diagnostic gate failed')
+          name = os.environ['AOT_EXECUTABLE_NAME']
+          if not re.fullmatch('[A-Za-z][A-Za-z0-9_.-]*', name):
+              raise SystemExit('Executable name must be a filename without directories')
+          assets = json.loads((pathlib.Path(os.environ['AOT_CONSUMER']).resolve().parent / 'obj/project.assets.json').read_text())
+          sdk = {'InstrumentComponents.Abstractions','InstrumentComponents.Runtime','InstrumentComponents.Scpi','InstrumentComponents.TestKit'}
+          if not {'InstrumentComponents.Abstractions','InstrumentComponents.Runtime'}.issubset({k.split('/')[0] for k in assets['libraries']}):
+              raise SystemExit('Expected runtime/contracts package references')
+          for key, value in assets['libraries'].items():
+              if key.split('/')[0] in sdk and value['type'] != 'package':
+                  raise SystemExit('SDK source/project reference leaked into driver consumer')
+          metadata = json.loads(subprocess.check_output(['cargo','metadata','--manifest-path',os.environ['RUST_MANIFEST'],'--all-features','--locked','--format-version','1'], text=True))
+          for package in metadata['packages']:
+              if package['name'] in {'instrument-api','instrument-runtime','instrument-scpi','instrument-testkit'} and not (package.get('source') or '').startswith('registry+'):
+                  raise SystemExit('SDK source/path reference leaked into driver consumer')
+          subprocess.run([str(output / (name + '.exe' if os.name == 'nt' else name))], check=True)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: driver-native-${{ matrix.os }}-${{ matrix.framework }}
+          path: ${{ runner.temp }}/driver-native-publish.log

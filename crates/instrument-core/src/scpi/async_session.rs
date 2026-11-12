@@ -1,4 +1,4 @@
-use super::framing::extract_response;
+use super::framing::{push_response_byte, try_extract_response};
 use super::protocol::{
     is_no_error_reply, is_opc_supported_reply, is_syst_err_supported_reply, max_write_attempts,
     normalize_command, parse_f64, SessionCapabilities,
@@ -14,11 +14,14 @@ use std::time::{Duration, Instant};
 struct IoTimeoutRestoreGuard<'a> {
     transport: &'a mut DynAsyncTransport,
     timeout: Duration,
+    armed: bool,
 }
 
 impl Drop for IoTimeoutRestoreGuard<'_> {
     fn drop(&mut self) {
-        let _ = self.transport.apply_read_timeout(self.timeout);
+        if self.armed {
+            let _ = self.transport.apply_read_timeout(self.timeout);
+        }
     }
 }
 
@@ -41,7 +44,7 @@ impl AsyncScpiSession {
             transport,
             opts,
             capabilities: SessionCapabilities::default(),
-            read_buffer: Vec::with_capacity(4096),
+            read_buffer: Vec::new(),
             diagnostics: None,
             pending_command: None,
             pending_error_reply: None,
@@ -70,14 +73,18 @@ impl AsyncScpiSession {
 
     /// Drains pending bytes from the transport read buffer.
     pub async fn flush(&mut self) -> Result<()> {
-        let short = Duration::from_millis(50);
         let restore_to = self.opts.io_timeout();
-        self.transport.set_read_timeout(short).await?;
-        let guard = IoTimeoutRestoreGuard {
+        let mut guard = IoTimeoutRestoreGuard {
             transport: &mut self.transport,
             timeout: restore_to,
+            armed: true,
         };
-        drain_read_buffer(&mut *guard.transport, &mut self.read_buffer).await
+        let result = drain_read_buffer(&mut *guard.transport, &mut self.read_buffer).await;
+        if result.is_ok() {
+            guard.transport.set_read_timeout(restore_to).await?;
+            guard.armed = false;
+        }
+        result
     }
 
     /// Writes a command without expecting a response.
@@ -102,7 +109,7 @@ impl AsyncScpiSession {
                     return Ok(String::from_utf8_lossy(&bytes).trim().to_string());
                 }
                 Err(Error::Timeout) if attempts < max_attempts => {
-                    let _ = self.flush().await;
+                    self.flush().await?;
                     if self.opts.reconnect_on_failure {
                         self.try_reconnect().await;
                     }
@@ -181,10 +188,10 @@ impl AsyncScpiSession {
 
     async fn read_response(&mut self, timeout: Duration) -> Result<Vec<u8>> {
         let restore_to = self.opts.io_timeout();
-        self.transport.set_read_timeout(timeout).await?;
         let guard = IoTimeoutRestoreGuard {
             transport: &mut self.transport,
             timeout: restore_to,
+            armed: true,
         };
         read_framed_response(
             &mut *guard.transport,
@@ -317,12 +324,20 @@ async fn drain_read_buffer(
     transport: &mut DynAsyncTransport,
     read_buffer: &mut Vec<u8>,
 ) -> Result<()> {
+    let quiet = Duration::from_millis(50);
+    let deadline = Instant::now() + quiet * 2;
     let mut chunk = [0u8; 256];
     loop {
+        let remaining = deadline.saturating_duration_since(Instant::now());
+        if remaining.is_zero() {
+            return Err(Error::Timeout);
+        }
+        let read_timeout = remaining.min(quiet);
+        transport.set_read_timeout(read_timeout).await?;
         match transport.read(&mut chunk).await {
             Ok(0) => break,
             Ok(_) => continue,
-            Err(Error::Timeout) => break,
+            Err(Error::Timeout) if read_timeout == quiet => break,
             Err(e) => return Err(e),
         }
     }
@@ -352,7 +367,11 @@ async fn read_framed_response(
         match transport.read(&mut chunk).await {
             Ok(0) => {
                 if !read_buffer.is_empty() {
-                    if let Ok((payload, _)) = extract_response(read_buffer, &opts.terminator) {
+                    if let Some((payload, _)) = try_extract_response(
+                        read_buffer,
+                        &opts.terminator,
+                        opts.max_response_bytes,
+                    )? {
                         record_success(diagnostics, CommsEventKind::ReadOk, command, 1, started);
                         *skip_block_terminator =
                             read_buffer.starts_with(b"#") && read_buffer.get(1) != Some(&b'0');
@@ -375,9 +394,16 @@ async fn read_framed_response(
                         continue;
                     }
                     *skip_block_terminator = false;
-                    read_buffer.push(byte);
+                    push_response_byte(
+                        read_buffer,
+                        byte,
+                        &opts.terminator,
+                        opts.max_response_bytes,
+                    )?;
                 }
-                if let Ok((payload, _)) = extract_response(read_buffer, &opts.terminator) {
+                if let Some((payload, _)) =
+                    try_extract_response(read_buffer, &opts.terminator, opts.max_response_bytes)?
+                {
                     record_success(diagnostics, CommsEventKind::ReadOk, command, 1, started);
                     *skip_block_terminator =
                         read_buffer.starts_with(b"#") && read_buffer.get(1) != Some(&b'0');
@@ -386,7 +412,11 @@ async fn read_framed_response(
             }
             Err(Error::Timeout) => {
                 if !read_buffer.is_empty() {
-                    if let Ok((payload, _)) = extract_response(read_buffer, &opts.terminator) {
+                    if let Some((payload, _)) = try_extract_response(
+                        read_buffer,
+                        &opts.terminator,
+                        opts.max_response_bytes,
+                    )? {
                         record_success(diagnostics, CommsEventKind::ReadOk, command, 1, started);
                         *skip_block_terminator =
                             read_buffer.starts_with(b"#") && read_buffer.get(1) != Some(&b'0');

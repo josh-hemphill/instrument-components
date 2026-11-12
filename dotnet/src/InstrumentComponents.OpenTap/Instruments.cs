@@ -1,129 +1,59 @@
-using InstrumentComponents.Classes;
-using InstrumentComponents.Kind;
-using InstrumentComponents.Scpi;
+using InstrumentComponents.Drivers.Catalog;
 using OpenTap;
-
 namespace InstrumentComponents.OpenTap;
-
-[Display("DMM", Groups: ["Instrument Components"], Description: "SCPI digital multimeter.")]
-public sealed class DmmInstrument : ScpiInstrument
+[Display("DMM",Groups:["Instrument Components"],Description:"Registered dmm device capabilities.")]
+public sealed class DmmInstrument : DeviceInstrument
 {
-    public DmmInstrument() => Name = "DMM";
-
-    public DmmInstrument(IScpiIo io) : base(io) => Name = "DMM";
-
-    protected override InstrumentKind PrimaryKind => InstrumentKind.Dmm;
-
-    public Dmm Dmm => AsDmm();
-
-    public override void OutputOff() => AsDmm().OutputOff();
+    public DmmInstrument()=>Name="DMM";
+    protected override string PrimaryKind=>"Dmm";
+    public Dmm Dmm=>AsDmm();
 }
-
-[Display("DC Power Supply", Groups: ["Instrument Components"], Description: "SCPI DC power supply.")]
-public sealed class DcPowerSupplyInstrument : ScpiInstrument
+[Display("DC Power Supply",Groups:["Instrument Components"],Description:"Registered dc power supply device capabilities.")]
+public sealed class DcPowerSupplyInstrument : DeviceInstrument
 {
-    public DcPowerSupplyInstrument() => Name = "DC Power Supply";
-
-    public DcPowerSupplyInstrument(IScpiIo io) : base(io) => Name = "DC Power Supply";
-
-    protected override InstrumentKind PrimaryKind => InstrumentKind.DcPowerSupply;
-
-    [Display("Output Channels", Group: "Communication", Order: 3, Description: "Physical PSU channel count. Required for generic devices before safe shutdown; vendor dialects supply their known count.")]
-    public uint? OutputChannelCount { get; set; }
-
-    public DcPowerSupply Supply
-    {
-        get
-        {
-            var supply = AsDcPowerSupply();
-            supply.Session.PowerSupplyChannelCount = OutputChannelCount;
-            return supply;
-        }
-    }
-
-    public override void OutputOff() => Supply.OutputOff();
+    public DcPowerSupplyInstrument()=>Name="DC Power Supply";
+    protected override string PrimaryKind=>"DcPowerSupply";
+    public DcPowerSupply Supply=>AsDcPowerSupply();
 }
-
-[Display("Function Generator", Groups: ["Instrument Components"], Description: "SCPI function generator.")]
-public sealed class FunctionGeneratorInstrument : ScpiInstrument
+[Display("Function Generator",Groups:["Instrument Components"],Description:"Registered function generator device capabilities.")]
+public sealed class FunctionGeneratorInstrument : DeviceInstrument
 {
-    public FunctionGeneratorInstrument() => Name = "Function Generator";
-
-    public FunctionGeneratorInstrument(IScpiIo io) : base(io) => Name = "Function Generator";
-
-    protected override InstrumentKind PrimaryKind => InstrumentKind.FunctionGenerator;
-
-    public FunctionGenerator Generator => AsFunctionGenerator();
-
-    public override void OutputOff() => AsFunctionGenerator().OutputOff();
+    public FunctionGeneratorInstrument()=>Name="Function Generator";
+    protected override string PrimaryKind=>"FunctionGenerator";
+    public FunctionGenerator Generator=>AsFunctionGenerator();
 }
-
-[Display("Oscilloscope", Groups: ["Instrument Components"], Description: "SCPI oscilloscope.")]
-public sealed class OscilloscopeInstrument : ScpiInstrument
+[Display("Oscilloscope",Groups:["Instrument Components"],Description:"Registered oscilloscope device capabilities.")]
+public sealed class OscilloscopeInstrument : DeviceInstrument
 {
-    public OscilloscopeInstrument() => Name = "Oscilloscope";
-
-    public OscilloscopeInstrument(IScpiIo io) : base(io) => Name = "Oscilloscope";
-
-    protected override InstrumentKind PrimaryKind => InstrumentKind.Oscilloscope;
-
-    public Oscilloscope Scope => AsOscilloscope();
-
-    public override void OutputOff() => AsOscilloscope().OutputOff();
+    public OscilloscopeInstrument()=>Name="Oscilloscope";
+    protected override string PrimaryKind=>"Oscilloscope";
+    public Oscilloscope Scope=>AsOscilloscope();
 }
-
-[Display("Switch", Groups: ["Instrument Components"], Description: "SCPI switch / matrix.")]
-public sealed class SwitchInstrument : ScpiInstrument
+[Display("Switch",Groups:["Instrument Components"],Description:"Registered switch device capabilities.")]
+public sealed class SwitchInstrument : DeviceInstrument
 {
-    public SwitchInstrument() => Name = "Switch";
-
-    public SwitchInstrument(IScpiIo io) : base(io) => Name = "Switch";
-
-    protected override InstrumentKind PrimaryKind => InstrumentKind.Switch;
-
-    public Classes.Switch Matrix => AsSwitch();
-
-    public override void OutputOff() => AsSwitch().OutputOff();
+    public SwitchInstrument()=>Name="Switch";
+    protected override string PrimaryKind=>"Switch";
+    public InstrumentComponents.Drivers.Catalog.Switch Matrix=>AsSwitch();
 }
-
-[Display("Counter", Groups: ["Instrument Components"], Description: "SCPI frequency counter.")]
-public sealed class CounterInstrument : ScpiInstrument
+[Display("Counter",Groups:["Instrument Components"],Description:"Registered counter device capabilities.")]
+public sealed class CounterInstrument : DeviceInstrument
 {
-    public CounterInstrument() => Name = "Counter";
-
-    public CounterInstrument(IScpiIo io) : base(io) => Name = "Counter";
-
-    protected override InstrumentKind PrimaryKind => InstrumentKind.Counter;
-
-    public Counter Counter => AsCounter();
-
-    public override void OutputOff() => AsCounter().OutputOff();
+    public CounterInstrument()=>Name="Counter";
+    protected override string PrimaryKind=>"Counter";
+    public Counter Counter=>AsCounter();
 }
-
-[Display("Power Meter", Groups: ["Instrument Components"], Description: "SCPI RF power meter.")]
-public sealed class PowerMeterInstrument : ScpiInstrument
+[Display("Power Meter",Groups:["Instrument Components"],Description:"Registered power meter device capabilities.")]
+public sealed class PowerMeterInstrument : DeviceInstrument
 {
-    public PowerMeterInstrument() => Name = "Power Meter";
-
-    public PowerMeterInstrument(IScpiIo io) : base(io) => Name = "Power Meter";
-
-    protected override InstrumentKind PrimaryKind => InstrumentKind.PowerMeter;
-
-    public PowerMeter Meter => AsPowerMeter();
-
-    public override void OutputOff() => AsPowerMeter().OutputOff();
+    public PowerMeterInstrument()=>Name="Power Meter";
+    protected override string PrimaryKind=>"PowerMeter";
+    public PowerMeter Meter=>AsPowerMeter();
 }
-
-[Display("Spectrum Analyzer", Groups: ["Instrument Components"], Description: "SCPI spectrum analyzer.")]
-public sealed class SpectrumAnalyzerInstrument : ScpiInstrument
+[Display("Spectrum Analyzer",Groups:["Instrument Components"],Description:"Registered spectrum analyzer device capabilities.")]
+public sealed class SpectrumAnalyzerInstrument : DeviceInstrument
 {
-    public SpectrumAnalyzerInstrument() => Name = "Spectrum Analyzer";
-
-    public SpectrumAnalyzerInstrument(IScpiIo io) : base(io) => Name = "Spectrum Analyzer";
-
-    protected override InstrumentKind PrimaryKind => InstrumentKind.SpectrumAnalyzer;
-
-    public SpectrumAnalyzer Analyzer => AsSpectrumAnalyzer();
-
-    public override void OutputOff() => AsSpectrumAnalyzer().OutputOff();
+    public SpectrumAnalyzerInstrument()=>Name="Spectrum Analyzer";
+    protected override string PrimaryKind=>"SpectrumAnalyzer";
+    public SpectrumAnalyzer Analyzer=>AsSpectrumAnalyzer();
 }

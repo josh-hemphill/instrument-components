@@ -1,41 +1,7 @@
 # Counter
 
-Frequency, period, and totalize helpers for frequency counters / timers.
+Use the `Counter` typed view over an already opened protocol-neutral handle. Rust views borrow the handle; C# views retain its shared reference. Async views use the corresponding async handle. A view does not open another connection or introduce device-specific fallback behavior.
 
-See [capability matrix](../capability-matrix.md#counter).
+Inspect the handle's operation set and request required operations at open. Device packages own literal commands, supported arguments, channel domains and any model exceptions. An unsupported operation fails without issuing IO; class membership alone does not guarantee every method.
 
-## Open
-
-=== "Rust"
-
-    ```rust
-    let mut counter = catalog.open_counter(&address)?;
-    ```
-
-=== "C#"
-
-    ```csharp
-    var counter = catalog.OpenCounter(address);
-    ```
-
-## Measure
-
-=== "Rust"
-
-    ```rust
-    let hz = counter.measure_frequency()?;
-    let period = counter.measure_period()?;   // seconds
-    counter.reset_totalize()?;
-    let count = counter.read_totalize()?;
-    ```
-
-=== "C#"
-
-    ```csharp
-    var hz = counter.MeasureFrequency();
-    var period = counter.MeasurePeriod();     // seconds
-    counter.ResetTotalize();
-    var count = counter.ReadTotalize();
-    ```
-
-Gate time, channel select, and timeout configuration are still todo on the matrix.
+Measurement results preserve units and status. See [capabilities](../capability-matrix.md), [composition](../getting-started.md) and [errors](../csharp/errors.md). The authoritative operation signatures are generated from `spec/driver-operations.json` in the main repository. External package provenance links source behavior to exact transcript cases. Hardware confirmation remains pending.

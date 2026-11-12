@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "githubOwner": "josh-hemphill",
+  "nugetAccount": "josh-hemphill",
+  "crates": [
+    {
+      "crate": "instrument-api",
+      "repository_owner": "josh-hemphill",
+      "repository_name": "instrument-components",
+      "workflow_filename": "driver-sdk-preview.yml",
+      "environment": null
+    },
+    {
+      "crate": "instrument-runtime",
+      "repository_owner": "josh-hemphill",
+      "repository_name": "instrument-components",
+      "workflow_filename": "driver-sdk-preview.yml",
+      "environment": null
+    },
+    {
+      "crate": "instrument-scpi",
+      "repository_owner": "josh-hemphill",
+      "repository_name": "instrument-components",
+      "workflow_filename": "driver-sdk-preview.yml",
+      "environment": null
+    },
+    {
+      "crate": "instrument-testkit",
+      "repository_owner": "josh-hemphill",
+      "repository_name": "instrument-components",
+      "workflow_filename": "driver-sdk-preview.yml",
+      "environment": null
+    },
+    {
+      "crate": "instrument-core",
+      "repository_owner": "josh-hemphill",
+      "repository_name": "instrument-components",
+      "workflow_filename": "release.yml",
+      "environment": null
+    },
+    {
+      "crate": "instrument-visa",
+      "repository_owner": "josh-hemphill",
+      "repository_name": "instrument-components",
+      "workflow_filename": "release.yml",
+      "environment": null
+    },
+    {
+      "crate": "instrument-components",
+      "repository_owner": "josh-hemphill",
+      "repository_name": "instrument-components",
+      "workflow_filename": "release.yml",
+      "environment": null
+    },
+    {
+      "crate": "instrument-driver-keysight",
+      "repository_owner": "josh-hemphill",
+      "repository_name": "instrument-components-keysight",
+      "workflow_filename": "driver-preview.yml",
+      "environment": null
+    },
+    {
+      "crate": "instrument-driver-keithley",
+      "repository_owner": "josh-hemphill",
+      "repository_name": "instrument-components-keithley",
+      "workflow_filename": "driver-preview.yml",
+      "environment": null
+    },
+    {
+      "crate": "instrument-driver-rigol",
+      "repository_owner": "josh-hemphill",
+      "repository_name": "instrument-components-rigol",
+      "workflow_filename": "driver-preview.yml",
+      "environment": null
+    },
+    {
+      "crate": "instrument-driver-siglent",
+      "repository_owner": "josh-hemphill",
+      "repository_name": "instrument-components-siglent",
+      "workflow_filename": "driver-preview.yml",
+      "environment": null
+    },
+    {
+      "crate": "instrument-driver-tektronix",
+      "repository_owner": "josh-hemphill",
+      "repository_name": "instrument-components-tektronix",
+      "workflow_filename": "driver-preview.yml",
+      "environment": null
+    }
+  ],
+  "nuget": [
+    {
+      "name": "instrument-sdk-preview",
+      "owner": "josh-hemphill",
+      "repositoryOwner": "josh-hemphill",
+      "repositoryOwnerId": 46608115,
+      "repository": "instrument-components",
+      "repositoryId": 1262634038,
+      "workflow": "driver-sdk-preview.yml",
+      "packages": [
+        "InstrumentComponents.Abstractions",
+        "InstrumentComponents.Runtime",
+        "InstrumentComponents.Scpi",
+        "InstrumentComponents.TestKit"
+      ]
+    },
+    {
+      "name": "instrument-core-preview",
+      "owner": "josh-hemphill",
+      "repositoryOwner": "josh-hemphill",
+      "repositoryOwnerId": 46608115,
+      "repository": "instrument-components",
+      "repositoryId": 1262634038,
+      "workflow": "release.yml",
+      "packages": [
+        "InstrumentComponents",
+        "InstrumentComponents.Visa",
+        "InstrumentComponents.OpenTap",
+        "InstrumentComponents.OpenTap.Visa"
+      ]
+    },
+    {
+      "name": "instrument-keysight-preview",
+      "owner": "josh-hemphill",
+      "repositoryOwner": "josh-hemphill",
+      "repositoryOwnerId": 46608115,
+      "repository": "instrument-components-keysight",
+      "repositoryId": 1451743527,
+      "workflow": "driver-preview.yml",
+      "packages": [
+        "InstrumentComponents.Drivers.Keysight"
+      ]
+    },
+    {
+      "name": "instrument-keithley-preview",
+      "owner": "josh-hemphill",
+      "repositoryOwner": "josh-hemphill",
+      "repositoryOwnerId": 46608115,
+      "repository": "instrument-components-keithley",
+      "repositoryId": 1451744171,
+      "workflow": "driver-preview.yml",
+      "packages": [
+        "InstrumentComponents.Drivers.Keithley"
+      ]
+    },
+    {
+      "name": "instrument-rigol-preview",
+      "owner": "josh-hemphill",
+      "repositoryOwner": "josh-hemphill",
+      "repositoryOwnerId": 46608115,
+      "repository": "instrument-components-rigol",
+      "repositoryId": 1451745158,
+      "workflow": "driver-preview.yml",
+      "packages": [
+        "InstrumentComponents.Drivers.Rigol"
+      ]
+    },
+    {
+      "name": "instrument-siglent-preview",
+      "owner": "josh-hemphill",
+      "repositoryOwner": "josh-hemphill",
+      "repositoryOwnerId": 46608115,
+      "repository": "instrument-components-siglent",
+      "repositoryId": 1451745792,
+      "workflow": "driver-preview.yml",
+      "packages": [
+        "InstrumentComponents.Drivers.Siglent"
+      ]
+    },
+    {
+      "name": "instrument-tektronix-preview",
+      "owner": "josh-hemphill",
+      "repositoryOwner": "josh-hemphill",
+      "repositoryOwnerId": 46608115,
+      "repository": "instrument-components-tektronix",
+      "repositoryId": 1451746219,
+      "workflow": "driver-preview.yml",
+      "packages": [
+        "InstrumentComponents.Drivers.Tektronix"
+      ]
+    }
+  ],
+  "sourceReferences": {
+    "cratesIo": "https://github.com/rust-lang/crates.io/tree/6cd78f2c7b09da12f6d7b3f70970b6d4d805a5b1/src/controllers/trustpub/github_configs",
+    "nugetGallery": "https://github.com/NuGet/NuGetGallery/tree/5969489b9f4928c70dbbb645768c47a525133f9b/src/NuGetGallery"
+  },
+  "githubOwnerId": 46608115
+}

@@ -26,7 +26,7 @@
         "Counter",
         "PowerMeter",
         "SpectrumAnalyzer",
-        "Scpi"
+        "Common"
       ]
     },
     "operation": {
@@ -107,7 +107,7 @@
       "properties": {
         "method": { "type": "string", "minLength": 1 },
         "returns": { "enum": ["void", "double", "bool", "trace"] },
-        "dialectKey": { "type": "string", "minLength": 1 },
+        "operationId": { "type": "string", "minLength": 1 },
         "args": {
           "type": "array",
           "items": {

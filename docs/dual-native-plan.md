@@ -1,3 +1,5 @@
+> Historical 0.1 planning record. The breaking 0.2 package/capability boundary is documented in [device-driver-sdk.md](device-driver-sdk.md); old class constructors and embedded model/dialect support below are retired.
+
 # Dual-native implementation plan
 
 Rust and C# are **first-class native implementations**, not a port. They share

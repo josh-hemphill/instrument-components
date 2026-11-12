@@ -1,0 +1,69 @@
+name: Independent driver bootstrap package proof
+on:
+  workflow_call:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  package:
+    name: Driver ${{ matrix.os }} / ${{ matrix.framework }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        framework: [net8.0, net10.0]
+    runs-on: ${{ matrix.os }}
+    steps:
+      # Only the caller's driver source is checked out in this consumer job.
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev
+      - uses: actions/download-artifact@v4
+        with:
+          name: driver-sdk-${{ matrix.os }}-${{ matrix.framework }}
+          path: ${{ runner.temp }}/sdk-artifact
+      - name: Verify the tool transfer, install and prepare fresh bootstrap feeds
+        shell: python
+        run: |
+          import hashlib, json, os, pathlib, subprocess, sys
+          root=pathlib.Path(os.environ['RUNNER_TEMP']); artifact=root/'sdk-artifact'
+          rows=[p for p in json.loads((artifact/'packages.json').read_text()) if p['package']=='instrument-driver-tools']
+          if len(rows)!=1: raise SystemExit('Missing/duplicate tool record')
+          row=rows[0]; name=pathlib.PurePosixPath(row['archive'].replace('\\','/')).name
+          matches=list(artifact.rglob(name))
+          if len(matches)!=1 or hashlib.sha256(matches[0].read_bytes()).hexdigest()!=row['sha256']:
+              raise SystemExit('Tool transfer checksum failed')
+          subprocess.run([sys.executable,'-m','pip','install',str(matches[0])],check=True)
+          subprocess.run(['instrument-driver','prepare-feeds','--artifacts',str(artifact),'--output',str(root/'driver-feeds')],check=True)
+      - name: Generated and packed consumers, native execution and negative warning gate
+        shell: python
+        env:
+          PROOF_FRAMEWORK: ${{ matrix.framework }}
+        run: |
+          import os, pathlib, subprocess
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])
+          subprocess.run(['instrument-driver','verify-package','--repository','.',
+                          '--feeds',str(root/'driver-feeds'),'--output',str(root/'driver-proof'),
+                          '--framework',os.environ['PROOF_FRAMEWORK']],check=True)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: driver-proof-${{ matrix.os }}-${{ matrix.framework }}
+          path: |
+            ${{ runner.temp }}/driver-proof/*.json
+            ${{ runner.temp }}/driver-proof/*.log
+            ${{ runner.temp }}/driver-proof/packages/*
+            ${{ runner.temp }}/driver-proof/generated-native/DriverProof*
+            ${{ runner.temp }}/driver-proof/packed-native/DriverProof*
+            ${{ runner.temp }}/driver-feeds/feeds.json

@@ -31,6 +31,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 26
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Require the exact SDK preview on public registries
+        run: python tools/validate-public-sdk.py
       - id: version
         env:
           RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
@@ -91,7 +96,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 26
-      - run: node dotnet/tools/gen-registry.ts
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
@@ -134,7 +138,6 @@ jobs:
           dotnet-version: |
             8.0.x
             9.0.x
-      - run: node dotnet/tools/gen-registry.ts
       - run: dotnet build dotnet/src/InstrumentComponents.OpenTap/InstrumentComponents.OpenTap.csproj -c Release -p:CreateOpenTapPackage=true
       - run: node tools/verify-opentap-package.ts "${{ needs.validate.outputs.version }}"
       - uses: actions/upload-artifact@v4
@@ -164,6 +167,7 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag || github.ref_name }}
+          prerelease: ${{ contains(inputs.tag || github.ref_name, '-') }}
           generate_release_notes: true
           files: release-artifacts/*.TapPackage
           fail_on_unmatched_files: true

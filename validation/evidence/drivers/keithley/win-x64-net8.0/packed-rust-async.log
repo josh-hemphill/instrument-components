@@ -1,0 +1,5 @@
+[1m[92m   Compiling[0m instrument-driver-keithley v0.2.0-alpha.1
+[1m[92m   Compiling[0m keithley-package-proof v0.0.0 (D:\a\_temp\driver-proof\consumer-packed\validation\rust)
+[1m[92m    Finished[0m `release` profile [optimized] target(s) in 6.30s
+[1m[92m     Running[0m `D:\a\_temp\driver-proof\cargo-target\release\keithley-package-proof.exe`
+PASS Keithley package: 297 independent cases; exact traffic, values, units, errors and resource lifetime

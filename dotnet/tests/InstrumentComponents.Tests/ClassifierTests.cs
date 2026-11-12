@@ -10,8 +10,8 @@ public class ClassifierTests
     [Fact]
     public void RegistryHintForUsbVidPid()
     {
-        var registry = ModelRegistry.Embedded();
-        var addr = ResourceAddress.Parse("USB0::0x0957::0x0607::SN::INSTR");
+        var registry = ModelRegistry.FromJson(File.ReadAllText(Path.Combine(RepoFiles.Root(),"validation","standards","registry.json")));
+        var addr = ResourceAddress.Parse("USB0::0x1111::0x2222::SN::INSTR");
         var (_, kinds) = Classifier.Classifier.ClassifyFromAddress(addr, registry);
         Assert.Contains(kinds, k => k.Kind == InstrumentKind.Dmm);
     }

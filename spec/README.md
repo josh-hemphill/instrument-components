@@ -1,30 +1,14 @@
-# Shared dual-native contracts
+# Shared specifications
 
-These files are the executable contract between the Rust and C# implementations. Both languages load the same JSON in tests. Do not encode the same rule twice in language-specific fixtures.
+`driver-operations.json` defines the protocol-neutral catalog and Rust/C# generation. `driver-*-cases.json` define neutral, async and explicit synthetic SCPI interpreter fixtures. `opentap-operations.json` maps74 steps to neutral operations. These contain no built-in real device implementations.
 
-| File | Role |
-|---|---|
-| `scpi-vectors.json` | Dialect resolution, vendor overrides, and generic command strings |
-| `classifier-cases.json` | Address / `*IDN?` / merge / override → kinds |
-| `generic-scpi-map.json` | Maps `generic_*` dialect keys to `scpi_commands.toml` (codegen check) |
-| `transcript.schema.json` | Schema for `fixtures/*.json` I/O transcripts |
-| `vendors.schema.json` | Schema for `vendors/*.json` hardware dialect profiles |
-| `vendors/*.json` | Real vendor SCPI dialects (merged before `generic_*` by `gen-dialects.ts`) |
-| `opentap-operations.json` | Curated OpenTAP step catalog (stable `stepTypeName` values are TapPlan contract) |
-| `opentap-operations.schema.json` | Schema for `opentap-operations.json` |
+`device-extraction-index.json` preserves source hashes and ownership/dispositions for47 hints+USB,48 model-kind rows,13TOML+2vendorJSON sources,83 operations,458 symbols and74 OpenTAP steps. `device-repositories.json` records the actual external repositories. Original literal device templates, fixtures, legacy source and conversion tooling are preserved in external provenance, excluded from production package archives.
 
-## Rules
+`driver-sdk-release.json` records SDK preview/release policy. `publishers.json` lists exact crates and NuGet scopes for the batch setup helper. None of these manifests alone proves publication, hardware behavior or a passing CI run.
 
-1. Edit TOML under `crates/instrument-core/data/` or JSON under `spec/vendors/`, then regenerate. Never hand-edit generated files.
-2. New typed-class methods that emit SCPI need a row in `scpi-vectors.json` (or a shared transcript that asserts the value).
-3. Transcripts under `fixtures/` must drive a typed-class action and assert **values**, not only step counts.
-4. Do not attach new vendor globs to models used as generic in mock catalog (`34461A`, `E36312A`).
-5. `tools/gen-dialects.ts` rejects vendor JSON that does not match `vendors.schema.json` (id pattern, extra properties, empty commands). Optional `notes` are documentation only and are not generated into dialect tables.
-
-```bash
-node tools/gen-shared-tables.ts
-node tools/gen-dialects.ts
-node dotnet/tools/gen-registry.ts
-node tools/validate-opentap-operations.ts
-node tools/gen-opentap-steps.ts
-```
+`public-release-evidence.json` records the completed `0.2.0-alpha.1` publication,
+public registry archive hashes and source commits, release run/job results,
+public package consumers and all-five native composition. It is separate from
+the historical `device-execution-evidence.json` artifact-bootstrap record.
+Hardware validation remains unperformed. New Rust publisher policies are
+configured and read back; their first OIDC publication awaits the next version.

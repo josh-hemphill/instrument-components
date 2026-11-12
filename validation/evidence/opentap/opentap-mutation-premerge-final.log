@@ -1,0 +1,41 @@
+  Determining projects to restore...
+  Restored /workspace/scratch/instrument-components-premerge/opentap-mutation-premerge-final/dotnet/src/InstrumentComponents.Abstractions/InstrumentComponents.Abstractions.csproj (in 244 ms).
+  Restored /workspace/scratch/instrument-components-premerge/opentap-mutation-premerge-final/dotnet/tests/InstrumentComponents.OpenTap.Tests/InstrumentComponents.OpenTap.Tests.csproj (in 244 ms).
+  Restored /workspace/scratch/instrument-components-premerge/opentap-mutation-premerge-final/dotnet/src/InstrumentComponents.Runtime/InstrumentComponents.Runtime.csproj (in 244 ms).
+  Restored /workspace/scratch/instrument-components-premerge/opentap-mutation-premerge-final/dotnet/src/InstrumentComponents.OpenTap/InstrumentComponents.OpenTap.csproj (in 244 ms).
+  Restored /workspace/scratch/instrument-components-premerge/opentap-mutation-premerge-final/dotnet/src/InstrumentComponents/InstrumentComponents.csproj (in 2 ms).
+  InstrumentComponents.Abstractions -> /workspace/scratch/instrument-components-premerge/opentap-mutation-premerge-final/dotnet/src/InstrumentComponents.Abstractions/bin/Release/net8.0/InstrumentComponents.Abstractions.dll
+  InstrumentComponents.Runtime -> /workspace/scratch/instrument-components-premerge/opentap-mutation-premerge-final/dotnet/src/InstrumentComponents.Runtime/bin/Release/net8.0/InstrumentComponents.Runtime.dll
+  InstrumentComponents -> /workspace/scratch/instrument-components-premerge/opentap-mutation-premerge-final/dotnet/src/InstrumentComponents/bin/Release/net8.0/InstrumentComponents.dll
+  InstrumentComponents.OpenTap -> /workspace/scratch/instrument-components-premerge/opentap-mutation-premerge-final/dotnet/src/InstrumentComponents.OpenTap/bin/Release/net8.0/InstrumentComponents.OpenTap.dll
+  InstrumentComponents.OpenTap.Tests -> /workspace/scratch/instrument-components-premerge/opentap-mutation-premerge-final/dotnet/tests/InstrumentComponents.OpenTap.Tests/bin/Release/net8.0/InstrumentComponents.OpenTap.Tests.dll
+Test run for /workspace/scratch/instrument-components-premerge/opentap-mutation-premerge-final/dotnet/tests/InstrumentComponents.OpenTap.Tests/bin/Release/net8.0/InstrumentComponents.OpenTap.Tests.dll (.NETCoreApp,Version=v8.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.70]     InstrumentComponents.OpenTap.Tests.OperationOracleTests.All74StepsForwardExactArgumentsAndPublishExactValuesBeforeAndAfterRoundTrip(roundTrip: True) [FAIL]
+[xUnit.net 00:00:00.78]     InstrumentComponents.OpenTap.Tests.OperationOracleTests.All74StepsForwardExactArgumentsAndPublishExactValuesBeforeAndAfterRoundTrip(roundTrip: False) [FAIL]
+  Failed InstrumentComponents.OpenTap.Tests.OperationOracleTests.All74StepsForwardExactArgumentsAndPublishExactValuesBeforeAndAfterRoundTrip(roundTrip: True) [549 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 7.5
+Actual:   1234
+  Stack Trace:
+     at InstrumentComponents.OpenTap.Tests.OperationOracleTests.Execute(JsonElement row, Boolean roundTrip) in /workspace/scratch/instrument-components-premerge/opentap-mutation-premerge-final/dotnet/tests/InstrumentComponents.OpenTap.Tests/OperationOracleTests.cs:line 57
+   at InstrumentComponents.OpenTap.Tests.OperationOracleTests.<>c__DisplayClass0_1.<All74StepsForwardExactArgumentsAndPublishExactValuesBeforeAndAfterRoundTrip>b__2() in /workspace/scratch/instrument-components-premerge/opentap-mutation-premerge-final/dotnet/tests/InstrumentComponents.OpenTap.Tests/OperationOracleTests.cs:line 18
+   at InstrumentComponents.OpenTap.Tests.InstrumentSettingsScope.Run(Action action) in /workspace/scratch/instrument-components-premerge/opentap-mutation-premerge-final/dotnet/tests/InstrumentComponents.OpenTap.Tests/Support/InstrumentSettingsScope.cs:line 17
+   at InstrumentComponents.OpenTap.Tests.OperationOracleTests.All74StepsForwardExactArgumentsAndPublishExactValuesBeforeAndAfterRoundTrip(Boolean roundTrip) in /workspace/scratch/instrument-components-premerge/opentap-mutation-premerge-final/dotnet/tests/InstrumentComponents.OpenTap.Tests/OperationOracleTests.cs:line 18
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Failed InstrumentComponents.OpenTap.Tests.OperationOracleTests.All74StepsForwardExactArgumentsAndPublishExactValuesBeforeAndAfterRoundTrip(roundTrip: False) [77 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: 7.5
+Actual:   1234
+  Stack Trace:
+     at InstrumentComponents.OpenTap.Tests.OperationOracleTests.Execute(JsonElement row, Boolean roundTrip) in /workspace/scratch/instrument-components-premerge/opentap-mutation-premerge-final/dotnet/tests/InstrumentComponents.OpenTap.Tests/OperationOracleTests.cs:line 57
+   at InstrumentComponents.OpenTap.Tests.OperationOracleTests.<>c__DisplayClass0_1.<All74StepsForwardExactArgumentsAndPublishExactValuesBeforeAndAfterRoundTrip>b__2() in /workspace/scratch/instrument-components-premerge/opentap-mutation-premerge-final/dotnet/tests/InstrumentComponents.OpenTap.Tests/OperationOracleTests.cs:line 18
+   at InstrumentComponents.OpenTap.Tests.InstrumentSettingsScope.Run(Action action) in /workspace/scratch/instrument-components-premerge/opentap-mutation-premerge-final/dotnet/tests/InstrumentComponents.OpenTap.Tests/Support/InstrumentSettingsScope.cs:line 17
+   at InstrumentComponents.OpenTap.Tests.OperationOracleTests.All74StepsForwardExactArgumentsAndPublishExactValuesBeforeAndAfterRoundTrip(Boolean roundTrip) in /workspace/scratch/instrument-components-premerge/opentap-mutation-premerge-final/dotnet/tests/InstrumentComponents.OpenTap.Tests/OperationOracleTests.cs:line 18
+   at InvokeStub_OperationOracleTests.All74StepsForwardExactArgumentsAndPublishExactValuesBeforeAndAfterRoundTrip(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Failed!  - Failed:     2, Passed:     0, Skipped:     0, Total:     2, Duration: 622 ms - InstrumentComponents.OpenTap.Tests.dll (net8.0)

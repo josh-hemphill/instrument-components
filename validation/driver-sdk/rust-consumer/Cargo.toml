@@ -1,0 +1,17 @@
+[package]
+name = "instrument-driver-package-consumer"
+version = "0.1.1"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[dependencies]
+instrument-api = "=0.2.0-alpha.1"
+instrument-runtime = "=0.2.0-alpha.1"
+instrument-synthetic-driver = "=0.2.0-alpha.1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"], optional = true }
+
+[features]
+default = []
+async = ["instrument-api/async", "instrument-runtime/async", "instrument-synthetic-driver/async", "dep:tokio"]

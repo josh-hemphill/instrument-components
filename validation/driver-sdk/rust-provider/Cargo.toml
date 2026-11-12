@@ -1,0 +1,16 @@
+[package]
+name = "instrument-synthetic-driver"
+version = "0.2.0-alpha.1"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "Synthetic binary device for the independent SDK package proof"
+
+[workspace]
+
+[dependencies]
+instrument-api = { path = "../../../crates/instrument-api", version = "=0.2.0-alpha.1" }
+tokio = { version = "1", features = ["sync", "rt"], optional = true }
+
+[features]
+default = []
+async = ["instrument-api/async", "dep:tokio"]

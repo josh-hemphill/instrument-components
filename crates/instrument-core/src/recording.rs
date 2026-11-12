@@ -1,7 +1,6 @@
 use crate::error::Result;
 use crate::mock::ScriptStep;
 use crate::transport::Transport;
-use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use tracing::debug;
 

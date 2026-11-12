@@ -1,55 +1,7 @@
 # DC power supply
 
-Channel-oriented DC source control: set voltage / current limit, enable output, readback.
+Use the `DcPowerSupply` typed view over an already opened protocol-neutral handle. Rust views borrow the handle; C# views retain its shared reference. Async views use the corresponding async handle. A view does not open another connection or introduce device-specific fallback behavior.
 
-See [capability matrix](../capability-matrix.md#dcpowersupply).
+Inspect the handle's operation set and request required operations at open. Device packages own literal commands, supported arguments, channel domains and any model exceptions. An unsupported operation fails without issuing IO; class membership alone does not guarantee every method.
 
-## Open
-
-=== "Rust"
-
-    ```rust
-    let mut psu = catalog.open_dc_power_supply(&address)?;
-    ```
-
-=== "C#"
-
-    ```csharp
-    var psu = catalog.OpenDcPowerSupply(address);
-    ```
-
-## Set and enable
-
-=== "Rust"
-
-    ```rust
-    psu.set_voltage(1, 3.3)?;
-    psu.set_current_limit(1, 0.5)?;
-    psu.output_enable(1, true)?;
-    ```
-
-=== "C#"
-
-    ```csharp
-    psu.SetVoltage(1, 3.3);
-    psu.SetCurrentLimit(1, 0.5);
-    psu.OutputEnable(1, true);
-    ```
-
-## Readback
-
-=== "Rust"
-
-    ```rust
-    let volts = psu.read_voltage(1)?;
-    let amps = psu.read_current(1)?;
-    ```
-
-=== "C#"
-
-    ```csharp
-    var volts = psu.ReadVoltage(1);
-    var amps = psu.ReadCurrent(1);
-    ```
-
-Channels are 1-based in the common SCPI dialects used here. Units are volts and amps (SI).
+Measurement results preserve units and status. See [capabilities](../capability-matrix.md), [composition](../getting-started.md) and [errors](../csharp/errors.md). The authoritative operation signatures are generated from `spec/driver-operations.json` in the main repository. External package provenance links source behavior to exact transcript cases. Hardware confirmation remains pending.

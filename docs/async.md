@@ -1,5 +1,7 @@
 # Async I/O (opt-in)
 
+> Historical 0.1-era async walkthrough. The current breaking 0.2 preview uses explicit driver factories and protocol-neutral handles; these examples are retained as history. Use the [current getting-started guide](../docs-site/docs/getting-started.md) and [initial testing notes](../docs-site/docs/initial-testing.md) for published alpha.1 and prepared corrections.
+
 Enable the `tokio` feature for a **full async API** that mirrors the sync stack: `AsyncScpiSession`, `AsyncDiscovery`, `AsyncDeviceCatalog`, and typed classes (`AsyncDmm`, `AsyncDcPowerSupply`, `AsyncFunctionGenerator`, `AsyncOscilloscope`, `AsyncSwitch`, `AsyncCounter`).
 
 Sync remains the default. Async is additive behind `tokio`.
