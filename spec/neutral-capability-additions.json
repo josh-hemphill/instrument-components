@@ -1,0 +1,49 @@
+{
+  "executionCellIds": [
+    "core-opentap:linux-x64:net8.0:neutral-additions"
+  ],
+  "openTapSteps": [
+    {
+      "id": "daq_measure_voltage_dc",
+      "stepTypeName": "DataAcquisitionMeasureVoltageDcStep",
+      "targetOperation": "DataAcquisitionMeasureVoltageDc"
+    },
+    {
+      "id": "rf_generator_configure",
+      "stepTypeName": "RfSignalGeneratorConfigureStep",
+      "targetOperation": "RfSignalGeneratorConfigure"
+    },
+    {
+      "id": "rf_generator_output_enable",
+      "stepTypeName": "RfSignalGeneratorOutputEnableStep",
+      "targetOperation": "RfSignalGeneratorOutputEnable"
+    },
+    {
+      "id": "rf_generator_output_state",
+      "stepTypeName": "RfSignalGeneratorOutputStateQueryStep",
+      "targetOperation": "RfSignalGeneratorOutputStateQuery"
+    },
+    {
+      "id": "rf_receiver_frequency",
+      "stepTypeName": "RfReceiverMeasureFrequencyStep",
+      "targetOperation": "RfReceiverMeasureFrequency"
+    },
+    {
+      "id": "rf_receiver_power",
+      "stepTypeName": "RfReceiverMeasurePowerStep",
+      "targetOperation": "RfReceiverMeasurePower"
+    }
+  ],
+  "operations": [
+    "DataAcquisitionMeasureVoltageDc",
+    "RfSignalGeneratorConfigure",
+    "RfSignalGeneratorOutputEnable",
+    "RfSignalGeneratorOutputStateQuery",
+    "RfReceiverMeasureFrequency",
+    "RfReceiverMeasurePower"
+  ],
+  "oracle": "validation/neutral/additional-opentap-oracle.json",
+  "oracleSha256": "8e5623c3e48d27d6ec4c41681ee71c879f6c520d10b1419450e4f5d40f69efd6",
+  "schemaVersion": 1,
+  "scope": "Unreleased neutral additions; original migration47hints/83operations/458symbols/74steps and prior raw evidence remain historical records. No external implementation dependency."
+}
