@@ -1,6 +1,6 @@
 # Public preview example
 
-This is a hardware-free application using the published `0.3.0-alpha.1` packages. Download this directory, then run:
+This is a hardware-free application targeting the coordinated `0.3.0-alpha.1` packages (check release availability before restoring). Download this directory, then run:
 
 ```sh
 cargo run --manifest-path rust/Cargo.toml --release
