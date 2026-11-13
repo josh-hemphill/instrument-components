@@ -186,6 +186,11 @@ def main():
                 raise ValueError('Packaged README differs from source')
         shutil.copy2(archive, packages / archive.name)
         records.append(dict(package=name, ecosystem='NuGet', file=archive.name, sha256=sha(archive), dependencies=deps, members=z.namelist()))
+    if args.public_registry:
+        for key, name in [('NUGET_PACKAGES', 'public-nuget-cache'), ('NUGET_HTTP_CACHE_PATH', 'public-nuget-http'), ('DOTNET_CLI_HOME', 'public-dotnet-home')]:
+            path = out / name
+            path.mkdir()
+            env[key] = str(path)
     managed = out / 'managed-consumer'
     managed.mkdir()
     program = (ROOT / 'validation/opentap-release/Program.cs').read_text(encoding='utf-8')
