@@ -17,6 +17,9 @@ def main():
     if not files:
         raise ValueError('No release assets')
     current = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+    # SHA-pinned release checkouts do not necessarily contain the tag ref.
+    subprocess.run(['git', 'fetch', '--no-tags', '--depth=1', 'origin',
+                    'refs/tags/' + args.tag + ':refs/tags/' + args.tag], check=True)
     tagged = subprocess.check_output(['git', 'rev-parse', args.tag + '^{commit}'], text=True).strip()
     if current != tagged:
         raise ValueError('Release source must equal immutable tag')
