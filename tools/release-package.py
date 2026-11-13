@@ -81,6 +81,8 @@ def main():
         metadata = json.loads(subprocess.check_output(['cargo', 'metadata', '--no-deps', '--format-version', '1'], text=True))
         package = next(p for p in metadata['packages'] if p['name'] == args.crate)
         name, version = package['name'], package['version']
+        if not Path('Cargo.lock').exists():
+            subprocess.run(['cargo', 'generate-lockfile'], check=True)
         subprocess.run(['cargo', 'package', '--locked', '-p', name], check=True)
         archive = Path(metadata['target_directory']) / 'package' / (name + '-' + version + '.crate')
         url = 'https://static.crates.io/crates/' + name + '/' + name + '-' + version + '.crate'
