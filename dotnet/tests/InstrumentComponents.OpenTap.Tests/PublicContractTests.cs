@@ -15,9 +15,9 @@ public class PublicContractTests
         PublicContractCatalog.AssertMatchesGolden(PublicContractCatalog.ResultTables(), "phase-i-results.json");
 
     [Fact]
-    public void PackShipsElevenInstrumentsAndCatalogedSteps()
+    public void PackShipsTwelveInstrumentsAndCatalogedSteps()
     {
-        Assert.Equal(11, OpenTapCatalog.InstrumentTypes().Count);
+        Assert.Equal(12, OpenTapCatalog.InstrumentTypes().Count);
         Assert.Equal(
             PublicContractCatalog.Steps().Count,
             OpenTapCatalog.StepTypes().Count);

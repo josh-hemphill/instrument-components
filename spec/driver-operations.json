@@ -12,7 +12,8 @@
     "SpectrumAnalyzer",
     "DataAcquisition",
     "RfSignalGenerator",
-    "RfReceiver"
+    "RfReceiver",
+    "DigitalIo"
   ],
   "units": [
     "Volt",
@@ -1644,6 +1645,81 @@
       "parameters": [],
       "result": "quantity",
       "unit": "Dbm"
+    },
+    {
+      "id": "SwitchCloseChannel",
+      "kind": "Switch",
+      "method": "close_channel",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "positive"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown"
+    },
+    {
+      "id": "SwitchOpenChannel",
+      "kind": "Switch",
+      "method": "open_channel",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "positive"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown"
+    },
+    {
+      "id": "SwitchChannelIsClosed",
+      "kind": "Switch",
+      "method": "channel_is_closed",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "positive"
+        }
+      ],
+      "result": "boolean",
+      "unit": "Unknown"
+    },
+    {
+      "id": "DigitalIoReadByte",
+      "kind": "DigitalIo",
+      "method": "read_byte",
+      "parameters": [
+        {
+          "name": "port",
+          "type": "channel",
+          "constraint": "positive"
+        }
+      ],
+      "result": "count",
+      "unit": "Count"
+    },
+    {
+      "id": "DigitalIoWriteByte",
+      "kind": "DigitalIo",
+      "method": "write_byte",
+      "parameters": [
+        {
+          "name": "port",
+          "type": "channel",
+          "constraint": "positive"
+        },
+        {
+          "name": "value",
+          "type": "count",
+          "constraint": "byte"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown"
     }
   ],
   "removedStructuralSymbols": [

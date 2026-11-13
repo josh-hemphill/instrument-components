@@ -3,6 +3,47 @@ using OpenTap;
 
 namespace InstrumentComponents.OpenTap;
 
+[Display("Channel closed", Groups: ["Instrument Components", "Switch"], Description: "Query the commanded state of one named path.")]
+public sealed class SwitchChannelIsClosedStep : OptionalLimitStep<SwitchInstrument>
+{
+    [Display("Channel", Order: 2)]
+    public uint Channel { get; set; } = 1;
+
+    public SwitchChannelIsClosedStep()
+    {
+        Rules.Add(() => Channel >= 1, "Channel must be at least 1.", nameof(Channel));
+    }
+
+    public override void Run()
+    {
+        if (!TryGetInstrument(out var instrument))
+            return;
+
+        PublishScalar("Closed", instrument.Matrix.ChannelIsClosed(Channel) ? 1.0 : 0.0, "");
+    }
+}
+
+[Display("Close channel", Groups: ["Instrument Components", "Switch"], Description: "Close one named normally-open/common path.")]
+public sealed class SwitchCloseChannelStep : InstrumentBoundStep<SwitchInstrument>
+{
+    [Display("Channel", Order: 2)]
+    public uint Channel { get; set; } = 1;
+
+    public SwitchCloseChannelStep()
+    {
+        Rules.Add(() => Channel >= 1, "Channel must be at least 1.", nameof(Channel));
+    }
+
+    public override void Run()
+    {
+        if (!TryGetInstrument(out var instrument))
+            return;
+
+        instrument.Matrix.CloseChannel(Channel);
+        UpgradeVerdict(Verdict.Pass);
+    }
+}
+
 [Display("Is Closed", Groups: ["Instrument Components", "Switch", "Route"], Description: "Query whether a matrix route is closed.")]
 public sealed class SwitchIsClosedStep : OptionalLimitStep<SwitchInstrument>
 {
@@ -25,5 +66,26 @@ public sealed class SwitchIsClosedStep : OptionalLimitStep<SwitchInstrument>
             return;
 
         PublishScalar("Closed", instrument.Matrix.IsClosed(Channel1, Channel2) ? 1.0 : 0.0, "");
+    }
+}
+
+[Display("Open channel", Groups: ["Instrument Components", "Switch"], Description: "Open one named path; physical isolation depends on the selected device.")]
+public sealed class SwitchOpenChannelStep : InstrumentBoundStep<SwitchInstrument>
+{
+    [Display("Channel", Order: 2)]
+    public uint Channel { get; set; } = 1;
+
+    public SwitchOpenChannelStep()
+    {
+        Rules.Add(() => Channel >= 1, "Channel must be at least 1.", nameof(Channel));
+    }
+
+    public override void Run()
+    {
+        if (!TryGetInstrument(out var instrument))
+            return;
+
+        instrument.Matrix.OpenChannel(Channel);
+        UpgradeVerdict(Verdict.Pass);
     }
 }

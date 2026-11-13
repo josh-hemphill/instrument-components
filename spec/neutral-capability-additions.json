@@ -1,6 +1,6 @@
 {
   "executionCellIds": [
-    "core-opentap:linux-x64:net8.0:strict-message-body"
+    "core-opentap:linux-x64:net8.0:device-expansion"
   ],
   "openTapSteps": [
     {
@@ -32,6 +32,31 @@
       "id": "rf_receiver_power",
       "stepTypeName": "RfReceiverMeasurePowerStep",
       "targetOperation": "RfReceiverMeasurePower"
+    },
+    {
+      "id": "switch_close_channel",
+      "stepTypeName": "SwitchCloseChannelStep",
+      "targetOperation": "SwitchCloseChannel"
+    },
+    {
+      "id": "switch_open_channel",
+      "stepTypeName": "SwitchOpenChannelStep",
+      "targetOperation": "SwitchOpenChannel"
+    },
+    {
+      "id": "switch_channel_is_closed",
+      "stepTypeName": "SwitchChannelIsClosedStep",
+      "targetOperation": "SwitchChannelIsClosed"
+    },
+    {
+      "id": "digital_io_read_byte",
+      "stepTypeName": "DigitalIoReadByteStep",
+      "targetOperation": "DigitalIoReadByte"
+    },
+    {
+      "id": "digital_io_write_byte",
+      "stepTypeName": "DigitalIoWriteByteStep",
+      "targetOperation": "DigitalIoWriteByte"
     }
   ],
   "operations": [
@@ -40,10 +65,15 @@
     "RfSignalGeneratorOutputEnable",
     "RfSignalGeneratorOutputStateQuery",
     "RfReceiverMeasureFrequency",
-    "RfReceiverMeasurePower"
+    "RfReceiverMeasurePower",
+    "SwitchCloseChannel",
+    "SwitchOpenChannel",
+    "SwitchChannelIsClosed",
+    "DigitalIoReadByte",
+    "DigitalIoWriteByte"
   ],
   "oracle": "validation/neutral/additional-opentap-oracle.json",
-  "oracleSha256": "8e5623c3e48d27d6ec4c41681ee71c879f6c520d10b1419450e4f5d40f69efd6",
+  "oracleSha256": "72868e6cde4e87a30c1456cf797efe360af950b65c93bac758efb31901fe9b37",
   "schemaVersion": 1,
-  "scope": "Unreleased neutral additions; original migration47hints/83operations/458symbols/74steps and prior raw evidence remain historical records. No external implementation dependency."
+  "scope": "Unreleased neutral DAQ/RF, channel switch and digital byte additions; original migration47hints/83operations/458symbols/74steps and prior raw evidence remain historical records. No external implementation dependency."
 }

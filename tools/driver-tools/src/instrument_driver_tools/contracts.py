@@ -23,7 +23,7 @@ def generate_contracts(manifest: dict) -> dict[str, str]:
         if len({p['name'] for p in op['parameters']}) != len(op['parameters']):raise ValueError('Duplicate parameter')
         for p in op['parameters']:
             if p['type'] not in ['number','optional_number','channel','count','boolean','symbol','waveform','power_unit','sense_mode']:raise ValueError('Unknown parameter type')
-            if p['constraint'] not in ['finite','positive','nonnegative','percent','positive_integer','safe_symbol','enum','none']:raise ValueError('Unknown parameter constraint')
+            if p['constraint'] not in ['finite','positive','nonnegative','percent','positive_integer','safe_symbol','enum','none','byte']:raise ValueError('Unknown parameter constraint')
         if 'setsUnit' in op and op['setsUnit'] not in manifest['units']+['PowerArgument']:raise ValueError('Unknown configured unit')
     if any(not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', n) for n in identifiers): raise ValueError('Unsafe contract identifier')
     if len({op['id'] for op in manifest['operations']}) != len(manifest['operations']): raise ValueError('Duplicate operation')
@@ -58,6 +58,7 @@ def generate_contracts(manifest: dict) -> dict[str, str]:
         for p in op['parameters']:
             n=p['name'];t=p['type'];con=p['constraint']
             if t in ['number','optional_number']:checks.append(f'validate_number({"Some(*"+n+")" if t=="number" else "*"+n}, "{con}")?;')
+            elif t=='count' and con=='byte':checks.append(f'if *{n} > 255 {{ return Err(invalid("byte value must be 0..255")); }}')
             elif t in ['channel','count']:checks.append(f'if *{n} == 0 {{ return Err(invalid("positive channel/count required")); }}')
             elif t=='symbol':checks.append(f'validate_symbol({n})?;')
             else:checks.append(f'let _ = {n};')
@@ -89,6 +90,7 @@ def generate_contracts(manifest: dict) -> dict[str, str]:
         for p in op['parameters']:
             n=pascal(p['name']);t=p['type']
             if t in ['number','optional_number']:cs += [f'ContractValidation.Number({n}, "{p["constraint"]}");']
+            elif t=='count' and p['constraint']=='byte':cs += [f'if ({n} > 255) throw ContractValidation.Invalid("Byte value must be 0..255");']
             elif t in ['channel','count']:cs += [f'if ({n} == 0) throw ContractValidation.Invalid("Positive channel/count required");']
             elif t=='symbol':cs += [f'ContractValidation.Symbol({n});']
             elif t in manifest['enums']:cs += [f'if (!Enum.IsDefined({n})) throw ContractValidation.Invalid("Invalid enum");']

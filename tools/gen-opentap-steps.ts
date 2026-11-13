@@ -105,7 +105,9 @@ function emitConstructor(operation: Operation, parameters: Parameter[]): string 
     }
   }
   for (const parameter of parameters) {
-    if (parameter.type === "uint") {
+    if (parameter.type === "uint" && constraints.get(parameter.name) === "byte") {
+      rules.push(`        Rules.Add(() => ${parameter.name} <= 255, "${parameter.displayName} must be between 0 and 255.", nameof(${parameter.name}));`);
+    } else if (parameter.type === "uint") {
       rules.push(
         `        Rules.Add(() => ${parameter.name} >= 1, ${JSON.stringify(`${parameter.displayName} must be at least 1.`)}, nameof(${parameter.name}));`,
       );
@@ -167,7 +169,7 @@ function emitScalarStep(operation: Operation): string {
   const invoke = `instrument.${operation.accessor}.${operation.invoke!.method}(${args})`;
   const valueExpr = operation.invoke!.returns === "bool" ? `${invoke} ? 1.0 : 0.0` : "quantity";
   const acquisition = operation.invoke!.returns === "bool" ? "" : `        var quantity = ${invoke};\n`;
-  const physicalUnit = operation.invoke!.returns === "bool" ? unit : "PhaseIResults.UnitSymbol(quantity.Unit)";
+  const physicalUnit = ["bool", "uint"].includes(operation.invoke!.returns!) ? unit : "PhaseIResults.UnitSymbol(quantity.Unit)";
   return emitClass(
     operation,
     `OptionalLimitStep<${operation.instrumentType}>`,
@@ -213,7 +215,7 @@ function emitOperation(operation: Operation): string {
   }
   const returns = operation.invoke.returns;
   const mode = operation.publish.mode;
-  if ((returns === "double" || returns === "bool") && mode === "scalar") {
+  if ((returns === "double" || returns === "bool" || returns === "uint") && mode === "scalar") {
     return emitScalarStep(operation);
   }
   if (returns === "void" && mode === "none") {

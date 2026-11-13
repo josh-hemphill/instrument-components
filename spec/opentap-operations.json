@@ -3641,6 +3641,241 @@
         "unit": "dBm",
         "supportsLimits": true
       }
+    },
+    {
+      "id": "switch_close_channel",
+      "stepTypeName": "SwitchCloseChannelStep",
+      "implementation": "generated",
+      "kind": "invoke",
+      "instrumentKind": "Switch",
+      "instrumentType": "SwitchInstrument",
+      "accessor": "Matrix",
+      "displayName": "Close channel",
+      "displayGroups": [
+        "Instrument Components",
+        "Switch"
+      ],
+      "description": "Close one named normally-open/common path.",
+      "capability": "base",
+      "since": "0.2.0",
+      "parameters": [
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        }
+      ],
+      "invoke": {
+        "method": "CloseChannel",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Channel"
+          }
+        ],
+        "operationId": "SwitchCloseChannel"
+      },
+      "publish": {
+        "mode": "none"
+      }
+    },
+    {
+      "id": "switch_open_channel",
+      "stepTypeName": "SwitchOpenChannelStep",
+      "implementation": "generated",
+      "kind": "invoke",
+      "instrumentKind": "Switch",
+      "instrumentType": "SwitchInstrument",
+      "accessor": "Matrix",
+      "displayName": "Open channel",
+      "displayGroups": [
+        "Instrument Components",
+        "Switch"
+      ],
+      "description": "Open one named path; physical isolation depends on the selected device.",
+      "capability": "base",
+      "since": "0.2.0",
+      "parameters": [
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        }
+      ],
+      "invoke": {
+        "method": "OpenChannel",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Channel"
+          }
+        ],
+        "operationId": "SwitchOpenChannel"
+      },
+      "publish": {
+        "mode": "none"
+      }
+    },
+    {
+      "id": "switch_channel_is_closed",
+      "stepTypeName": "SwitchChannelIsClosedStep",
+      "implementation": "generated",
+      "kind": "invoke",
+      "instrumentKind": "Switch",
+      "instrumentType": "SwitchInstrument",
+      "accessor": "Matrix",
+      "displayName": "Channel closed",
+      "displayGroups": [
+        "Instrument Components",
+        "Switch"
+      ],
+      "description": "Query the commanded state of one named path.",
+      "capability": "base",
+      "since": "0.2.0",
+      "parameters": [
+        {
+          "name": "Channel",
+          "displayName": "Channel",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        },
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
+      ],
+      "invoke": {
+        "method": "ChannelIsClosed",
+        "returns": "bool",
+        "args": [
+          {
+            "parameter": "Channel"
+          }
+        ],
+        "operationId": "SwitchChannelIsClosed"
+      },
+      "publish": {
+        "mode": "scalar",
+        "name": "Closed",
+        "unit": "",
+        "supportsLimits": true
+      }
+    },
+    {
+      "id": "digital_io_read_byte",
+      "stepTypeName": "DigitalIoReadByteStep",
+      "implementation": "generated",
+      "kind": "invoke",
+      "instrumentKind": "DigitalIo",
+      "instrumentType": "DigitalIoInstrument",
+      "accessor": "Io",
+      "displayName": "Read byte",
+      "displayGroups": [
+        "Instrument Components",
+        "DigitalIo"
+      ],
+      "description": "Sample one explicitly configured digital input byte.",
+      "capability": "base",
+      "since": "0.2.0",
+      "parameters": [
+        {
+          "name": "Port",
+          "displayName": "Port",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        },
+        {
+          "name": "LimitLow",
+          "displayName": "Limit low",
+          "type": "nullableDouble",
+          "order": 90
+        },
+        {
+          "name": "LimitHigh",
+          "displayName": "Limit high",
+          "type": "nullableDouble",
+          "order": 91
+        }
+      ],
+      "invoke": {
+        "method": "ReadByte",
+        "returns": "uint",
+        "args": [
+          {
+            "parameter": "Port"
+          }
+        ],
+        "operationId": "DigitalIoReadByte"
+      },
+      "publish": {
+        "mode": "scalar",
+        "name": "Byte",
+        "unit": "",
+        "supportsLimits": true
+      }
+    },
+    {
+      "id": "digital_io_write_byte",
+      "stepTypeName": "DigitalIoWriteByteStep",
+      "implementation": "generated",
+      "kind": "invoke",
+      "instrumentKind": "DigitalIo",
+      "instrumentType": "DigitalIoInstrument",
+      "accessor": "Io",
+      "displayName": "Write byte",
+      "displayGroups": [
+        "Instrument Components",
+        "DigitalIo"
+      ],
+      "description": "Write an explicit 0\u2013255 pattern to a configured digital output.",
+      "capability": "base",
+      "since": "0.2.0",
+      "parameters": [
+        {
+          "name": "Port",
+          "displayName": "Port",
+          "type": "uint",
+          "order": 2,
+          "default": 1
+        },
+        {
+          "name": "Value",
+          "displayName": "Value",
+          "type": "uint",
+          "order": 3,
+          "default": 0
+        }
+      ],
+      "invoke": {
+        "method": "WriteByte",
+        "returns": "void",
+        "args": [
+          {
+            "parameter": "Port"
+          },
+          {
+            "parameter": "Value"
+          }
+        ],
+        "operationId": "DigitalIoWriteByte"
+      },
+      "publish": {
+        "mode": "none"
+      }
     }
   ]
 }

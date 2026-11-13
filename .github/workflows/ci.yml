@@ -5,6 +5,7 @@ on:
     branches: [latest]
   pull_request:
     branches: [latest]
+  workflow_dispatch:
   workflow_call:
     inputs:
       source_ref:

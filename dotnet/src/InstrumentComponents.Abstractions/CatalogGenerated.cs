@@ -2,7 +2,7 @@
 #nullable enable
 using InstrumentComponents.Drivers;
 namespace InstrumentComponents.Drivers.Catalog;
-public enum CatalogOperation { DmmMeasureVoltageDc, DmmMeasureVoltageAc, DmmMeasureCurrentDc, DmmMeasureCurrentAc, DmmMeasureResistance, DmmMeasureResistance2Wire, DmmMeasureResistance4Wire, DmmMeasureTemperature, DmmConfigureVoltageDc, DmmConfigureVoltageAc, DmmConfigureCurrentDc, DmmConfigureCurrentAc, DmmConfigureResistance, DmmConfigureResistance4Wire, DmmInitiate, DmmFetch, DmmRead, DmmSoftwareTrigger, DcPowerSupplyChannelCount, DcPowerSupplySetVoltage, DcPowerSupplySetCurrentLimit, DcPowerSupplyOutputEnable, DcPowerSupplyOutputStateQuery, DcPowerSupplyOvpLevel, DcPowerSupplyOvpEnable, DcPowerSupplyOvpQuery, DcPowerSupplyReadVoltage, DcPowerSupplyReadCurrent, FunctionGeneratorSetWaveform, FunctionGeneratorSetFrequency, FunctionGeneratorSetAmplitude, FunctionGeneratorSetOffset, FunctionGeneratorSetDutyCycle, FunctionGeneratorSetLoad, FunctionGeneratorOutputEnable, FunctionGeneratorSetBurstCount, FunctionGeneratorSetBurstState, FunctionGeneratorSetBurstTriggerSource, FunctionGeneratorReadFrequency, OscilloscopeSetTimebaseScale, OscilloscopeReadTimebaseScale, OscilloscopeSetChannelScale, OscilloscopeSetChannelDisplay, OscilloscopeSetChannelCoupling, OscilloscopeSetTriggerSource, OscilloscopeSetTriggerLevel, OscilloscopeSetTriggerSlope, OscilloscopeRun, OscilloscopeStop, OscilloscopeSingle, OscilloscopeMeasureVpp, OscilloscopeMeasureFrequency, OscilloscopeCaptureVoltageTrace, SwitchCloseRoute, SwitchOpenRoute, SwitchIsClosed, SwitchOpenAll, CounterMeasureFrequency, CounterMeasurePeriod, CounterSetGateTime, CounterSelectChannel, CounterResetTotalize, CounterReadTotalize, PowerMeterConfigureMeasurement, PowerMeterInitiate, PowerMeterFetch, PowerMeterRead, SpectrumAnalyzerSetCenterFrequency, SpectrumAnalyzerSetSpan, SpectrumAnalyzerSetRbw, SpectrumAnalyzerSetVbw, SpectrumAnalyzerSetRefLevel, SpectrumAnalyzerFetchTraceAscii, SpectrumAnalyzerMarkerPeak, SpectrumAnalyzerMarkerX, SpectrumAnalyzerMarkerY, SpectrumAnalyzerSweepContinuous, SpectrumAnalyzerSingleSweep, SpectrumAnalyzerWaitOpc, DcPowerSupplySetSenseMode, QueryIdentity, Reset, Shutdown, DataAcquisitionMeasureVoltageDc, RfSignalGeneratorConfigure, RfSignalGeneratorOutputEnable, RfSignalGeneratorOutputStateQuery, RfReceiverMeasureFrequency, RfReceiverMeasurePower }
+public enum CatalogOperation { DmmMeasureVoltageDc, DmmMeasureVoltageAc, DmmMeasureCurrentDc, DmmMeasureCurrentAc, DmmMeasureResistance, DmmMeasureResistance2Wire, DmmMeasureResistance4Wire, DmmMeasureTemperature, DmmConfigureVoltageDc, DmmConfigureVoltageAc, DmmConfigureCurrentDc, DmmConfigureCurrentAc, DmmConfigureResistance, DmmConfigureResistance4Wire, DmmInitiate, DmmFetch, DmmRead, DmmSoftwareTrigger, DcPowerSupplyChannelCount, DcPowerSupplySetVoltage, DcPowerSupplySetCurrentLimit, DcPowerSupplyOutputEnable, DcPowerSupplyOutputStateQuery, DcPowerSupplyOvpLevel, DcPowerSupplyOvpEnable, DcPowerSupplyOvpQuery, DcPowerSupplyReadVoltage, DcPowerSupplyReadCurrent, FunctionGeneratorSetWaveform, FunctionGeneratorSetFrequency, FunctionGeneratorSetAmplitude, FunctionGeneratorSetOffset, FunctionGeneratorSetDutyCycle, FunctionGeneratorSetLoad, FunctionGeneratorOutputEnable, FunctionGeneratorSetBurstCount, FunctionGeneratorSetBurstState, FunctionGeneratorSetBurstTriggerSource, FunctionGeneratorReadFrequency, OscilloscopeSetTimebaseScale, OscilloscopeReadTimebaseScale, OscilloscopeSetChannelScale, OscilloscopeSetChannelDisplay, OscilloscopeSetChannelCoupling, OscilloscopeSetTriggerSource, OscilloscopeSetTriggerLevel, OscilloscopeSetTriggerSlope, OscilloscopeRun, OscilloscopeStop, OscilloscopeSingle, OscilloscopeMeasureVpp, OscilloscopeMeasureFrequency, OscilloscopeCaptureVoltageTrace, SwitchCloseRoute, SwitchOpenRoute, SwitchIsClosed, SwitchOpenAll, CounterMeasureFrequency, CounterMeasurePeriod, CounterSetGateTime, CounterSelectChannel, CounterResetTotalize, CounterReadTotalize, PowerMeterConfigureMeasurement, PowerMeterInitiate, PowerMeterFetch, PowerMeterRead, SpectrumAnalyzerSetCenterFrequency, SpectrumAnalyzerSetSpan, SpectrumAnalyzerSetRbw, SpectrumAnalyzerSetVbw, SpectrumAnalyzerSetRefLevel, SpectrumAnalyzerFetchTraceAscii, SpectrumAnalyzerMarkerPeak, SpectrumAnalyzerMarkerX, SpectrumAnalyzerMarkerY, SpectrumAnalyzerSweepContinuous, SpectrumAnalyzerSingleSweep, SpectrumAnalyzerWaitOpc, DcPowerSupplySetSenseMode, QueryIdentity, Reset, Shutdown, DataAcquisitionMeasureVoltageDc, RfSignalGeneratorConfigure, RfSignalGeneratorOutputEnable, RfSignalGeneratorOutputStateQuery, RfReceiverMeasureFrequency, RfReceiverMeasurePower, SwitchCloseChannel, SwitchOpenChannel, SwitchChannelIsClosed, DigitalIoReadByte, DigitalIoWriteByte }
 public enum Waveform { Sine, Square, Ramp, Pulse, Noise, Dc }
 public enum PowerUnit { Watt, Dbm }
 public enum SenseMode { Internal, External }
@@ -898,6 +898,58 @@ public override (ReplyKind Kind, Unit Unit) Result => (ReplyKind.Quantity, globa
 private protected override void ValidateArguments() {
 }
 }
+public sealed record SwitchCloseChannelRequest(uint Channel) : CatalogRequest {
+public override CatalogOperation Operation => CatalogOperation.SwitchCloseChannel;
+public override IReadOnlyDictionary<string, Argument> Arguments => new Dictionary<string, Argument> {
+["channel"] = Argument.Channel(Channel),
+};
+public override (ReplyKind Kind, Unit Unit) Result => (ReplyKind.Unit, global::InstrumentComponents.Drivers.Catalog.Unit.Unknown);
+private protected override void ValidateArguments() {
+if (Channel == 0) throw ContractValidation.Invalid("Positive channel/count required");
+}
+}
+public sealed record SwitchOpenChannelRequest(uint Channel) : CatalogRequest {
+public override CatalogOperation Operation => CatalogOperation.SwitchOpenChannel;
+public override IReadOnlyDictionary<string, Argument> Arguments => new Dictionary<string, Argument> {
+["channel"] = Argument.Channel(Channel),
+};
+public override (ReplyKind Kind, Unit Unit) Result => (ReplyKind.Unit, global::InstrumentComponents.Drivers.Catalog.Unit.Unknown);
+private protected override void ValidateArguments() {
+if (Channel == 0) throw ContractValidation.Invalid("Positive channel/count required");
+}
+}
+public sealed record SwitchChannelIsClosedRequest(uint Channel) : CatalogRequest {
+public override CatalogOperation Operation => CatalogOperation.SwitchChannelIsClosed;
+public override IReadOnlyDictionary<string, Argument> Arguments => new Dictionary<string, Argument> {
+["channel"] = Argument.Channel(Channel),
+};
+public override (ReplyKind Kind, Unit Unit) Result => (ReplyKind.Boolean, global::InstrumentComponents.Drivers.Catalog.Unit.Unknown);
+private protected override void ValidateArguments() {
+if (Channel == 0) throw ContractValidation.Invalid("Positive channel/count required");
+}
+}
+public sealed record DigitalIoReadByteRequest(uint Port) : CatalogRequest {
+public override CatalogOperation Operation => CatalogOperation.DigitalIoReadByte;
+public override IReadOnlyDictionary<string, Argument> Arguments => new Dictionary<string, Argument> {
+["port"] = Argument.Channel(Port),
+};
+public override (ReplyKind Kind, Unit Unit) Result => (ReplyKind.Count, global::InstrumentComponents.Drivers.Catalog.Unit.Count);
+private protected override void ValidateArguments() {
+if (Port == 0) throw ContractValidation.Invalid("Positive channel/count required");
+}
+}
+public sealed record DigitalIoWriteByteRequest(uint Port, uint Value) : CatalogRequest {
+public override CatalogOperation Operation => CatalogOperation.DigitalIoWriteByte;
+public override IReadOnlyDictionary<string, Argument> Arguments => new Dictionary<string, Argument> {
+["port"] = Argument.Channel(Port),
+["value"] = Argument.Count(Value),
+};
+public override (ReplyKind Kind, Unit Unit) Result => (ReplyKind.Unit, global::InstrumentComponents.Drivers.Catalog.Unit.Unknown);
+private protected override void ValidateArguments() {
+if (Port == 0) throw ContractValidation.Invalid("Positive channel/count required");
+if (Value > 255) throw ContractValidation.Invalid("Byte value must be 0..255");
+}
+}
 public sealed class Dmm(ICatalogExecutor executor) {
 public Quantity MeasureVoltageDc(double? Range) => executor.Invoke(new DmmMeasureVoltageDcRequest(Range)).IntoQuantity();
 public Quantity MeasureVoltageAc(double? Range) => executor.Invoke(new DmmMeasureVoltageAcRequest(Range)).IntoQuantity();
@@ -1054,6 +1106,9 @@ public void OpenAll() => executor.Invoke(new SwitchOpenAllRequest()).IntoUnit();
 public DeviceIdentity QueryIdentity() => executor.Invoke(new QueryIdentityRequest()).IntoIdentity();
 public void Reset() => executor.Invoke(new ResetRequest()).IntoUnit();
 public void Shutdown() => executor.Invoke(new ShutdownRequest()).IntoUnit();
+public void CloseChannel(uint Channel) => executor.Invoke(new SwitchCloseChannelRequest(Channel)).IntoUnit();
+public void OpenChannel(uint Channel) => executor.Invoke(new SwitchOpenChannelRequest(Channel)).IntoUnit();
+public bool ChannelIsClosed(uint Channel) => executor.Invoke(new SwitchChannelIsClosedRequest(Channel)).IntoBoolean();
 }
 public sealed class AsyncSwitch(IAsyncCatalogExecutor executor) {
 public async Task CloseRouteAsync(uint Ch1, uint Ch2, CancellationToken cancellationToken = default) { (await executor.InvokeAsync(new SwitchCloseRouteRequest(Ch1, Ch2), cancellationToken).ConfigureAwait(false)).IntoUnit(); }
@@ -1063,6 +1118,9 @@ public async Task OpenAllAsync(CancellationToken cancellationToken = default) { 
 public async Task<DeviceIdentity> QueryIdentityAsync(CancellationToken cancellationToken = default) { return (await executor.InvokeAsync(new QueryIdentityRequest(), cancellationToken).ConfigureAwait(false)).IntoIdentity(); }
 public async Task ResetAsync(CancellationToken cancellationToken = default) { (await executor.InvokeAsync(new ResetRequest(), cancellationToken).ConfigureAwait(false)).IntoUnit(); }
 public async Task ShutdownAsync(CancellationToken cancellationToken = default) { (await executor.InvokeAsync(new ShutdownRequest(), cancellationToken).ConfigureAwait(false)).IntoUnit(); }
+public async Task CloseChannelAsync(uint Channel, CancellationToken cancellationToken = default) { (await executor.InvokeAsync(new SwitchCloseChannelRequest(Channel), cancellationToken).ConfigureAwait(false)).IntoUnit(); }
+public async Task OpenChannelAsync(uint Channel, CancellationToken cancellationToken = default) { (await executor.InvokeAsync(new SwitchOpenChannelRequest(Channel), cancellationToken).ConfigureAwait(false)).IntoUnit(); }
+public async Task<bool> ChannelIsClosedAsync(uint Channel, CancellationToken cancellationToken = default) { return (await executor.InvokeAsync(new SwitchChannelIsClosedRequest(Channel), cancellationToken).ConfigureAwait(false)).IntoBoolean(); }
 }
 public sealed class Counter(ICatalogExecutor executor) {
 public Quantity MeasureFrequency() => executor.Invoke(new CounterMeasureFrequencyRequest()).IntoQuantity();
@@ -1180,6 +1238,20 @@ public async Task ShutdownAsync(CancellationToken cancellationToken = default) {
 public async Task<Quantity> MeasureFrequencyAsync(CancellationToken cancellationToken = default) { return (await executor.InvokeAsync(new RfReceiverMeasureFrequencyRequest(), cancellationToken).ConfigureAwait(false)).IntoQuantity(); }
 public async Task<Quantity> MeasurePowerAsync(CancellationToken cancellationToken = default) { return (await executor.InvokeAsync(new RfReceiverMeasurePowerRequest(), cancellationToken).ConfigureAwait(false)).IntoQuantity(); }
 }
+public sealed class DigitalIo(ICatalogExecutor executor) {
+public DeviceIdentity QueryIdentity() => executor.Invoke(new QueryIdentityRequest()).IntoIdentity();
+public void Reset() => executor.Invoke(new ResetRequest()).IntoUnit();
+public void Shutdown() => executor.Invoke(new ShutdownRequest()).IntoUnit();
+public uint ReadByte(uint Port) => executor.Invoke(new DigitalIoReadByteRequest(Port)).IntoCount();
+public void WriteByte(uint Port, uint Value) => executor.Invoke(new DigitalIoWriteByteRequest(Port, Value)).IntoUnit();
+}
+public sealed class AsyncDigitalIo(IAsyncCatalogExecutor executor) {
+public async Task<DeviceIdentity> QueryIdentityAsync(CancellationToken cancellationToken = default) { return (await executor.InvokeAsync(new QueryIdentityRequest(), cancellationToken).ConfigureAwait(false)).IntoIdentity(); }
+public async Task ResetAsync(CancellationToken cancellationToken = default) { (await executor.InvokeAsync(new ResetRequest(), cancellationToken).ConfigureAwait(false)).IntoUnit(); }
+public async Task ShutdownAsync(CancellationToken cancellationToken = default) { (await executor.InvokeAsync(new ShutdownRequest(), cancellationToken).ConfigureAwait(false)).IntoUnit(); }
+public async Task<uint> ReadByteAsync(uint Port, CancellationToken cancellationToken = default) { return (await executor.InvokeAsync(new DigitalIoReadByteRequest(Port), cancellationToken).ConfigureAwait(false)).IntoCount(); }
+public async Task WriteByteAsync(uint Port, uint Value, CancellationToken cancellationToken = default) { (await executor.InvokeAsync(new DigitalIoWriteByteRequest(Port, Value), cancellationToken).ConfigureAwait(false)).IntoUnit(); }
+}
 public static class OperationDescriptions { public static OperationMetadata Describe(this CatalogOperation operation) => operation switch {
 CatalogOperation.DmmMeasureVoltageDc => new("Dmm", [new("range", ParameterKind.OptionalNumber, "positive")], ReplyKind.Quantity, global::InstrumentComponents.Drivers.Catalog.Unit.Volt),
 CatalogOperation.DmmMeasureVoltageAc => new("Dmm", [new("range", ParameterKind.OptionalNumber, "positive")], ReplyKind.Quantity, global::InstrumentComponents.Drivers.Catalog.Unit.Volt),
@@ -1270,6 +1342,11 @@ CatalogOperation.RfSignalGeneratorOutputEnable => new("RfSignalGenerator", [new(
 CatalogOperation.RfSignalGeneratorOutputStateQuery => new("RfSignalGenerator", [], ReplyKind.Boolean, global::InstrumentComponents.Drivers.Catalog.Unit.Unknown),
 CatalogOperation.RfReceiverMeasureFrequency => new("RfReceiver", [], ReplyKind.Quantity, global::InstrumentComponents.Drivers.Catalog.Unit.Hertz),
 CatalogOperation.RfReceiverMeasurePower => new("RfReceiver", [], ReplyKind.Quantity, global::InstrumentComponents.Drivers.Catalog.Unit.Dbm),
+CatalogOperation.SwitchCloseChannel => new("Switch", [new("channel", ParameterKind.Channel, "positive")], ReplyKind.Unit, global::InstrumentComponents.Drivers.Catalog.Unit.Unknown),
+CatalogOperation.SwitchOpenChannel => new("Switch", [new("channel", ParameterKind.Channel, "positive")], ReplyKind.Unit, global::InstrumentComponents.Drivers.Catalog.Unit.Unknown),
+CatalogOperation.SwitchChannelIsClosed => new("Switch", [new("channel", ParameterKind.Channel, "positive")], ReplyKind.Boolean, global::InstrumentComponents.Drivers.Catalog.Unit.Unknown),
+CatalogOperation.DigitalIoReadByte => new("DigitalIo", [new("port", ParameterKind.Channel, "positive")], ReplyKind.Count, global::InstrumentComponents.Drivers.Catalog.Unit.Count),
+CatalogOperation.DigitalIoWriteByte => new("DigitalIo", [new("port", ParameterKind.Channel, "positive"), new("value", ParameterKind.Count, "byte")], ReplyKind.Unit, global::InstrumentComponents.Drivers.Catalog.Unit.Unknown),
 _ => throw ContractValidation.Invalid("Unknown operation"), }; }
 public static class ParameterDomains { public static IReadOnlyList<string>? SemanticValues(this ParameterKind kind) => kind switch {
 ParameterKind.Boolean => Array.AsReadOnly(new string[] { "true", "false" }),
@@ -1367,4 +1444,9 @@ CatalogOperation.RfSignalGeneratorOutputEnable => Operation.CatalogRfSignalGener
 CatalogOperation.RfSignalGeneratorOutputStateQuery => Operation.CatalogRfSignalGeneratorOutputStateQuery,
 CatalogOperation.RfReceiverMeasureFrequency => Operation.CatalogRfReceiverMeasureFrequency,
 CatalogOperation.RfReceiverMeasurePower => Operation.CatalogRfReceiverMeasurePower,
+CatalogOperation.SwitchCloseChannel => Operation.CatalogSwitchCloseChannel,
+CatalogOperation.SwitchOpenChannel => Operation.CatalogSwitchOpenChannel,
+CatalogOperation.SwitchChannelIsClosed => Operation.CatalogSwitchChannelIsClosed,
+CatalogOperation.DigitalIoReadByte => Operation.CatalogDigitalIoReadByte,
+CatalogOperation.DigitalIoWriteByte => Operation.CatalogDigitalIoWriteByte,
 _ => throw ContractValidation.Invalid("Unknown operation"), }; }

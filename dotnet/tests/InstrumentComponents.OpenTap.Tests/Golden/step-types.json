@@ -372,6 +372,124 @@
       }
     ]
   },
+  "DigitalIoReadByteStep": {
+    "fullName": "InstrumentComponents.OpenTap.DigitalIoReadByteStep",
+    "displayName": "Read byte",
+    "groups": [
+      "Instrument Components",
+      "DigitalIo"
+    ],
+    "description": "Sample one explicitly configured digital input byte.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.DigitalIoInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Port",
+        "type": "System.UInt32",
+        "displayName": "Port",
+        "order": 2,
+        "group": [],
+        "defaultValue": "1"
+      },
+      {
+        "name": "LimitLow",
+        "type": "System.Double?",
+        "displayName": "Limit low",
+        "order": 90,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitHigh",
+        "type": "System.Double?",
+        "displayName": "Limit high",
+        "order": 91,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Read byte"
+      }
+    ]
+  },
+  "DigitalIoWriteByteStep": {
+    "fullName": "InstrumentComponents.OpenTap.DigitalIoWriteByteStep",
+    "displayName": "Write byte",
+    "groups": [
+      "Instrument Components",
+      "DigitalIo"
+    ],
+    "description": "Write an explicit 0\u2013255 pattern to a configured digital output.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.DigitalIoInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Port",
+        "type": "System.UInt32",
+        "displayName": "Port",
+        "order": 2,
+        "group": [],
+        "defaultValue": "1"
+      },
+      {
+        "name": "Value",
+        "type": "System.UInt32",
+        "displayName": "Value",
+        "order": 3,
+        "group": [],
+        "defaultValue": "0"
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Write byte"
+      }
+    ]
+  },
   "DmmConfigureCurrentAcStep": {
     "fullName": "InstrumentComponents.OpenTap.DmmConfigureCurrentAcStep",
     "displayName": "Configure AC Current",
@@ -4067,6 +4185,116 @@
       }
     ]
   },
+  "SwitchChannelIsClosedStep": {
+    "fullName": "InstrumentComponents.OpenTap.SwitchChannelIsClosedStep",
+    "displayName": "Channel closed",
+    "groups": [
+      "Instrument Components",
+      "Switch"
+    ],
+    "description": "Query the commanded state of one named path.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.SwitchInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Channel",
+        "type": "System.UInt32",
+        "displayName": "Channel",
+        "order": 2,
+        "group": [],
+        "defaultValue": "1"
+      },
+      {
+        "name": "LimitLow",
+        "type": "System.Double?",
+        "displayName": "Limit low",
+        "order": 90,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "LimitHigh",
+        "type": "System.Double?",
+        "displayName": "Limit high",
+        "order": 91,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Channel closed"
+      }
+    ]
+  },
+  "SwitchCloseChannelStep": {
+    "fullName": "InstrumentComponents.OpenTap.SwitchCloseChannelStep",
+    "displayName": "Close channel",
+    "groups": [
+      "Instrument Components",
+      "Switch"
+    ],
+    "description": "Close one named normally-open/common path.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.SwitchInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Channel",
+        "type": "System.UInt32",
+        "displayName": "Channel",
+        "order": 2,
+        "group": [],
+        "defaultValue": "1"
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Close channel"
+      }
+    ]
+  },
   "SwitchCloseRouteStep": {
     "fullName": "InstrumentComponents.OpenTap.SwitchCloseRouteStep",
     "displayName": "Switch Close Route",
@@ -4230,6 +4458,53 @@
           "Common"
         ],
         "defaultValue": "Switch Open All"
+      }
+    ]
+  },
+  "SwitchOpenChannelStep": {
+    "fullName": "InstrumentComponents.OpenTap.SwitchOpenChannelStep",
+    "displayName": "Open channel",
+    "groups": [
+      "Instrument Components",
+      "Switch"
+    ],
+    "description": "Open one named path; physical isolation depends on the selected device.",
+    "settings": [
+      {
+        "name": "Instrument",
+        "type": "InstrumentComponents.OpenTap.SwitchInstrument",
+        "displayName": "Instrument",
+        "order": 1,
+        "group": [],
+        "defaultValue": null
+      },
+      {
+        "name": "Channel",
+        "type": "System.UInt32",
+        "displayName": "Channel",
+        "order": 2,
+        "group": [],
+        "defaultValue": "1"
+      },
+      {
+        "name": "Enabled",
+        "type": "System.Boolean",
+        "displayName": "Enabled",
+        "order": 20000,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": true
+      },
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Step Name",
+        "order": 20001,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Open channel"
       }
     ]
   },
