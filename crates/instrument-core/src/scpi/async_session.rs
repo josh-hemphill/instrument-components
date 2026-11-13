@@ -1,4 +1,4 @@
-use super::framing::{push_response_byte, try_extract_response};
+use super::framing::{push_response_byte, try_extract_body_response};
 use super::protocol::{
     is_no_error_reply, is_opc_supported_reply, is_syst_err_supported_reply, max_write_attempts,
     normalize_command, parse_f64, SessionCapabilities,
@@ -98,6 +98,19 @@ impl AsyncScpiSession {
             .await
     }
 
+    /// One complete plain-text response body without whitespace trimming, retries
+    /// or drain. Rejects blocks, extra buffered messages and alternate terminators.
+    pub async fn query_body(&mut self, command: &str) -> Result<String> {
+        if self.opts.retries != 0 {
+            return Err(Error::Unsupported("query_body requires zero retries"));
+        }
+        self.write_with_retry(command, false).await?;
+        let bytes = self
+            .read_response_mode(self.effective_read_timeout(), false)
+            .await?;
+        Ok(String::from_utf8_lossy(&bytes).into_owned())
+    }
+
     pub async fn query_with_timeout(&mut self, command: &str, timeout: Duration) -> Result<String> {
         let max_attempts = max_write_attempts(true, self.opts.retries);
         let mut attempts = 0;
@@ -187,6 +200,14 @@ impl AsyncScpiSession {
     }
 
     async fn read_response(&mut self, timeout: Duration) -> Result<Vec<u8>> {
+        self.read_response_mode(timeout, true).await
+    }
+
+    async fn read_response_mode(
+        &mut self,
+        timeout: Duration,
+        allow_binary_blocks: bool,
+    ) -> Result<Vec<u8>> {
         let restore_to = self.opts.io_timeout();
         let guard = IoTimeoutRestoreGuard {
             transport: &mut self.transport,
@@ -197,9 +218,12 @@ impl AsyncScpiSession {
             &mut *guard.transport,
             &mut self.read_buffer,
             &mut self.skip_block_terminator,
-            &self.opts,
-            self.pending_command.as_deref(),
-            &self.diagnostics,
+            ReadContext {
+                opts: &self.opts,
+                command: self.pending_command.as_deref(),
+                diagnostics: &self.diagnostics,
+                allow_binary_blocks,
+            },
             timeout,
         )
         .await
@@ -345,15 +369,26 @@ async fn drain_read_buffer(
     Ok(())
 }
 
+struct ReadContext<'a> {
+    opts: &'a ConnectOptions,
+    command: Option<&'a str>,
+    diagnostics: &'a Option<Diagnostics>,
+    allow_binary_blocks: bool,
+}
+
 async fn read_framed_response(
     transport: &mut DynAsyncTransport,
     read_buffer: &mut Vec<u8>,
     skip_block_terminator: &mut bool,
-    opts: &ConnectOptions,
-    command: Option<&str>,
-    diagnostics: &Option<Diagnostics>,
+    context: ReadContext<'_>,
     timeout: Duration,
 ) -> Result<Vec<u8>> {
+    let ReadContext {
+        opts,
+        command,
+        diagnostics,
+        allow_binary_blocks,
+    } = context;
     let deadline = Instant::now() + timeout;
     read_buffer.clear();
     let mut chunk = [0u8; 1024];
@@ -367,10 +402,11 @@ async fn read_framed_response(
         match transport.read(&mut chunk).await {
             Ok(0) => {
                 if !read_buffer.is_empty() {
-                    if let Some((payload, _)) = try_extract_response(
+                    if let Some((payload, _)) = try_extract_body_response(
                         read_buffer,
                         &opts.terminator,
                         opts.max_response_bytes,
+                        allow_binary_blocks,
                     )? {
                         record_success(diagnostics, CommsEventKind::ReadOk, command, 1, started);
                         *skip_block_terminator =
@@ -394,6 +430,11 @@ async fn read_framed_response(
                         continue;
                     }
                     *skip_block_terminator = false;
+                    if !allow_binary_blocks && read_buffer.is_empty() && byte == b'#' {
+                        return Err(Error::Parse(
+                            "Binary blocks unavailable for plain text response body".into(),
+                        ));
+                    }
                     push_response_byte(
                         read_buffer,
                         byte,
@@ -401,9 +442,12 @@ async fn read_framed_response(
                         opts.max_response_bytes,
                     )?;
                 }
-                if let Some((payload, _)) =
-                    try_extract_response(read_buffer, &opts.terminator, opts.max_response_bytes)?
-                {
+                if let Some((payload, _)) = try_extract_body_response(
+                    read_buffer,
+                    &opts.terminator,
+                    opts.max_response_bytes,
+                    allow_binary_blocks,
+                )? {
                     record_success(diagnostics, CommsEventKind::ReadOk, command, 1, started);
                     *skip_block_terminator =
                         read_buffer.starts_with(b"#") && read_buffer.get(1) != Some(&b'0');
@@ -412,10 +456,11 @@ async fn read_framed_response(
             }
             Err(Error::Timeout) => {
                 if !read_buffer.is_empty() {
-                    if let Some((payload, _)) = try_extract_response(
+                    if let Some((payload, _)) = try_extract_body_response(
                         read_buffer,
                         &opts.terminator,
                         opts.max_response_bytes,
+                        allow_binary_blocks,
                     )? {
                         record_success(diagnostics, CommsEventKind::ReadOk, command, 1, started);
                         *skip_block_terminator =

@@ -4,7 +4,10 @@ use instrument_synthetic_driver::{candidate, BinaryFactory, Trace};
 use std::collections::BTreeSet;
 use std::sync::{atomic::Ordering, Arc};
 
+mod neutral_classes;
+
 fn main() -> Result<()> {
+    neutral_classes::synchronous()?;
     checked_close_regressions()?;
     let trace = Arc::new(Trace::default());
     let registry = DriverRegistry::new([
@@ -163,6 +166,7 @@ fn checked_close_regressions() -> Result<()> {
 
 #[cfg(feature = "async")]
 async fn async_proof() -> Result<()> {
+    neutral_classes::asynchronous().await?;
     use instrument_synthetic_driver::{
         native_candidate, worker_candidate, AsyncTrace, NativeFactory, WorkerFactory, WorkerTrace,
     };

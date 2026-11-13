@@ -1,0 +1,14 @@
+  Determining projects to restore...
+  Restored /workspace/instrument-components/dotnet/tests/InstrumentComponents.Runtime.Tests/InstrumentComponents.Runtime.Tests.csproj (in 548 ms).
+  Restored /workspace/instrument-components/validation/driver-sdk/dotnet-provider/InstrumentComponents.SyntheticDriver.csproj (in 434 ms).
+  4 of 6 projects are up-to-date for restore.
+  InstrumentComponents.Abstractions -> /workspace/instrument-components/dotnet/src/InstrumentComponents.Abstractions/bin/Release/net8.0/InstrumentComponents.Abstractions.dll
+  InstrumentComponents.Scpi -> /workspace/instrument-components/dotnet/src/InstrumentComponents.Scpi/bin/Release/net8.0/InstrumentComponents.Scpi.dll
+  InstrumentComponents.Runtime -> /workspace/instrument-components/dotnet/src/InstrumentComponents.Runtime/bin/Release/net8.0/InstrumentComponents.Runtime.dll
+  InstrumentComponents.TestKit -> /workspace/instrument-components/dotnet/src/InstrumentComponents.TestKit/bin/Release/net8.0/InstrumentComponents.TestKit.dll
+  InstrumentComponents.SyntheticDriver -> /workspace/instrument-components/validation/driver-sdk/dotnet-provider/bin/Release/net8.0/InstrumentComponents.SyntheticDriver.dll
+  InstrumentComponents.Runtime.Tests -> /workspace/instrument-components/dotnet/tests/InstrumentComponents.Runtime.Tests/bin/Release/net8.0/InstrumentComponents.Runtime.Tests.dll
+Test run for /workspace/instrument-components/dotnet/tests/InstrumentComponents.Runtime.Tests/bin/Release/net8.0/InstrumentComponents.Runtime.Tests.dll (.NETCoreApp,Version=v8.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:    46, Skipped:     0, Total:    46, Duration: 488 ms - InstrumentComponents.Runtime.Tests.dll (net8.0)

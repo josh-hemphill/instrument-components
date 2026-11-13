@@ -57,3 +57,35 @@ public sealed class SpectrumAnalyzerInstrument : DeviceInstrument
     protected override string PrimaryKind=>"SpectrumAnalyzer";
     public SpectrumAnalyzer Analyzer=>AsSpectrumAnalyzer();
 }
+
+[Display("Data Acquisition", Groups: ["Instrument Components"], Description: "Registered channel-aware acquisition capabilities.")]
+public sealed class DataAcquisitionInstrument : DeviceInstrument
+{
+    public DataAcquisitionInstrument() => Name = "Data Acquisition";
+    protected override string PrimaryKind => "DataAcquisition";
+    public DataAcquisition Acquisition => AsDataAcquisition();
+}
+
+[Display("RF Signal Generator", Groups: ["Instrument Components"], Description: "Registered RF source capabilities; output enable is explicit.")]
+public sealed class RfSignalGeneratorInstrument : DeviceInstrument
+{
+    public RfSignalGeneratorInstrument() => Name = "RF Signal Generator";
+    protected override string PrimaryKind => "RfSignalGenerator";
+    public RfSignalGenerator Generator => AsRfSignalGenerator();
+}
+
+[Display("RF Receiver", Groups: ["Instrument Components"], Description: "Registered absolute RF measurement capabilities.")]
+public sealed class RfReceiverInstrument : DeviceInstrument
+{
+    public RfReceiverInstrument() => Name = "RF Receiver";
+    protected override string PrimaryKind => "RfReceiver";
+    public RfReceiver Receiver => AsRfReceiver();
+}
+
+[Display("Digital IO", Groups: ["Instrument Components"], Description: "Registered byte input and output capabilities.")]
+public sealed class DigitalIoInstrument : DeviceInstrument
+{
+    public DigitalIoInstrument() => Name = "Digital IO";
+    protected override string PrimaryKind => "DigitalIo";
+    public DigitalIo Io => AsDigitalIo();
+}

@@ -9,7 +9,11 @@
     "Switch",
     "Counter",
     "PowerMeter",
-    "SpectrumAnalyzer"
+    "SpectrumAnalyzer",
+    "DataAcquisition",
+    "RfSignalGenerator",
+    "RfReceiver",
+    "DigitalIo"
   ],
   "units": [
     "Volt",
@@ -1168,6 +1172,157 @@
       "kind": "Common",
       "method": "shutdown",
       "parameters": [],
+      "result": "unit",
+      "unit": "Unknown"
+    },
+    {
+      "id": "DataAcquisitionMeasureVoltageDc",
+      "kind": "DataAcquisition",
+      "method": "measure_voltage_dc",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "positive_integer"
+        },
+        {
+          "name": "range",
+          "type": "optional_number",
+          "constraint": "positive"
+        }
+      ],
+      "result": "quantity",
+      "unit": "Volt"
+    },
+    {
+      "id": "RfSignalGeneratorConfigure",
+      "kind": "RfSignalGenerator",
+      "method": "configure",
+      "parameters": [
+        {
+          "name": "frequency_hz",
+          "type": "number",
+          "constraint": "positive"
+        },
+        {
+          "name": "level_dbm",
+          "type": "number",
+          "constraint": "finite"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown"
+    },
+    {
+      "id": "RfSignalGeneratorOutputEnable",
+      "kind": "RfSignalGenerator",
+      "method": "output_enable",
+      "parameters": [
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "constraint": "none"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown"
+    },
+    {
+      "id": "RfSignalGeneratorOutputStateQuery",
+      "kind": "RfSignalGenerator",
+      "method": "output_state_query",
+      "parameters": [],
+      "result": "boolean",
+      "unit": "Unknown"
+    },
+    {
+      "id": "RfReceiverMeasureFrequency",
+      "kind": "RfReceiver",
+      "method": "measure_frequency",
+      "parameters": [],
+      "result": "quantity",
+      "unit": "Hertz"
+    },
+    {
+      "id": "RfReceiverMeasurePower",
+      "kind": "RfReceiver",
+      "method": "measure_power",
+      "parameters": [],
+      "result": "quantity",
+      "unit": "Dbm"
+    },
+    {
+      "id": "SwitchCloseChannel",
+      "kind": "Switch",
+      "method": "close_channel",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "positive"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown"
+    },
+    {
+      "id": "SwitchOpenChannel",
+      "kind": "Switch",
+      "method": "open_channel",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "positive"
+        }
+      ],
+      "result": "unit",
+      "unit": "Unknown"
+    },
+    {
+      "id": "SwitchChannelIsClosed",
+      "kind": "Switch",
+      "method": "channel_is_closed",
+      "parameters": [
+        {
+          "name": "channel",
+          "type": "channel",
+          "constraint": "positive"
+        }
+      ],
+      "result": "boolean",
+      "unit": "Unknown"
+    },
+    {
+      "id": "DigitalIoReadByte",
+      "kind": "DigitalIo",
+      "method": "read_byte",
+      "parameters": [
+        {
+          "name": "port",
+          "type": "channel",
+          "constraint": "positive"
+        }
+      ],
+      "result": "count",
+      "unit": "Count"
+    },
+    {
+      "id": "DigitalIoWriteByte",
+      "kind": "DigitalIo",
+      "method": "write_byte",
+      "parameters": [
+        {
+          "name": "port",
+          "type": "channel",
+          "constraint": "positive"
+        },
+        {
+          "name": "value",
+          "type": "count",
+          "constraint": "byte"
+        }
+      ],
       "result": "unit",
       "unit": "Unknown"
     }

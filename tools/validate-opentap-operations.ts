@@ -21,6 +21,10 @@ const KINDS = new Set([
   "Counter",
   "PowerMeter",
   "SpectrumAnalyzer",
+  "DataAcquisition",
+  "RfSignalGenerator",
+  "RfReceiver",
+  "DigitalIo",
   "Common",
 ]);
 
@@ -29,7 +33,7 @@ const IMPLEMENTATIONS = new Set(["handwritten", "generated"]);
 const OPERATION_KINDS = new Set(["invoke", "composite", "utility"]);
 const PARAM_TYPES = new Set(["string", "int", "uint", "double", "bool", "nullableDouble", "enum"]);
 const RESERVED_PARAMETER_NAMES = new Set(["Enabled", "Name", "Id", "Verdict", "Instrument"]);
-const RETURN_TYPES = new Set(["void", "double", "bool", "trace"]);
+const RETURN_TYPES = new Set(["void", "double", "bool", "trace", "uint"]);
 const PUBLISH_MODES = new Set(["none", "identity", "sample", "scalar", "sampleAndScalar", "multiScalar"]);
 const CAPABILITIES = new Set(["base", "extension"]);
 

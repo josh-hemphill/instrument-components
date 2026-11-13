@@ -1,4 +1,4 @@
-use super::framing::{push_response_byte, try_extract_response};
+use super::framing::{push_response_byte, try_extract_body_response};
 use super::protocol::{
     is_no_error_reply, is_opc_supported_reply, is_syst_err_supported_reply, max_write_attempts,
     normalize_command, parse_f64, SessionCapabilities,
@@ -96,6 +96,20 @@ impl ScpiSession {
         self.query_with_timeout(command, self.effective_read_timeout())
     }
 
+    /// One complete response body with payload whitespace preserved. No retry,
+    /// drain or recovery is attempted; requires zero retries. Rejects binary
+    /// blocks, extra buffered messages and alternate terminators.
+    pub fn query_body(&mut self, command: &str) -> Result<String> {
+        if self.opts.retries != 0 {
+            return Err(Error::Unsupported("query_body requires zero retries"));
+        }
+        self.write_with_retry(command, false)?;
+        let result = self.read_framed_response(self.effective_read_timeout(), false);
+        let _ = self.restore_io_timeout();
+        let bytes = result?;
+        Ok(String::from_utf8_lossy(&bytes).into_owned())
+    }
+
     pub fn query_with_timeout(&mut self, command: &str, timeout: Duration) -> Result<String> {
         let max_attempts = max_write_attempts(true, self.opts.retries);
         let mut attempts = 0;
@@ -176,12 +190,16 @@ impl ScpiSession {
     }
 
     fn read_response(&mut self, timeout: Duration) -> Result<Vec<u8>> {
-        let result = self.read_framed_response(timeout);
+        let result = self.read_framed_response(timeout, true);
         let _ = self.restore_io_timeout();
         result
     }
 
-    fn read_framed_response(&mut self, timeout: Duration) -> Result<Vec<u8>> {
+    fn read_framed_response(
+        &mut self,
+        timeout: Duration,
+        allow_binary_blocks: bool,
+    ) -> Result<Vec<u8>> {
         let deadline = Instant::now() + timeout;
         self.read_buffer.clear();
         let command = self.pending_command.clone();
@@ -197,10 +215,11 @@ impl ScpiSession {
             match self.transport.read(&mut chunk) {
                 Ok(0) => {
                     if !self.read_buffer.is_empty() {
-                        if let Some((payload, _)) = try_extract_response(
+                        if let Some((payload, _)) = try_extract_body_response(
                             &self.read_buffer,
                             &self.opts.terminator,
                             self.opts.max_response_bytes,
+                            allow_binary_blocks,
                         )? {
                             self.record_success(
                                 CommsEventKind::ReadOk,
@@ -228,6 +247,11 @@ impl ScpiSession {
                             continue;
                         }
                         self.skip_block_terminator = false;
+                        if !allow_binary_blocks && self.read_buffer.is_empty() && byte == b'#' {
+                            return Err(Error::Parse(
+                                "Binary blocks unavailable for plain text response body".into(),
+                            ));
+                        }
                         push_response_byte(
                             &mut self.read_buffer,
                             byte,
@@ -235,10 +259,11 @@ impl ScpiSession {
                             self.opts.max_response_bytes,
                         )?;
                     }
-                    if let Some((payload, _)) = try_extract_response(
+                    if let Some((payload, _)) = try_extract_body_response(
                         &self.read_buffer,
                         &self.opts.terminator,
                         self.opts.max_response_bytes,
+                        allow_binary_blocks,
                     )? {
                         self.record_success(CommsEventKind::ReadOk, command.as_deref(), 1, started);
                         self.skip_block_terminator = self.read_buffer.starts_with(b"#")
@@ -248,10 +273,11 @@ impl ScpiSession {
                 }
                 Err(Error::Timeout) => {
                     if !self.read_buffer.is_empty() {
-                        if let Some((payload, _)) = try_extract_response(
+                        if let Some((payload, _)) = try_extract_body_response(
                             &self.read_buffer,
                             &self.opts.terminator,
                             self.opts.max_response_bytes,
+                            allow_binary_blocks,
                         )? {
                             self.record_success(
                                 CommsEventKind::ReadOk,

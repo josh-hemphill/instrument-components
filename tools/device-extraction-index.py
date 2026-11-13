@@ -15,6 +15,10 @@ def read(path):return json.loads(path.read_text(encoding='utf-8'))
 def digest(path):return hashlib.sha256(path.read_bytes()).hexdigest()
 def source_digest(path):return hashlib.sha256(path.read_bytes().replace(b"\r\n",b"\n")).hexdigest()
 def write(path,value):path.write_text(json.dumps(value,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+def active_opentap_cells(cells):
+    """Historical proof stays immutable; newer executions may explicitly supersede it."""
+    superseded={identity for cell in cells.values() for identity in cell.get('supersedes',[])}
+    return [cell for cell in cells.values() if cell['kind']=='opentap-exact-and-loaded' and cell['id'] not in superseded]
 def generate(parent):
     archive=parent/'instrument-components-keysight/provenance/migration-tooling/device-migration-inventory.json'
     baseline=read(archive);models=[];packages=[];coverage=[]
@@ -76,7 +80,7 @@ def generate(parent):
         step['testCaseIds']=['opentap:'+step['id']+':nondefault','opentap:'+step['id']+':loaded-nondefault']
         step['oracle']='validation/neutral/opentap-oracle.json'
         step['oracleSha256']=digest(ROOT/step['oracle']) if (ROOT/step['oracle']).exists() else None
-        step['executionCellIds']=sorted(cell['id'] for cell in cells.values() if cell['kind']=='opentap-exact-and-loaded')
+        step['executionCellIds']=sorted(cell['id'] for cell in active_opentap_cells(cells))
         if current[step['id']]['publish']['mode'] in ['sample','sampleAndScalar']:step['changedSemantics']=(step['changedSemantics'] or '')+' Sample rows additionally preserve the actual physical Unit.'
     return dict(executionEvidenceFile='spec/device-execution-evidence.json',executionEvidenceSha256=digest(evidencePath) if evidencePath.exists() else None,schemaVersion=1,baselineCommit='5eb92b17f775d326e5a3542ee40855b156321745',hardwareValidated=False,apiCompatibilityRequired=False,publicationStatus='not-published-by-this-migration',sourceHashes=baseline['sourceSha256']|baseline['extractionSources'],models=models,usbHints=[dict(row,repository=canonical[(row['manufacturer'],row['model'])]['repository'],driver=canonical[(row['manufacturer'],row['model'])]['driver']) for row in baseline['usbHints']],profiles=profiles,operations=baseline['implementedNeutralOperationIds'],publicSymbols=symbols,openTapSteps=steps,packages=packages,operationCoverage=coverage)
 
@@ -87,7 +91,24 @@ def check(index,parent=None,complete=False):
     assert len(index['publicSymbols'])==458 and len(index['openTapSteps'])==74
     operations={o['id'] for o in read(ROOT/'spec/driver-operations.json')['operations']}
     assert len(index['operations'])==83 and set(index['operations'])<=operations
-    assert {r['id'] for r in index['openTapSteps']}=={r['id'] for r in read(ROOT/'spec/opentap-operations.json')['operations']}
+    current_steps={r['id']:r for r in read(ROOT/'spec/opentap-operations.json')['operations']}
+    historical_steps={r['id'] for r in index['openTapSteps']}
+    additions_path=ROOT/'spec/neutral-capability-additions.json'
+    additions=read(additions_path) if additions_path.exists() else None
+    assert historical_steps<=set(current_steps),'Historical OpenTAP step lost'
+    if additions:
+        assert additions['schemaVersion']==1
+        extra_steps={row['id'] for row in additions['openTapSteps']}
+        assert len(extra_steps)==len(additions['openTapSteps'])
+        assert extra_steps==set(current_steps)-historical_steps,'Unreconciled added OpenTAP steps'
+        assert set(additions['operations'])==operations-set(index['operations']),'Unreconciled added neutral operations'
+        assert len(set(additions['operations']))==len(additions['operations'])
+        assert {row['targetOperation'] for row in additions['openTapSteps']}==set(additions['operations'])
+        for row in additions['openTapSteps']:
+            step=current_steps[row['id']]
+            assert step['stepTypeName']==row['stepTypeName'] and step['invoke']['operationId']==row['targetOperation']
+    else:
+        assert historical_steps==set(current_steps)
     assert all(row['targetOperation'] is None or row['targetOperation'] in operations|{'Quantity.Unit'} for row in index['publicSymbols'])
     assert len({(m['manufacturer'],m['model']) for m in index['models']})==47
     assert {row['operation'] for row in index['operationCoverage']}==set(index['operations']),'Operation coverage does not reconcile all83 operations'
@@ -95,6 +116,21 @@ def check(index,parent=None,complete=False):
     evidence=read(ROOT/index['executionEvidenceFile'])
     assert digest(ROOT/index['executionEvidenceFile'])==index['executionEvidenceSha256'],'Execution index drift'
     cells={cell['id']:cell for cell in evidence['cells']};assert len(cells)==len(evidence['cells'])
+    if additions:
+        assert additions['executionCellIds'],'Added steps require executed proof'
+        assert digest(ROOT/additions['oracle'])==additions['oracleSha256']
+        oracle={row['id']:row for row in read(ROOT/additions['oracle'])['cases']}
+        assert set(oracle)==extra_steps
+        for row in additions['openTapSteps']:
+            assert oracle[row['id']]['stepTypeName']==row['stepTypeName']
+            assert [call['operation'] for call in oracle[row['id']]['calls']]==[row['targetOperation']]
+        required_cases={'opentap:'+identity+':'+mode for identity in extra_steps for mode in ['nondefault','loaded-nondefault']}
+        for identity in additions['executionCellIds']:
+            cell=cells[identity]
+            assert cell['status']=='PASS' and cell['kind']=='opentap-exact-and-loaded'
+            assert required_cases<=set(cell['caseIds'])
+            assert cell['additionalOracle']==additions['oracle'] and cell['additionalOracleSha256']==additions['oracleSha256']
+            for file,expected in cell['sourceFileSha256'].items():assert source_digest(ROOT/file)==expected,'Tested neutral addition source drift: '+file
     for cell in cells.values():
         for phase in cell.get('phaseLogs',[]):assert digest(ROOT/phase['log'])==phase['logSha256'],'Composition phase log drift'
         assert digest(ROOT/cell['log'])==cell['logSha256'],'Executed log drift: '+cell['id']

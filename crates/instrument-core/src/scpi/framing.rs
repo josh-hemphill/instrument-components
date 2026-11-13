@@ -38,6 +38,33 @@ pub(crate) fn try_extract_response(
     }
 }
 
+/// A strict text body must contain exactly one frame with the selected terminator.
+pub(crate) fn try_extract_body_response(
+    buffer: &[u8],
+    terminator: &str,
+    limit: Option<usize>,
+    allow_binary_blocks: bool,
+) -> Result<Option<(Vec<u8>, usize)>> {
+    if !allow_binary_blocks && buffer.starts_with(b"#") {
+        return Err(Error::Parse(
+            "Binary blocks unavailable for plain text response body".into(),
+        ));
+    }
+    let response = try_extract_response(buffer, terminator, limit)?;
+    if let Some((_, consumed)) = &response {
+        if !allow_binary_blocks
+            && (*consumed != buffer.len()
+                || (!terminator.is_empty()
+                    && !buffer[..*consumed].ends_with(terminator.as_bytes())))
+        {
+            return Err(Error::Parse(
+                "Expected exactly one text response with the configured terminator".into(),
+            ));
+        }
+    }
+    Ok(response)
+}
+
 pub(crate) fn push_response_byte(
     buffer: &mut Vec<u8>,
     value: u8,

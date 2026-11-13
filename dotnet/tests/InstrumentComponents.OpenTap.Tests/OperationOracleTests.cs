@@ -10,10 +10,13 @@ namespace InstrumentComponents.OpenTap.Tests;
 public sealed class OperationOracleTests
 {
  [Theory][InlineData(false)][InlineData(true)]
- public void All74StepsForwardExactArgumentsAndPublishExactValuesBeforeAndAfterRoundTrip(bool roundTrip)
+ public void AllShippedStepsForwardExactArgumentsAndPublishExactValuesBeforeAndAfterRoundTrip(bool roundTrip)
  {
   using var document=JsonDocument.Parse(File.ReadAllText(Path.Combine(RepoPaths.Root(),"validation/neutral/opentap-oracle.json")));
-  var cases=document.RootElement.GetProperty("cases").EnumerateArray().ToArray();Assert.Equal(74,cases.Length);
+  var baseline=document.RootElement.GetProperty("cases").EnumerateArray().ToArray();Assert.Equal(74,baseline.Length);
+  using var additions=JsonDocument.Parse(File.ReadAllText(Path.Combine(RepoPaths.Root(),"validation/neutral/additional-opentap-oracle.json")));
+  var added=additions.RootElement.GetProperty("cases").EnumerateArray().ToArray();Assert.Equal(11,added.Length);
+  var cases=baseline.Concat(added).ToArray();
   Assert.Equal(OpenTapCatalog.StepTypes().Select(t=>t.Name).Order(),cases.Select(c=>c.GetProperty("stepTypeName").GetString()!).Order());
   foreach(var row in cases)InstrumentSettingsScope.Run(()=>Execute(row,roundTrip));
  }

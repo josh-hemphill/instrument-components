@@ -1,4 +1,4 @@
-//! Protocol-neutral typed operations for all eight instrument classes.
+//! Protocol-neutral typed operations for statically composed instrument capabilities.
 #[cfg(feature = "async")]
 use crate::DriverFuture;
 use crate::{DriverError, ErrorKind, MeasurementStatus, Operation, Result};

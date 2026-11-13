@@ -1,0 +1,13 @@
+# Channel switching and digital byte IO
+
+These unreleased contracts extend the statically composed driver SDK. Implementations remain in independently distributed device packages. Core builds and artifacts require none of those implementations. The existing public `0.2.0-alpha.1` packages do not contain these additions; using them requires compatible, coordinated new SDK and device-package versions.
+
+`Switch.CloseChannel(channel)`, `OpenChannel(channel)` and `ChannelIsClosed(channel)` address one positive logical channel. A channel names a path, rather than a matrix row/column pair. The existing paired route operations remain separate capabilities. Opening a named path does not establish that the entire device is isolated, and a state query does not prove physical contact continuity. Physical contact behavior belongs in the selected package's documentation.
+
+`DigitalIo.ReadByte(port)` returns an unsigned input byte, including zero. `WriteByte(port, value)` explicitly writes a value from zero through 255. Ports are positive logical IDs. Values above 255 fail validation; they are never truncated. An ordinary positive-count operation still rejects zero. The new byte constraint is recorded in the same neutral metadata used by Rust/C# generation and OpenTAP validation.
+
+Providers bind channels, directions and physical inventories outside core. A selected endpoint can expose only the capabilities its own inventory supports. A write-capable endpoint does not thereby gain input sampling, and reading an output latch must not be represented as an input sample. No slot, module, electrical-level or vendor-command fields enter these core requests.
+
+The typed sync and async views operate on the same SDK handle and share its serialization, health and lifetime. For example, C# `new DigitalIo(handle).WriteByte(7, 0)` and Rust `DigitalIo(&handle).write_byte(7, 0)` both preserve zero. Actual native async requires a native provider; blocking providers use the SDK worker path. Resource close follows explicit owned/borrowed semantics and is not an implicit physical shutdown.
+
+The neutral OpenTAP host adds five steps and a `DigitalIoInstrument`. Unsigned scalar results publish without assuming a physical quantity unit; the byte-value setting accepts zero and rejects values above 255. Source and loaded-plan tests retain the original 74 operation oracles, the previous six additions, and five new literal forwarding/result oracles. These managed host tests do not establish that OpenTAP itself supports Native AOT. Separate packed SDK consumers statically exercise all eleven added operations, sync/async and zero-valued bytes, under actual Native AOT.

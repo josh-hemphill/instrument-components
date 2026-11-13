@@ -1,0 +1,79 @@
+{
+  "executionCellIds": [
+    "core-opentap:linux-x64:net8.0:device-expansion"
+  ],
+  "openTapSteps": [
+    {
+      "id": "daq_measure_voltage_dc",
+      "stepTypeName": "DataAcquisitionMeasureVoltageDcStep",
+      "targetOperation": "DataAcquisitionMeasureVoltageDc"
+    },
+    {
+      "id": "rf_generator_configure",
+      "stepTypeName": "RfSignalGeneratorConfigureStep",
+      "targetOperation": "RfSignalGeneratorConfigure"
+    },
+    {
+      "id": "rf_generator_output_enable",
+      "stepTypeName": "RfSignalGeneratorOutputEnableStep",
+      "targetOperation": "RfSignalGeneratorOutputEnable"
+    },
+    {
+      "id": "rf_generator_output_state",
+      "stepTypeName": "RfSignalGeneratorOutputStateQueryStep",
+      "targetOperation": "RfSignalGeneratorOutputStateQuery"
+    },
+    {
+      "id": "rf_receiver_frequency",
+      "stepTypeName": "RfReceiverMeasureFrequencyStep",
+      "targetOperation": "RfReceiverMeasureFrequency"
+    },
+    {
+      "id": "rf_receiver_power",
+      "stepTypeName": "RfReceiverMeasurePowerStep",
+      "targetOperation": "RfReceiverMeasurePower"
+    },
+    {
+      "id": "switch_close_channel",
+      "stepTypeName": "SwitchCloseChannelStep",
+      "targetOperation": "SwitchCloseChannel"
+    },
+    {
+      "id": "switch_open_channel",
+      "stepTypeName": "SwitchOpenChannelStep",
+      "targetOperation": "SwitchOpenChannel"
+    },
+    {
+      "id": "switch_channel_is_closed",
+      "stepTypeName": "SwitchChannelIsClosedStep",
+      "targetOperation": "SwitchChannelIsClosed"
+    },
+    {
+      "id": "digital_io_read_byte",
+      "stepTypeName": "DigitalIoReadByteStep",
+      "targetOperation": "DigitalIoReadByte"
+    },
+    {
+      "id": "digital_io_write_byte",
+      "stepTypeName": "DigitalIoWriteByteStep",
+      "targetOperation": "DigitalIoWriteByte"
+    }
+  ],
+  "operations": [
+    "DataAcquisitionMeasureVoltageDc",
+    "RfSignalGeneratorConfigure",
+    "RfSignalGeneratorOutputEnable",
+    "RfSignalGeneratorOutputStateQuery",
+    "RfReceiverMeasureFrequency",
+    "RfReceiverMeasurePower",
+    "SwitchCloseChannel",
+    "SwitchOpenChannel",
+    "SwitchChannelIsClosed",
+    "DigitalIoReadByte",
+    "DigitalIoWriteByte"
+  ],
+  "oracle": "validation/neutral/additional-opentap-oracle.json",
+  "oracleSha256": "72868e6cde4e87a30c1456cf797efe360af950b65c93bac758efb31901fe9b37",
+  "schemaVersion": 1,
+  "scope": "Unreleased neutral DAQ/RF, channel switch and digital byte additions; original migration47hints/83operations/458symbols/74steps and prior raw evidence remain historical records. No external implementation dependency."
+}

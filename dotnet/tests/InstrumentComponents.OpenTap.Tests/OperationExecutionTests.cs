@@ -8,7 +8,7 @@ public class OperationExecutionTests
     [Fact]public void EveryShippedStepExecutesThroughOpaqueCapabilitiesAndPublishesItsShape()
     {
         using var doc=JsonDocument.Parse(File.ReadAllText(Path.Combine(RepoPaths.Root(),"spec","opentap-operations.json")));
-        var rows=doc.RootElement.GetProperty("operations").EnumerateArray().ToArray();Assert.Equal(74,rows.Length);
+        var rows=doc.RootElement.GetProperty("operations").EnumerateArray().ToArray();Assert.Equal(85,rows.Length);
         foreach(var row in rows){
             var name=row.GetProperty("stepTypeName").GetString()!;var type=typeof(DeviceInstrument).Assembly.GetType("InstrumentComponents.OpenTap."+name)!;
             var step=(TestStep)Activator.CreateInstance(type)!;var property=type.GetProperty("Instrument")!;

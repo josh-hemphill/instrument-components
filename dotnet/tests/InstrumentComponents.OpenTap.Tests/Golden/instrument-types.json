@@ -62,6 +62,69 @@
       }
     ]
   },
+  "DataAcquisitionInstrument": {
+    "fullName": "InstrumentComponents.OpenTap.DataAcquisitionInstrument",
+    "displayName": "Data Acquisition",
+    "groups": [
+      "Instrument Components"
+    ],
+    "description": "Registered channel-aware acquisition capabilities.",
+    "settings": [
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Name",
+        "order": -3,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Data Acquisition"
+      },
+      {
+        "name": "VisaAddress",
+        "type": "System.String",
+        "displayName": "Resource Address",
+        "order": 1,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
+        "name": "IoTimeoutMilliseconds",
+        "type": "System.Int32",
+        "displayName": "IO Timeout (ms)",
+        "order": 2,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": "5000"
+      },
+      {
+        "name": "DriverId",
+        "type": "System.String",
+        "displayName": "Driver ID",
+        "order": 3,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
+        "name": "IdentityFields",
+        "type": "InstrumentComponents.OpenTap.DeviceIdentityFields",
+        "displayName": "Identity",
+        "order": 10,
+        "group": [],
+        "defaultValue": {
+          "manufacturer": "",
+          "model": "",
+          "serial": "",
+          "firmware": ""
+        }
+      }
+    ]
+  },
   "DcPowerSupplyInstrument": {
     "fullName": "InstrumentComponents.OpenTap.DcPowerSupplyInstrument",
     "displayName": "DC Power Supply",
@@ -79,6 +142,69 @@
           "Common"
         ],
         "defaultValue": "DC Power Supply"
+      },
+      {
+        "name": "VisaAddress",
+        "type": "System.String",
+        "displayName": "Resource Address",
+        "order": 1,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
+        "name": "IoTimeoutMilliseconds",
+        "type": "System.Int32",
+        "displayName": "IO Timeout (ms)",
+        "order": 2,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": "5000"
+      },
+      {
+        "name": "DriverId",
+        "type": "System.String",
+        "displayName": "Driver ID",
+        "order": 3,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
+        "name": "IdentityFields",
+        "type": "InstrumentComponents.OpenTap.DeviceIdentityFields",
+        "displayName": "Identity",
+        "order": 10,
+        "group": [],
+        "defaultValue": {
+          "manufacturer": "",
+          "model": "",
+          "serial": "",
+          "firmware": ""
+        }
+      }
+    ]
+  },
+  "DigitalIoInstrument": {
+    "fullName": "InstrumentComponents.OpenTap.DigitalIoInstrument",
+    "displayName": "Digital IO",
+    "groups": [
+      "Instrument Components"
+    ],
+    "description": "Registered byte input and output capabilities.",
+    "settings": [
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Name",
+        "order": -3,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Digital IO"
       },
       {
         "name": "VisaAddress",
@@ -331,6 +457,132 @@
           "Common"
         ],
         "defaultValue": "Power Meter"
+      },
+      {
+        "name": "VisaAddress",
+        "type": "System.String",
+        "displayName": "Resource Address",
+        "order": 1,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
+        "name": "IoTimeoutMilliseconds",
+        "type": "System.Int32",
+        "displayName": "IO Timeout (ms)",
+        "order": 2,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": "5000"
+      },
+      {
+        "name": "DriverId",
+        "type": "System.String",
+        "displayName": "Driver ID",
+        "order": 3,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
+        "name": "IdentityFields",
+        "type": "InstrumentComponents.OpenTap.DeviceIdentityFields",
+        "displayName": "Identity",
+        "order": 10,
+        "group": [],
+        "defaultValue": {
+          "manufacturer": "",
+          "model": "",
+          "serial": "",
+          "firmware": ""
+        }
+      }
+    ]
+  },
+  "RfReceiverInstrument": {
+    "fullName": "InstrumentComponents.OpenTap.RfReceiverInstrument",
+    "displayName": "RF Receiver",
+    "groups": [
+      "Instrument Components"
+    ],
+    "description": "Registered absolute RF measurement capabilities.",
+    "settings": [
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Name",
+        "order": -3,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "RF Receiver"
+      },
+      {
+        "name": "VisaAddress",
+        "type": "System.String",
+        "displayName": "Resource Address",
+        "order": 1,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
+        "name": "IoTimeoutMilliseconds",
+        "type": "System.Int32",
+        "displayName": "IO Timeout (ms)",
+        "order": 2,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": "5000"
+      },
+      {
+        "name": "DriverId",
+        "type": "System.String",
+        "displayName": "Driver ID",
+        "order": 3,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
+        "name": "IdentityFields",
+        "type": "InstrumentComponents.OpenTap.DeviceIdentityFields",
+        "displayName": "Identity",
+        "order": 10,
+        "group": [],
+        "defaultValue": {
+          "manufacturer": "",
+          "model": "",
+          "serial": "",
+          "firmware": ""
+        }
+      }
+    ]
+  },
+  "RfSignalGeneratorInstrument": {
+    "fullName": "InstrumentComponents.OpenTap.RfSignalGeneratorInstrument",
+    "displayName": "RF Signal Generator",
+    "groups": [
+      "Instrument Components"
+    ],
+    "description": "Registered RF source capabilities; output enable is explicit.",
+    "settings": [
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Name",
+        "order": -3,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "RF Signal Generator"
       },
       {
         "name": "VisaAddress",
