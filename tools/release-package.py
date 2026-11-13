@@ -55,13 +55,15 @@ def fetch(url):
         raise
 
 
-def index_available(name, version, crate):
+def index_available(name, version, crate, archive_sha256=None):
     if crate:
         key = name.lower()
         prefix = ('1/' if len(key) == 1 else '2/' if len(key) == 2 else '3/' + key[0] + '/' if len(key) == 3 else key[:2] + '/' + key[2:4] + '/')
         data = fetch('https://index.crates.io/' + prefix + key)
-        return data is not None and any(row.get('vers') == version and not row.get('yanked')
-            for row in map(json.loads, data.decode().splitlines()))
+        rows=[] if data is None else [row for row in map(json.loads,data.decode().splitlines()) if row.get('vers')==version and not row.get('yanked')]
+        if rows and archive_sha256 is not None and any(row.get('cksum')!=archive_sha256 for row in rows):
+            raise ValueError('Registry index checksum differs from verified archive')
+        return bool(rows)
     data = fetch('https://api.nuget.org/v3-flatcontainer/' + name.lower() + '/index.json')
     return data is not None and version.lower() in json.loads(data)['versions']
 
@@ -157,7 +159,7 @@ def main():
     proof['stage'] = 'waiting-for-package-index'
     save()
     deadline = time.monotonic() + args.timeout
-    while not index_available(name, version, bool(args.crate)):
+    while not index_available(name, version, bool(args.crate), digest(remote)):
         if time.monotonic() >= deadline:
             raise RuntimeError('Exact non-yanked package version not yet visible to dependency resolution')
         time.sleep(5)
