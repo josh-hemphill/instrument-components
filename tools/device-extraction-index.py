@@ -14,6 +14,23 @@ VENDORS=['keysight','keithley','rigol','siglent','tektronix']
 def read(path):return json.loads(path.read_text(encoding='utf-8'))
 def digest(path):return hashlib.sha256(path.read_bytes()).hexdigest()
 def source_digest(path):return hashlib.sha256(path.read_bytes().replace(b"\r\n",b"\n")).hexdigest()
+def qualified_source_matches(file,expected):
+    if source_digest(ROOT/file)==expected:return True
+    # The historical execution bytes are immutable. A release may change ONLY
+    # the explicit package Version element; current native gates reexecute it.
+    transition_path=ROOT/'spec/release-version-transitions.json'
+    if not transition_path.exists():return False
+    transitions=read(transition_path)
+    assert transitions['schemaVersion']==1
+    for row in transitions['files']:
+        if row['file']!=file:continue
+        if not file.endswith('.csproj') or row['qualifiedSourceSha256']!=expected:return False
+        current=(ROOT/file).read_bytes().replace(b"\r\n",b"\n")
+        if hashlib.sha256(current).hexdigest()!=row['candidateSourceSha256']:return False
+        new=('<Version>'+row['toVersion']+'</Version>').encode()
+        old=('<Version>'+row['fromVersion']+'</Version>').encode()
+        return current.count(new)==1 and hashlib.sha256(current.replace(new,old)).hexdigest()==expected
+    return False
 def write(path,value):path.write_text(json.dumps(value,indent=2,sort_keys=True)+'\n',encoding='utf-8')
 def active_opentap_cells(cells):
     """Historical proof stays immutable; newer executions may explicitly supersede it."""
@@ -130,7 +147,7 @@ def check(index,parent=None,complete=False):
             assert cell['status']=='PASS' and cell['kind']=='opentap-exact-and-loaded'
             assert required_cases<=set(cell['caseIds'])
             assert cell['additionalOracle']==additions['oracle'] and cell['additionalOracleSha256']==additions['oracleSha256']
-            for file,expected in cell['sourceFileSha256'].items():assert source_digest(ROOT/file)==expected,'Tested neutral addition source drift: '+file
+            for file,expected in cell['sourceFileSha256'].items():assert qualified_source_matches(file,expected),'Tested neutral addition source drift: '+file
     for cell in cells.values():
         for phase in cell.get('phaseLogs',[]):assert digest(ROOT/phase['log'])==phase['logSha256'],'Composition phase log drift'
         assert digest(ROOT/cell['log'])==cell['logSha256'],'Executed log drift: '+cell['id']
@@ -157,7 +174,7 @@ def check(index,parent=None,complete=False):
         for identity in row['executionCellIds']:
             cell=cells[identity];assert cell['kind']=='opentap-exact-and-loaded' and cell['status']=='PASS'
             assert set(row['testCaseIds'])<=set(cell['caseIds']) and cell['oracleSha256']==row['oracleSha256']
-            for file,expected in cell['sourceFileSha256'].items():assert source_digest(ROOT/file)==expected,'Tested OpenTAP source drift: '+file
+            for file,expected in cell['sourceFileSha256'].items():assert qualified_source_matches(file,expected),'Tested OpenTAP source drift: '+file
 
     if complete:
         diagnostics=[cell for cell in cells.values() if cell['kind']=='intended-negative-warning-gate']

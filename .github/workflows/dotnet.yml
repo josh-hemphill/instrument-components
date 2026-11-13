@@ -113,6 +113,23 @@ jobs:
           node-version: 26
       - run: dotnet build dotnet/src/InstrumentComponents.OpenTap/InstrumentComponents.OpenTap.csproj -c Release -p:CreateOpenTapPackage=true
       - run: node tools/verify-opentap-package.ts
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Installed managed TapPackage mock plan and lifecycle
+        env:
+          PROOF_OUTPUT: ${{ runner.temp }}/opentap-installed-${{ matrix.sdk }}
+        run: |
+          packages=(dotnet/src/InstrumentComponents.OpenTap/bin/Release/net8.0/*.TapPackage)
+          test "${#packages[@]}" -eq 1
+          python tools/validate-opentap-release.py --package "${packages[0]}" --runtime dotnet/src/InstrumentComponents.OpenTap/bin/Release/net8.0 --output "$PROOF_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: opentap-installed-${{ matrix.sdk }}
+          path: |
+            ${{ runner.temp }}/opentap-installed-${{ matrix.sdk }}/*.json
+            ${{ runner.temp }}/opentap-installed-${{ matrix.sdk }}/*.log
       - name: Install smoke
         working-directory: dotnet/src/InstrumentComponents.OpenTap/bin/Release/net8.0
         run: |

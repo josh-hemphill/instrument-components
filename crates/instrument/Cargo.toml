@@ -1,6 +1,6 @@
 [package]
 name = "instrument-components"
-version = "0.2.0-alpha.1"
+version = "0.3.0-alpha.1"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Protocol-neutral instrument catalog and explicit build-time driver composition"
@@ -9,8 +9,8 @@ readme = "../../README.md"
 [lib]
 name = "instrument"
 [dependencies]
-instrument-api = { path = "../instrument-api", version = "=0.2.0-alpha.1" }
-instrument-runtime = { path = "../instrument-runtime", version = "=0.2.0-alpha.1" }
+instrument-api = { path = "../instrument-api", version = "=0.3.0-alpha.1" }
+instrument-runtime = { path = "../instrument-runtime", version = "=0.3.0-alpha.1" }
 [features]
 default = []
 async = ["instrument-api/async", "instrument-runtime/async"]

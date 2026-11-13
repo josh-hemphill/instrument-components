@@ -7,9 +7,9 @@ publish = false
 [workspace]
 
 [dependencies]
-instrument-api = "=0.2.0-alpha.1"
-instrument-runtime = "=0.2.0-alpha.1"
-instrument-synthetic-driver = "=0.2.0-alpha.1"
+instrument-api = "=0.3.0-alpha.1"
+instrument-runtime = "=0.3.0-alpha.1"
+instrument-synthetic-driver = "=0.3.0-alpha.1"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"], optional = true }
 
 [features]

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "version": "0.2.0-alpha.1",
-  "pythonVersion": "0.2.0a1",
+  "version": "0.3.0-alpha.1",
+  "pythonVersion": "0.3.0a1",
   "contractMajor": 1,
   "tagPrefix": "driver-sdk-v",
   "rustPackages": [
@@ -28,6 +28,6 @@
   "publicationRequiresHardwareEvidence": false,
   "hardwareValidated": false,
   "devicePackageCutoverComplete": true,
-  "previewPublished": true,
-  "publicRegistryValidated": true
+  "previewPublished": false,
+  "publicRegistryValidated": false
 }

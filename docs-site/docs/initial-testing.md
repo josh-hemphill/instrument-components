@@ -1,6 +1,6 @@
 # Initial preview testing
 
-Start with the [hardware-free public-package example](getting-started.md#run-without-hardware). It restores `0.2.0-alpha.1` packages and checks a scripted measurement of **1.25 Volt**, passive selection, capability rejection before opening, and connection lifetime in the sync and async frontends. No credentials, VISA installation or device connection are needed.
+This page records historical findings in **0.2.0-alpha.1**. Its package-only predecessor is retained in `validation/upgrade-from-0.2`. The [current hardware-free example](getting-started.md#run-without-hardware) targets the coordinated 0.3 release and uses the explicit commissioned 34401A factory. No credentials, VISA installation or device connection are needed.
 
 The published alpha passed the five vendor transcript corpora and all-five static application tests on Windows/Linux x64 with .NET 8/10 Native AOT. These tests establish software behavior against the preserved source expectations. None of the device/model hints have physical bench validation yet.
 

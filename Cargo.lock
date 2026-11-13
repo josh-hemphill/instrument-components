@@ -70,11 +70,11 @@ dependencies = [
 
 [[package]]
 name = "instrument-api"
-version = "0.2.0-alpha.1"
+version = "0.3.0-alpha.1"
 
 [[package]]
 name = "instrument-components"
-version = "0.2.0-alpha.1"
+version = "0.3.0-alpha.1"
 dependencies = [
  "instrument-api",
  "instrument-runtime",
@@ -84,7 +84,7 @@ dependencies = [
 
 [[package]]
 name = "instrument-core"
-version = "0.2.0-alpha.1"
+version = "0.3.0-alpha.1"
 dependencies = [
  "indexmap",
  "serde",
@@ -97,7 +97,7 @@ dependencies = [
 
 [[package]]
 name = "instrument-runtime"
-version = "0.2.0-alpha.1"
+version = "0.3.0-alpha.1"
 dependencies = [
  "instrument-api",
  "tokio",
@@ -105,14 +105,14 @@ dependencies = [
 
 [[package]]
 name = "instrument-scpi"
-version = "0.2.0-alpha.1"
+version = "0.3.0-alpha.1"
 dependencies = [
  "instrument-api",
 ]
 
 [[package]]
 name = "instrument-testkit"
-version = "0.2.0-alpha.1"
+version = "0.3.0-alpha.1"
 dependencies = [
  "instrument-api",
  "instrument-scpi",
@@ -120,7 +120,7 @@ dependencies = [
 
 [[package]]
 name = "instrument-visa"
-version = "0.2.0-alpha.1"
+version = "0.3.0-alpha.1"
 dependencies = [
  "instrument-core",
  "thiserror",

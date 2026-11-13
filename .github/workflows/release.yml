@@ -7,11 +7,11 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing release tag to retry NuGet and OpenTAP artifacts (crates.io is skipped)
+        description: Existing release tag to resume with exact immutable package identity checks
         required: true
         type: string
       source_ref:
-        description: Optional commit for a packaging-only backfill; defaults to the release tag
+        description: Optional source ref; must resolve to the exact existing release tag commit
         required: false
         type: string
 
@@ -24,10 +24,18 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
+      source_commit: ${{ steps.version.outputs.source_commit }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.source_ref || inputs.tag || github.ref }}
+      - name: Require exact immutable tag source on retries
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          git fetch origin "refs/tags/$RELEASE_TAG:refs/tags/$RELEASE_TAG"
+          test "$(git rev-parse HEAD)" = "$(git rev-parse "$RELEASE_TAG^{commit}")"
       - uses: actions/setup-node@v4
         with:
           node-version: 26
@@ -42,21 +50,23 @@ jobs:
         run: |
           version=$(node tools/validate-release.ts "$RELEASE_TAG")
           echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "source_commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
   ci:
     name: CI gate
+    needs: validate
     uses: ./.github/workflows/ci.yml
     with:
-      source_ref: ${{ inputs.source_ref || inputs.tag || github.ref }}
+      source_ref: ${{ needs.validate.outputs.source_commit }}
 
   dotnet:
     name: .NET gate
+    needs: validate
     uses: ./.github/workflows/dotnet.yml
     with:
-      source_ref: ${{ inputs.source_ref || inputs.tag || github.ref }}
+      source_ref: ${{ needs.validate.outputs.source_commit }}
 
   publish:
-    if: github.event_name == 'push'
     name: Publish to crates.io
     needs: [validate, ci, dotnet]
     runs-on: ubuntu-latest
@@ -66,21 +76,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.source_ref || inputs.tag || github.ref }}
+          ref: ${{ needs.validate.outputs.source_commit }}
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Authenticate to crates.io
         uses: rust-lang/crates-io-auth-action@v1
         id: crates-auth
-      - run: cargo publish -p instrument-core
+      - run: python tools/release-package.py --crate instrument-core
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.crates-auth.outputs.token }}
-      - run: cargo publish -p instrument-visa
+      - run: python tools/release-package.py --crate instrument-visa
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.crates-auth.outputs.token }}
-      - run: cargo publish -p instrument-components
+      - run: python tools/release-package.py --crate instrument-components
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.crates-auth.outputs.token }}
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: publication-crates
+          path: publication-proof/*
+          if-no-files-found: warn
 
   nuget:
     name: Publish to NuGet
@@ -92,7 +109,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.source_ref || inputs.tag || github.ref }}
+          ref: ${{ needs.validate.outputs.source_commit }}
       - uses: actions/setup-node@v4
         with:
           node-version: 26
@@ -113,12 +130,19 @@ jobs:
         env:
           NUGET_API_KEY: ${{ steps.nuget-auth.outputs.NUGET_API_KEY }}
         run: |
-          $packages = @(Get-ChildItem -Path nupkg -Filter *.nupkg | Sort-Object Name)
+          $packages = @('InstrumentComponents','InstrumentComponents.Visa','InstrumentComponents.OpenTap','InstrumentComponents.OpenTap.Visa') | ForEach-Object { Get-Item "nupkg/$($_).${{ needs.validate.outputs.version }}.nupkg" }
           if ($packages.Count -ne 4) { throw "Expected four NuGet packages, found $($packages.Count)" }
           foreach ($package in $packages) {
-            dotnet nuget push $package.FullName --api-key $env:NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
+            python tools/release-package.py --nuget $package.FullName
             if ($LASTEXITCODE -ne 0) { throw "NuGet push failed for $($package.Name)" }
           }
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: publication-nuget
+          path: publication-proof/*
+          if-no-files-found: warn
 
   tap-package:
     name: Build OpenTAP release artifact
@@ -129,7 +153,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.source_ref || inputs.tag || github.ref }}
+          ref: ${{ needs.validate.outputs.source_commit }}
       - uses: actions/setup-node@v4
         with:
           node-version: 26
@@ -140,6 +164,23 @@ jobs:
             9.0.x
       - run: dotnet build dotnet/src/InstrumentComponents.OpenTap/InstrumentComponents.OpenTap.csproj -c Release -p:CreateOpenTapPackage=true
       - run: node tools/verify-opentap-package.ts "${{ needs.validate.outputs.version }}"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Execute the exact release TapPackage after installation
+        env:
+          PROOF_OUTPUT: ${{ runner.temp }}/opentap-release
+        run: |
+          packages=(dotnet/src/InstrumentComponents.OpenTap/bin/Release/net8.0/*.TapPackage)
+          test "${#packages[@]}" -eq 1
+          python tools/validate-opentap-release.py --package "${packages[0]}" --runtime dotnet/src/InstrumentComponents.OpenTap/bin/Release/net8.0 --output "$PROOF_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: opentap-release-proof
+          path: |
+            ${{ runner.temp }}/opentap-release/*.json
+            ${{ runner.temp }}/opentap-release/*.log
       - uses: actions/upload-artifact@v4
         with:
           name: opentap-package
@@ -149,25 +190,27 @@ jobs:
   github-release:
     if: >-
       always() && needs.nuget.result == 'success' && needs.tap-package.result == 'success' &&
-      (needs.publish.result == 'success' ||
-       (github.event_name == 'workflow_dispatch' && needs.publish.result == 'skipped'))
+      needs.publish.result == 'success'
     name: GitHub Release
-    needs: [publish, nuget, tap-package]
+    needs: [validate, publish, nuget, tap-package]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.source_ref || inputs.tag || github.ref }}
+          ref: ${{ needs.validate.outputs.source_commit }}
       - uses: actions/download-artifact@v4
         with:
           name: opentap-package
           path: release-artifacts
-      - uses: softprops/action-gh-release@v2
+      - name: Publish immutable OpenTAP release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: python tools/release-assets.py --tag "$RELEASE_TAG" --assets release-artifacts
+      - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          tag_name: ${{ inputs.tag || github.ref_name }}
-          prerelease: ${{ contains(inputs.tag || github.ref_name, '-') }}
-          generate_release_notes: true
-          files: release-artifacts/*.TapPackage
-          fail_on_unmatched_files: true
+          name: publication-release-assets
+          path: release-assets-proof.json

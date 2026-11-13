@@ -29,11 +29,14 @@ class VersionTransitionTests(unittest.TestCase):
                 target = root / file
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(ROOT / file, target)
-            future = '0.2.0-alpha.2'
+            current = manifest['version']
+            current_python = manifest['pythonVersion']
+            future = '0.9.0-alpha.7'
+            future_python = '0.9.0a7'
             # Change checked declarations, not runtime globals or assertions.
             for target in root.rglob('*'):
                 if target.is_file() and target.suffix in ('.py', '.toml', '.json', '.csproj'):
-                    target.write_text(target.read_text().replace('0.2.0-alpha.1', future).replace('0.2.0a1', '0.2.0a2'))
+                    target.write_text(target.read_text().replace(current, future).replace(current_python, future_python))
             release = root / 'spec/driver-sdk-release.json'
             candidate = json.loads(release.read_text())
             candidate.update(previewPublished=False, publicRegistryValidated=False)
@@ -47,7 +50,7 @@ class VersionTransitionTests(unittest.TestCase):
             self.assertEqual(run([sys.executable, str(root / 'tools/validate-sdk-release.py'), '--tag', 'driver-sdk-v' + future]).strip(), future)
             wheel_dir = root / 'wheels'
             run([sys.executable, '-m', 'pip', 'wheel', '--no-deps', '-w', str(wheel_dir), str(root / 'tools/driver-tools')])
-            wheel = wheel_dir / 'instrument_driver_tools-0.2.0a2-py3-none-any.whl'
+            wheel = wheel_dir / 'instrument_driver_tools-0.9.0a7-py3-none-any.whl'
             self.assertTrue(wheel.is_file())
             artifact = root / 'artifact'
             artifact.mkdir()
@@ -79,13 +82,13 @@ class VersionTransitionTests(unittest.TestCase):
 from pathlib import Path
 from instrument_driver_tools import VERSION,python_version
 from instrument_driver_tools.feeds import prepare
-root=Path(sys.argv[1]);assert VERSION=='0.2.0-alpha.2';assert python_version(VERSION)=='0.2.0a2'
+root=Path(sys.argv[1]);assert VERSION=='0.9.0-alpha.7';assert python_version(VERSION)=='0.9.0a7'
 checks=runpy.run_path(str(root/'tools/validate-driver-sdk.py'));assert checks['SDK_VERSION']==VERSION
 rust,dotnet=checks['core_only_manifests'](checks['SDK_VERSION'],'net10.0')
 assert set(tomllib.loads(rust)['dependencies'].values())=={'='+VERSION}
 assert {p.get('Version') for p in ET.fromstring(dotnet).findall('.//PackageReference')}=={'['+VERSION+']'}
 result=prepare(root/'artifact',root/'feed');assert (Path(result['cargoRegistry'])/('instrument-api-'+VERSION)).is_dir()
-assert (root/'feed/instrument_driver_tools-0.2.0a2-py3-none-any.whl').is_file()
+assert (root/'feed/instrument_driver_tools-0.9.0a7-py3-none-any.whl').is_file()
 print('PASS checked future preview, built wheel, real feeds and generated consumers')
 '''
             run([sys.executable, '-c', probe, str(root)], env=env, cwd=root)

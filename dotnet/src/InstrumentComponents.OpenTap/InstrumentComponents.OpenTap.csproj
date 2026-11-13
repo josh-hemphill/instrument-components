@@ -8,7 +8,7 @@
     <RootNamespace>InstrumentComponents.OpenTap</RootNamespace>
     <AssemblyName>InstrumentComponents.OpenTap</AssemblyName>
     <PackageId>InstrumentComponents.OpenTap</PackageId>
-    <Version>0.2.0-alpha.1</Version>
+    <Version>0.3.0-alpha.1</Version>
     <Authors>josh-hemphill</Authors>
     <Description>OpenTAP instruments and typed steps with host-injected neutral device handles.</Description>
     <PackageLicenseExpression>MIT OR Apache-2.0</PackageLicenseExpression>

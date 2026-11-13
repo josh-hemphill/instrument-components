@@ -1,10 +1,7 @@
 use instrument::prelude::*;
 use instrument_api::Operation;
 use instrument_testkit::{Script, ScriptStep};
-use std::{
-    collections::{BTreeMap, BTreeSet},
-    sync::Arc,
-};
+use std::{collections::BTreeSet, sync::Arc};
 
 fn candidate() -> Candidate {
     Candidate {
@@ -21,9 +18,33 @@ fn candidate() -> Candidate {
 }
 fn script() -> Arc<Script> {
     Arc::new(Script::new([
-        ScriptStep::Query(":MEAS:VOLT:DC?".into(), Ok("1.25".into())),
+        ScriptStep::Query(
+            ":MEAS:VOLT:DC? DEF,DEF".into(),
+            Ok("+1.25000000E+00".into()),
+        ),
         ScriptStep::Close(Ok(())),
     ]))
+}
+// Commissioning is an explicit host assertion, not hardware discovery.
+fn factories(io: Arc<Script>, native: bool) -> Result<Vec<Arc<dyn DriverFactory>>> {
+    use instrument_driver_keysight::qualified_scpi::{Binding, Commissioning, Factory, Model};
+    let factory = Factory::new(
+        Model::Agilent34401A,
+        vec![Binding {
+            endpoint: candidate().endpoint,
+            commissioning: Commissioning::GpibScpiConfirmed,
+        }],
+        io.clone(),
+    )?;
+    #[cfg(feature = "async")]
+    let factory = if native {
+        factory.with_native_connector(io)
+    } else {
+        factory
+    };
+    #[cfg(not(feature = "async"))]
+    let _ = native;
+    Ok(vec![Arc::new(factory)])
 }
 fn required() -> BTreeSet<Operation> {
     [Operation::Catalog(CatalogOperation::DmmMeasureVoltageDc)]
@@ -32,10 +53,7 @@ fn required() -> BTreeSet<Operation> {
 }
 fn synchronous() -> Result<()> {
     let io = script();
-    let registry = DriverRegistry::new(instrument_driver_keysight::sync_factories(
-        io.clone(),
-        &BTreeMap::new(),
-    )?)?;
+    let registry = DriverRegistry::new(factories(io.clone(), false)?)?;
     let c = candidate();
     assert_eq!(
         registry.select(&c, &Selection::default())?.driver_id,
@@ -77,18 +95,14 @@ fn synchronous() -> Result<()> {
     );
     io.assert_complete()?;
     assert_eq!((io.opens(), io.closes()), (1, 1));
-    println!("PASS public Rust sync: 1.25 Volt, passive matching, pre-open requirements, checked close; no hardware");
+    println!("PASS preview Rust sync: 1.25 Volt, passive matching, pre-open requirements, checked close; no hardware");
     Ok(())
 }
 #[cfg(feature = "async")]
 async fn asynchronous() -> Result<()> {
     for mode in 0..3 {
         let io = script();
-        let factories = instrument_driver_keysight::combined_factories(
-            io.clone(),
-            io.clone(),
-            &BTreeMap::new(),
-        )?;
+        let factories = factories(io.clone(), true)?;
         let c = candidate();
         let catalog = DeviceCatalog::new(DriverRegistry::new(factories)?, vec![c.clone()])?;
         let device = catalog.device(&c.endpoint)?;
@@ -125,7 +139,7 @@ async fn asynchronous() -> Result<()> {
         io.assert_complete()?;
         assert_eq!((io.opens(), io.closes()), (1, 1));
     }
-    println!("PASS public Rust native async, worker async and worker blocking; no hardware");
+    println!("PASS preview Rust native async, worker async and worker blocking; no hardware");
     Ok(())
 }
 fn main() -> Result<()> {

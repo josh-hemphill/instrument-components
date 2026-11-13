@@ -13,8 +13,8 @@
     <IlcTreatWarningsAsErrors>true</IlcTreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="InstrumentComponents" Version="[0.2.0-alpha.1]" />
-    <PackageReference Include="InstrumentComponents.Drivers.Keysight" Version="[0.2.0-alpha.1]" />
-    <PackageReference Include="InstrumentComponents.TestKit" Version="[0.2.0-alpha.1]" />
+    <PackageReference Include="InstrumentComponents" Version="[0.3.0-alpha.1]" />
+    <PackageReference Include="InstrumentComponents.Drivers.Keysight" Version="[0.3.0-alpha.1]" />
+    <PackageReference Include="InstrumentComponents.TestKit" Version="[0.3.0-alpha.1]" />
   </ItemGroup>
 </Project>

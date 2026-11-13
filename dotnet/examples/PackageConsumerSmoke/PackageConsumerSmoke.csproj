@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <InstrumentComponentsPackageVersion Condition="'$(InstrumentComponentsPackageVersion)' == ''">0.2.0-alpha.1</InstrumentComponentsPackageVersion>
+    <InstrumentComponentsPackageVersion Condition="'$(InstrumentComponentsPackageVersion)' == ''">0.3.0-alpha.1</InstrumentComponentsPackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="InstrumentComponents" Version="$(InstrumentComponentsPackageVersion)" />

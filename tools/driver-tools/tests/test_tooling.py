@@ -12,6 +12,7 @@ import runpy
 
 ROOT=Path(__file__).resolve().parents[3]
 sys.path.insert(0,str(ROOT/'tools/driver-tools/src'))
+from instrument_driver_tools import VERSION
 from instrument_driver_tools.cli import main, read_json
 from instrument_driver_tools.profiles import validate,emit,catalogue
 
@@ -171,7 +172,7 @@ class ToolingTests(unittest.TestCase):
         self.assertEqual(outputs,emit(alternative))
     def test_preview_validator_distinguishes_legacy_version_and_rejects_stable_tags(self):
         command=[sys.executable,str(ROOT/'tools/validate-sdk-release.py')]
-        self.assertEqual(subprocess.run(command+['--tag','driver-sdk-v0.2.0-alpha.1'],capture_output=True).returncode,0)
+        self.assertEqual(subprocess.run(command+['--tag','driver-sdk-v'+VERSION],capture_output=True).returncode,0)
         for tag in ['v0.1.1','driver-sdk-v0.2.0','driver-sdk-v0.2.0-alpha.2']:
             self.assertNotEqual(subprocess.run(command+['--tag',tag],capture_output=True).returncode,0)
     def test_future_preview_core_consumers_and_python_identity_use_the_requested_version(self):
@@ -193,7 +194,7 @@ class ToolingTests(unittest.TestCase):
             with self.subTest(requirement=requirement):
                 with self.assertRaises(ValueError):checks['check_rust_pins']({'package':{'version':'0.2.0-alpha.1'},'dependencies':{'instrument-api':{'version':requirement}}})
                 with self.assertRaises(ValueError):checks['check_nuget_pins']({'InstrumentComponents.Abstractions':requirement})
-        checks['check_rust_pins']({'package':{'version':'0.2.0-alpha.1'},'dependencies':{'instrument-api':{'version':'=0.2.0-alpha.1'}}})
-        checks['check_nuget_pins']({'InstrumentComponents.Abstractions':'[0.2.0-alpha.1]'})
+        checks['check_rust_pins']({'package':{'version':VERSION},'dependencies':{'instrument-api':{'version':'='+VERSION}}})
+        checks['check_nuget_pins']({'InstrumentComponents.Abstractions':'['+VERSION+']'})
 
 if __name__=='__main__':unittest.main()
