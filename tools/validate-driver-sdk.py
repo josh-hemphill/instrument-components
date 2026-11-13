@@ -196,6 +196,12 @@ def main():
             if dependencies != expected[name]:raise RuntimeError(f'Unexpected {name} dependencies: {dependencies}')
             ranges={d.attrib['id']:d.attrib['version'] for d in metadata.findall('.//{*}dependency')}
             check_nuget_pins(ranges)
+            if not name.endswith('SyntheticDriver'):
+                if packed.read('README.md').replace(b'\r\n',b'\n')!=(ROOT/'dotnet/README.md').read_bytes().replace(b'\r\n',b'\n'):
+                    raise RuntimeError('Packaged SDK documentation differs from current source')
+                if name in {'InstrumentComponents.Abstractions','InstrumentComponents.Runtime','InstrumentComponents.Scpi','InstrumentComponents.TestKit'}:
+                    expected_url='https://github.com/josh-hemphill/instrument-components/blob/driver-sdk-v'+SDK_VERSION+'/docs-site/docs/getting-started.md'
+                    if metadata.findtext('.//{*}projectUrl')!=expected_url:raise RuntimeError('SDK project URL does not select this version guide')
             if any(n.endswith(('.json','.toml')) or 'vendors/' in n for n in packed.namelist()):raise RuntimeError('Driver data in SDK package')
             inventory.append(dict(package=name,archive=str(archive),sha256=hashlib.sha256(archive.read_bytes()).hexdigest(),dependencies=ranges,files=packed.namelist()))
     aot=work/'dotnet-consumer';shutil.copytree(ROOT/'validation/driver-sdk/dotnet-consumer',aot,ignore=IGNORE)

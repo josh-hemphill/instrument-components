@@ -1,34 +1,64 @@
 {
-  "schemaVersion": 1,
-  "scope": "Version metadata only; retained historical proof is not new release qualification. New candidate source is executed by current CI.",
+  "schemaVersion": 2,
+  "scope": "Package Version and Project URL metadata only. Historical proof bytes remain immutable; current CI qualifies new payloads separately.",
   "files": [
     {
       "file": "dotnet/src/InstrumentComponents.Abstractions/InstrumentComponents.Abstractions.csproj",
-      "fromVersion": "0.2.0-alpha.1",
-      "toVersion": "0.3.0-alpha.1",
       "qualifiedSourceSha256": "000c93d7610001ca5b1beade975401051df98060b70075ece96bfb7dc7860c7b",
-      "candidateSourceSha256": "87cfffbcc6b24bfb940d59f10ca2f8b9ec76d17e1182d8c628359bf4f99ffc58"
+      "candidateSourceSha256": "3c427256652e58edbe74a83851f1dfaa26f13dd1d71da771f45d7a7d2e5d1ba4",
+      "metadataReplacements": [
+        {
+          "element": "Version",
+          "fromValue": "0.2.0-alpha.1",
+          "toValue": "0.3.0-alpha.1"
+        },
+        {
+          "element": "PackageProjectUrl",
+          "fromValue": "https://github.com/josh-hemphill/instrument-components/blob/72015932f9b168ac7d182fcb5ca7a367318505b8/docs-site/docs/getting-started.md",
+          "toValue": "https://github.com/josh-hemphill/instrument-components/blob/driver-sdk-v0.3.0-alpha.1/docs-site/docs/getting-started.md"
+        }
+      ]
     },
     {
       "file": "dotnet/src/InstrumentComponents.OpenTap/InstrumentComponents.OpenTap.csproj",
-      "fromVersion": "0.2.0-alpha.1",
-      "toVersion": "0.3.0-alpha.1",
       "qualifiedSourceSha256": "4ae66f3ab456b66fbc41943960ef2f9657f7e9d22b6d1bebc994f7a4ac450037",
-      "candidateSourceSha256": "843afa90622a7359466850342174c7e85fa182ccf4dd9e5c5eeb9baa3f930d6f"
+      "candidateSourceSha256": "843afa90622a7359466850342174c7e85fa182ccf4dd9e5c5eeb9baa3f930d6f",
+      "metadataReplacements": [
+        {
+          "element": "Version",
+          "fromValue": "0.2.0-alpha.1",
+          "toValue": "0.3.0-alpha.1"
+        }
+      ]
     },
     {
       "file": "dotnet/src/InstrumentComponents.Runtime/InstrumentComponents.Runtime.csproj",
-      "fromVersion": "0.2.0-alpha.1",
-      "toVersion": "0.3.0-alpha.1",
       "qualifiedSourceSha256": "2a540d587e340279aca3588abd87daced4dbfa793efe99aa36517a575bb5a6f5",
-      "candidateSourceSha256": "89c90c3b362b7833595e56aee2662c1b243308fc6544fe3787385af3139dae4f"
+      "candidateSourceSha256": "ccc437496f2d7731e293111e1d9d2e7c3bb62822c5fa85b4c2e3d35e1bd08ece",
+      "metadataReplacements": [
+        {
+          "element": "Version",
+          "fromValue": "0.2.0-alpha.1",
+          "toValue": "0.3.0-alpha.1"
+        },
+        {
+          "element": "PackageProjectUrl",
+          "fromValue": "https://github.com/josh-hemphill/instrument-components/blob/72015932f9b168ac7d182fcb5ca7a367318505b8/docs-site/docs/getting-started.md",
+          "toValue": "https://github.com/josh-hemphill/instrument-components/blob/driver-sdk-v0.3.0-alpha.1/docs-site/docs/getting-started.md"
+        }
+      ]
     },
     {
       "file": "dotnet/src/InstrumentComponents/InstrumentComponents.csproj",
-      "fromVersion": "0.2.0-alpha.1",
-      "toVersion": "0.3.0-alpha.1",
       "qualifiedSourceSha256": "9936aec12c05a094ce8909abeeab714123121d31053e32bcc3f54ce1e07440f6",
-      "candidateSourceSha256": "1524b0c443a7a50717a4a3ce20a15b16e934d9cf17e9e968031ff2ba0d40b9a5"
+      "candidateSourceSha256": "1524b0c443a7a50717a4a3ce20a15b16e934d9cf17e9e968031ff2ba0d40b9a5",
+      "metadataReplacements": [
+        {
+          "element": "Version",
+          "fromValue": "0.2.0-alpha.1",
+          "toValue": "0.3.0-alpha.1"
+        }
+      ]
     }
   ]
 }
