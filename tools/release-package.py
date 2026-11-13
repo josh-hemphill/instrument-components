@@ -72,6 +72,7 @@ def main():
     group.add_argument('--crate', help='Workspace package ID')
     group.add_argument('--nuget', type=Path, help='Already packed NuGet archive')
     parser.add_argument('--output', type=Path, default=Path('publication-proof'))
+    parser.add_argument('--replay-record', type=Path, help='Retained original identity record; source/package/archive must all match')
     parser.add_argument('--timeout', type=int, default=900)
     args = parser.parse_args()
     source = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
@@ -81,6 +82,10 @@ def main():
         metadata = json.loads(subprocess.check_output(['cargo', 'metadata', '--no-deps', '--format-version', '1'], text=True))
         package = next(p for p in metadata['packages'] if p['name'] == args.crate)
         name, version = package['name'], package['version']
+        if args.replay_record:
+            retained = json.loads(args.replay_record.read_text())
+            if retained['sourceCommit'] != source or retained['package'] != name or retained['version'] != version:
+                raise ValueError('Retained record source/package mismatch')
         if not Path('Cargo.lock').exists():
             subprocess.run(['cargo', 'generate-lockfile'], check=True)
         subprocess.run(['cargo', 'package', '--locked', '-p', name], check=True)
@@ -93,6 +98,18 @@ def main():
             name = manifest.findtext('.//{*}id')
             version = manifest.findtext('.//{*}version')
         url = 'https://api.nuget.org/v3-flatcontainer/' + name.lower() + '/' + version.lower() + '/' + name.lower() + '.' + version.lower() + '.nupkg'
+    replay = None
+    if args.replay_record:
+        replay = json.loads(args.replay_record.read_text())
+        if replay['sourceCommit'] != source or replay['package'] != name or replay['version'] != version:
+            raise ValueError('Retained record source/package mismatch')
+        original = args.replay_record.parent / replay['archive']
+        retained_bytes = original.read_bytes()
+        if digest(retained_bytes) != replay['archiveSha256']:
+            raise ValueError('Retained archive checksum mismatch')
+        if args.crate and archive.read_bytes() != retained_bytes:
+            raise ValueError('Rust source rebuild differs from retained original; do not republish or retag')
+        archive = original
     local = archive.read_bytes()
     identity = digest(local) if args.crate else nuget_payload(local)
     args.output.mkdir(parents=True, exist_ok=True)

@@ -80,7 +80,7 @@ jobs:
         env:
           NUGET_API_KEY: ${{ steps.auth.outputs.NUGET_API_KEY }}
         run: |
-          $packages = @(Get-ChildItem packages -Filter *.nupkg)
+          $packages = @('InstrumentComponents.Abstractions','InstrumentComponents.Runtime','InstrumentComponents.Scpi','InstrumentComponents.TestKit') | ForEach-Object { Get-Item "packages/$($_).${{ needs.validate.outputs.version }}.nupkg" }
           if ($packages.Count -ne 4) { throw 'Expected exactly four SDK packages' }
           foreach ($package in $packages) {
             python tools/release-package.py --nuget $package.FullName
