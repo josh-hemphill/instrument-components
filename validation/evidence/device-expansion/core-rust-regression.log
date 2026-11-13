@@ -1,0 +1,57 @@
+   Compiling instrument-api v0.2.0-alpha.1 (/workspace/instrument-components/crates/instrument-api)
+   Compiling tokio v1.52.3
+   Compiling instrument-scpi v0.2.0-alpha.1 (/workspace/instrument-components/crates/instrument-scpi)
+   Compiling instrument-testkit v0.2.0-alpha.1 (/workspace/instrument-components/crates/instrument-testkit)
+   Compiling instrument-runtime v0.2.0-alpha.1 (/workspace/instrument-components/crates/instrument-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.86s
+     Running unittests src/lib.rs (target/debug/deps/instrument_api-e003d8d0a3bf8f64)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/instrument_runtime-97dd4165ab5f68f7)
+
+running 3 tests
+test asynchronous::worker::tests::cancellation_before_recovery_dispatch_does_not_call_provider ... ok
+test asynchronous::native::tests::interrupted_close_cannot_lose_cleanup_at_final_unlock ... ok
+test asynchronous::worker::tests::cancellation_after_recovery_dispatch_retains_backend_and_quarantines ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src/lib.rs (target/debug/deps/instrument_scpi-cd046d8a2fbf46ea)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/instrument_testkit-94eb1eb9bfdc4fa7)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests instrument_api
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests instrument_runtime
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests instrument_scpi
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests instrument_testkit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

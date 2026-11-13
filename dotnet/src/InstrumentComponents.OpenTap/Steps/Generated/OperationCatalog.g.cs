@@ -10,6 +10,8 @@ public static class GeneratedOperationCatalog
         typeof(CounterSelectChannelStep),
         typeof(CounterSetGateTimeStep),
         typeof(DataAcquisitionMeasureVoltageDcStep),
+        typeof(DigitalIoReadByteStep),
+        typeof(DigitalIoWriteByteStep),
         typeof(DmmConfigureCurrentAcStep),
         typeof(DmmConfigureCurrentDcStep),
         typeof(DmmConfigureResistance4WireStep),
@@ -67,6 +69,9 @@ public static class GeneratedOperationCatalog
         typeof(SpectrumAnalyzerSingleSweepStep),
         typeof(SpectrumAnalyzerSweepContinuousStep),
         typeof(SpectrumAnalyzerWaitOpcStep),
+        typeof(SwitchChannelIsClosedStep),
+        typeof(SwitchCloseChannelStep),
         typeof(SwitchIsClosedStep),
+        typeof(SwitchOpenChannelStep),
     ];
 }

@@ -49,6 +49,26 @@ impl Executor {
                         status: MeasurementStatus::Valid,
                     }),
                 ),
+                (
+                    CatalogRequest::SwitchCloseChannel { channel: 7 },
+                    CatalogReply::Unit,
+                ),
+                (
+                    CatalogRequest::SwitchOpenChannel { channel: 13 },
+                    CatalogReply::Unit,
+                ),
+                (
+                    CatalogRequest::SwitchChannelIsClosed { channel: 29 },
+                    CatalogReply::Boolean(true),
+                ),
+                (
+                    CatalogRequest::DigitalIoReadByte { port: 7 },
+                    CatalogReply::Count(0),
+                ),
+                (
+                    CatalogRequest::DigitalIoWriteByte { port: 13, value: 0 },
+                    CatalogReply::Unit,
+                ),
             ]
             .into(),
         ))
@@ -91,6 +111,23 @@ pub fn synchronous() -> Result<()> {
     assert!(source.output_state_query()?);
     assert_eq!(RfReceiver(&executor).measure_frequency()?.unit, Unit::Hertz);
     assert_eq!(RfReceiver(&executor).measure_power()?.unit, Unit::Dbm);
+    let switches = Switch(&executor);
+    switches.close_channel(7)?;
+    switches.open_channel(13)?;
+    assert!(switches.channel_is_closed(29)?);
+    assert_eq!(DigitalIo(&executor).read_byte(7)?, 0);
+    assert_eq!(
+        DigitalIo(&executor).write_byte(13, 256).unwrap_err().kind,
+        ErrorKind::InvalidArgument
+    );
+    DigitalIo(&executor).write_byte(13, 0)?;
+    assert_eq!(
+        CatalogRequest::FunctionGeneratorSetBurstCount { count: 0 }
+            .validate()
+            .unwrap_err()
+            .kind,
+        ErrorKind::InvalidArgument
+    );
     executor.complete();
     Ok(())
 }
@@ -116,6 +153,12 @@ pub async fn asynchronous() -> Result<()> {
         AsyncRfReceiver(&executor).measure_power().await?.unit,
         Unit::Dbm
     );
+    let switches = AsyncSwitch(&executor);
+    switches.close_channel(7).await?;
+    switches.open_channel(13).await?;
+    assert!(switches.channel_is_closed(29).await?);
+    assert_eq!(AsyncDigitalIo(&executor).read_byte(7).await?, 0);
+    AsyncDigitalIo(&executor).write_byte(13, 0).await?;
     executor.complete();
     Ok(())
 }

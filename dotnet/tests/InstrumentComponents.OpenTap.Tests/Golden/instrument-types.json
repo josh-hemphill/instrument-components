@@ -188,6 +188,69 @@
       }
     ]
   },
+  "DigitalIoInstrument": {
+    "fullName": "InstrumentComponents.OpenTap.DigitalIoInstrument",
+    "displayName": "Digital IO",
+    "groups": [
+      "Instrument Components"
+    ],
+    "description": "Registered byte input and output capabilities.",
+    "settings": [
+      {
+        "name": "Name",
+        "type": "System.String",
+        "displayName": "Name",
+        "order": -3,
+        "group": [
+          "Common"
+        ],
+        "defaultValue": "Digital IO"
+      },
+      {
+        "name": "VisaAddress",
+        "type": "System.String",
+        "displayName": "Resource Address",
+        "order": 1,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
+        "name": "IoTimeoutMilliseconds",
+        "type": "System.Int32",
+        "displayName": "IO Timeout (ms)",
+        "order": 2,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": "5000"
+      },
+      {
+        "name": "DriverId",
+        "type": "System.String",
+        "displayName": "Driver ID",
+        "order": 3,
+        "group": [
+          "Communication"
+        ],
+        "defaultValue": ""
+      },
+      {
+        "name": "IdentityFields",
+        "type": "InstrumentComponents.OpenTap.DeviceIdentityFields",
+        "displayName": "Identity",
+        "order": 10,
+        "group": [],
+        "defaultValue": {
+          "manufacturer": "",
+          "model": "",
+          "serial": "",
+          "firmware": ""
+        }
+      }
+    ]
+  },
   "DmmInstrument": {
     "fullName": "InstrumentComponents.OpenTap.DmmInstrument",
     "displayName": "DMM",

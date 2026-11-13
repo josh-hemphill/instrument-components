@@ -81,3 +81,11 @@ public sealed class RfReceiverInstrument : DeviceInstrument
     protected override string PrimaryKind => "RfReceiver";
     public RfReceiver Receiver => AsRfReceiver();
 }
+
+[Display("Digital IO", Groups: ["Instrument Components"], Description: "Registered byte input and output capabilities.")]
+public sealed class DigitalIoInstrument : DeviceInstrument
+{
+    public DigitalIoInstrument() => Name = "Digital IO";
+    protected override string PrimaryKind => "DigitalIo";
+    public DigitalIo Io => AsDigitalIo();
+}

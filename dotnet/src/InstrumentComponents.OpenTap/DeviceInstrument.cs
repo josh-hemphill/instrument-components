@@ -71,6 +71,7 @@ public abstract class DeviceInstrument : Instrument
     public DataAcquisition AsDataAcquisition()=>new(RequireKind("DataAcquisition"));
     public RfSignalGenerator AsRfSignalGenerator()=>new(RequireKind("RfSignalGenerator"));
     public RfReceiver AsRfReceiver()=>new(RequireKind("RfReceiver"));
+    public DigitalIo AsDigitalIo()=>new(RequireKind("DigitalIo"));
     public CatalogIdentity QueryIdentity(){var identity=RequireHandle().Invoke(new QueryIdentityRequest()).IntoIdentity();IdentityFields.CopyFrom(identity);return identity;}
     public void Reset()=>RequireHandle().Invoke(new ResetRequest()).IntoUnit();
     public void Shutdown()=>RequireHandle().Invoke(new ShutdownRequest()).IntoUnit();
