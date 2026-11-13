@@ -14,6 +14,7 @@ import platform
 import re
 import shutil
 import subprocess
+import struct
 import tomllib
 import xml.etree.ElementTree as ET
 import zipfile
@@ -65,6 +66,21 @@ def main():
                NUGET_PACKAGES=str(out / 'nuget-cache'), NUGET_HTTP_CACHE_PATH=str(out / 'nuget-http'),
                DOTNET_CLI_HOME=str(out / 'dotnet-home'), DOTNET_NOLOGO='1', DOTNET_CLI_TELEMETRY_OPTOUT='1')
     execution = []
+    binaries = []
+
+    def retain_binary(phase, path, kind):
+        data = path.read_bytes()
+        if kind == 'Rust-native':
+            if platform.system() == 'Windows':
+                offset = struct.unpack_from('<I', data, 0x3c)[0]
+                if data[offset:offset+4] != b'PE\0\0' or struct.unpack_from('<H', data, offset+4)[0] != 0x8664:
+                    raise ValueError('Expected native x64 Rust consumer')
+            elif data[:5] != b'\x7fELF\x02' or struct.unpack_from('<H', data, 18)[0] != 62:
+                raise ValueError('Expected native x64 Rust consumer')
+        target = out / 'consumer-artifacts' / phase / path.name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(path, target)
+        binaries.append(dict(phase=phase, kind=kind, file=str(target.relative_to(out)).replace('\\', '/'), sha256=sha(target)))
 
     def run(name, command, cwd=out):
         log = out / (name + '.log')
@@ -96,9 +112,18 @@ def main():
             if 'path' in value or 'git' in value or dependency.startswith('instrument-') and value['version'] != '=' + VERSION:
                 raise ValueError('Root Rust dependency boundary')
         members = {str(p.relative_to(directory)).replace('\\', '/'): sha(p) for p in directory.rglob('*') if p.is_file()}
+        shipped_sources = {n for n in members if n.startswith('src/')}
+        expected_sources = {str(p.relative_to(ROOT / 'crates' / name)).replace('\\', '/') for p in (ROOT / 'crates' / name / 'src').rglob('*') if p.is_file()}
+        if shipped_sources != expected_sources:
+            raise ValueError('Root Rust source member inventory mismatch')
         for relative in members:
-            if relative.startswith('src/') and (directory / relative).read_bytes().replace(b'\r\n', b'\n') != (ROOT / 'crates' / name / relative).read_bytes().replace(b'\r\n', b'\n'):
-                raise ValueError('Packaged root Rust source differs')
+            if relative in {'Cargo.toml', 'Cargo.lock', '.cargo_vcs_info.json'}:
+                continue
+            source = ROOT / 'crates' / name / ('Cargo.toml' if relative == 'Cargo.toml.orig' else relative)
+            if relative == 'README.md':
+                source = ROOT / 'README.md'
+            if not source.is_file() or (directory / relative).read_bytes().replace(b'\r\n', b'\n') != source.read_bytes().replace(b'\r\n', b'\n'):
+                raise ValueError('Packaged root Rust source/resource differs: ' + relative)
         (directory / '.cargo-checksum.json').write_text(json.dumps(dict(files=members, package=sha(archive))), encoding='utf-8')
         shutil.copy2(archive, packages / archive.name)
         records.append(dict(package=name, ecosystem='Cargo', file=archive.name, sha256=sha(archive), dependencies=manifest.get('dependencies', {}), members=members))
@@ -109,6 +134,7 @@ def main():
     shutil.copy2(ROOT / 'validation/root-packages/core.rs', core / 'src/main.rs')
     for flags in [[], ['--features', 'async']]:
         run('core-async' if flags else 'core-default', ['cargo', 'run', '--offline', '--release'] + flags, core)
+        retain_binary('core-async' if flags else 'core-default', out / 'cargo-target/release' / ('root-core-package-proof.exe' if os.name == 'nt' else 'root-core-package-proof'), 'Rust-native')
     visa = out / 'visa-consumer'
     (visa / 'src').mkdir(parents=True)
     (visa / 'src/main.rs').write_text('use instrument_visa as _;fn main(){}\n', encoding='utf-8')
@@ -158,6 +184,18 @@ def main():
     (managed / 'Root.csproj').write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>' + args.framework + '</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><TreatWarningsAsErrors>true</TreatWarningsAsErrors></PropertyGroup><ItemGroup>' + references + '</ItemGroup></Project>', encoding='utf-8')
     shutil.copy2(feed['nugetConfig'], managed / 'NuGet.Config')
     run('managed-package-only-plan', ['dotnet', 'run', '--project', managed / 'Root.csproj', '-c', 'Release'])
+    for name in ['Root.dll', 'Root.deps.json', 'Root.runtimeconfig.json', 'Root.exe' if os.name == 'nt' else 'Root']:
+        retain_binary('managed-package-only-plan', managed / 'bin/Release' / args.framework / name, 'managed-output')
+    consumer_sources = {}
+    for label, directory in [('core', core), ('visa', visa), ('managed', managed)]:
+        for path in directory.rglob('*'):
+            if not path.is_file() or {'bin', 'obj'} & set(path.parts):
+                continue
+            target = out / 'consumer-inputs' / label / path.relative_to(directory)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(path, target)
+            consumer_sources[str(target.relative_to(out)).replace('\\', '/')] = sha(target)
+
     assets = json.loads((managed / 'obj/project.assets.json').read_text(encoding='utf-8'))
     if any(row['type'] != 'package' for row in assets['libraries'].values()):
         raise ValueError('Root consumer contains a source project reference')
@@ -174,7 +212,7 @@ def main():
     (out / 'packages.json').write_text(json.dumps(dict(mode=mode, version=VERSION, sourceCommit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(), packages=records, sdkPackages=feed['packages']), indent=2) + '\n', encoding='utf-8')
     source_files = [ROOT / 'dotnet/README.md', ROOT / 'validation/root-packages/core.rs', ROOT / 'validation/opentap-release/Program.cs', ROOT / 'validation/neutral/OpaqueDevice.cs']
     source_files += [p for p in (ROOT / 'dotnet/src').rglob('*') if p.is_file() and p.suffix in ['.cs', '.csproj'] and not {'bin', 'obj'} & set(p.parts)]
-    (out / 'proof.json').write_text(json.dumps(dict(mode=mode, framework=args.framework, sourceDirty=dirty, platform=platform.system(), packages=records, consumedNuGet=consumed, sourceFiles={str(p.relative_to(ROOT)): sha(p) for p in source_files}, managedPlanExecuted=True, rustCoreDefaultAsyncExecuted=True, visaDefaultTokioCompileChecked=True, actualVisaProviderActivated=False, openTapNativeAotClaim=False, hardwareValidated=False), indent=2) + '\n', encoding='utf-8')
+    (out / 'proof.json').write_text(json.dumps(dict(mode=mode, framework=args.framework, sourceDirty=dirty, platform=platform.system(), packages=records, consumedNuGet=consumed, sourceFiles={str(p.relative_to(ROOT)): sha(p) for p in source_files}, managedPlanExecuted=True, consumerSources=consumer_sources, consumerOutputs=binaries, rustCoreDefaultAsyncExecuted=True, visaDefaultTokioCompileChecked=True, actualVisaProviderActivated=False, openTapNativeAotClaim=False, hardwareValidated=False), indent=2) + '\n', encoding='utf-8')
     print('PASS five standalone root payloads, Rust core execution/VISA compilation and managed package-only plan; no hardware')
 
 

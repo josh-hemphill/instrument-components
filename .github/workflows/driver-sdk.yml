@@ -95,3 +95,5 @@ jobs:
             ${{ runner.temp }}/sdk-${{ matrix.framework }}/root-packages/*.json
             ${{ runner.temp }}/sdk-${{ matrix.framework }}/root-packages/*.log
             ${{ runner.temp }}/sdk-${{ matrix.framework }}/root-packages/packages/*
+            ${{ runner.temp }}/sdk-${{ matrix.framework }}/root-packages/consumer-inputs/**
+            ${{ runner.temp }}/sdk-${{ matrix.framework }}/root-packages/consumer-artifacts/**
