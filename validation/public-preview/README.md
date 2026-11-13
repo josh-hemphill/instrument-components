@@ -1,6 +1,6 @@
 # Public preview example
 
-This is a hardware-free application using the published `0.2.0-alpha.1` packages. Download this directory, then run:
+This is a hardware-free application using the published `0.3.0-alpha.1` packages. Download this directory, then run:
 
 ```sh
 cargo run --manifest-path rust/Cargo.toml --release
@@ -19,3 +19,5 @@ python tools/validate-public-preview.py --output /tmp/instrument-preview --frame
 ```
 
 Run that command from the main checkout. Choose a new output directory for each run; on Windows use a path such as `C:\Temp\instrument-preview`. `.github/workflows/public-preview.yml` tests Linux/Windows x64 and .NET 8/10 separately from normal core builds. No external driver implementation is required by ordinary core builds or bundled in core artifacts.
+
+The 0.3 example uses the explicit commissioned 34401A factory; see the getting-started upgrade instructions. `--feeds` is candidate development evidence; default validation uses fresh public packages after publication.

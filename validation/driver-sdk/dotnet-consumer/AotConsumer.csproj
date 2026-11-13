@@ -10,9 +10,9 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="InstrumentComponents" Version="[0.2.0-alpha.1]" />
-    <PackageReference Include="InstrumentComponents.Runtime" Version="[0.2.0-alpha.1]" />
-    <PackageReference Include="InstrumentComponents.SyntheticDriver" Version="[0.2.0-alpha.1]" />
-    <PackageReference Include="InstrumentComponents.TestKit" Version="[0.2.0-alpha.1]" />
+    <PackageReference Include="InstrumentComponents" Version="[0.3.0-alpha.1]" />
+    <PackageReference Include="InstrumentComponents.Runtime" Version="[0.3.0-alpha.1]" />
+    <PackageReference Include="InstrumentComponents.SyntheticDriver" Version="[0.3.0-alpha.1]" />
+    <PackageReference Include="InstrumentComponents.TestKit" Version="[0.3.0-alpha.1]" />
   </ItemGroup>
 </Project>

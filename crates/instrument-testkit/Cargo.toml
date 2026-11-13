@@ -1,14 +1,14 @@
 [package]
 name = "instrument-testkit"
-version = "0.2.0-alpha.1"
+version = "0.3.0-alpha.1"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Strict scripted message conformance helpers for independent Instrument Components drivers"
 repository = "https://github.com/josh-hemphill/instrument-components"
 
 [dependencies]
-instrument-api = { path = "../instrument-api", version = "=0.2.0-alpha.1" }
-instrument-scpi = { path = "../instrument-scpi", version = "=0.2.0-alpha.1" }
+instrument-api = { path = "../instrument-api", version = "=0.3.0-alpha.1" }
+instrument-scpi = { path = "../instrument-scpi", version = "=0.3.0-alpha.1" }
 
 [features]
 default = []

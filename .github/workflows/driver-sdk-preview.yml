@@ -43,10 +43,16 @@ jobs:
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_BOOTSTRAP_TOKEN || steps.auth.outputs.token }}
         run: |
-          cargo publish --locked -p instrument-api
-          cargo publish --locked -p instrument-runtime
-          cargo publish --locked -p instrument-scpi
-          cargo publish --locked -p instrument-testkit
+          python tools/release-package.py --crate instrument-api
+          python tools/release-package.py --crate instrument-runtime
+          python tools/release-package.py --crate instrument-scpi
+          python tools/release-package.py --crate instrument-testkit
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: publication-crates
+          path: publication-proof/*
+          if-no-files-found: warn
   nuget:
     needs: [validate, conformance]
     runs-on: windows-latest
@@ -77,9 +83,15 @@ jobs:
           $packages = @(Get-ChildItem packages -Filter *.nupkg)
           if ($packages.Count -ne 4) { throw 'Expected exactly four SDK packages' }
           foreach ($package in $packages) {
-            dotnet nuget push $package.FullName --source https://api.nuget.org/v3/index.json --api-key $env:NUGET_API_KEY --skip-duplicate
+            python tools/release-package.py --nuget $package.FullName
             if ($LASTEXITCODE -ne 0) { throw "Publish failed: $($package.Name)" }
           }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: publication-nuget
+          path: publication-proof/*
+          if-no-files-found: warn
   tool-assets:
     needs: [validate, conformance]
     runs-on: ubuntu-latest
@@ -88,6 +100,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - run: echo "SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)" >> "$GITHUB_ENV"
       - run: python -m pip wheel --no-deps --wheel-dir assets ./tools/driver-tools
       - run: sha256sum assets/*.whl > assets/SHA256SUMS
       - uses: actions/upload-artifact@v4
@@ -104,10 +117,14 @@ jobs:
         with:
           name: sdk-tool-assets
           path: assets
-      - uses: softprops/action-gh-release@v2
+      - uses: actions/checkout@v4
+      - name: Publish immutable SDK release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python tools/release-assets.py --tag "$RELEASE_TAG" --assets assets
+      - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          prerelease: true
-          generate_release_notes: true
-          body: 'Driver SDK preview. Synthetic conformance and native Windows/Linux package gates passed. Hardware validation and full device-package cutover remain pending.'
-          files: assets/*
-          fail_on_unmatched_files: true
+          name: publication-release-assets
+          path: release-assets-proof.json

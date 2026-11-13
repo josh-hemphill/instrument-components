@@ -4,29 +4,29 @@ Choose the device packages your application needs and register their exported fa
 
 ## Install the public preview
 
-The SDK and all five device families are published as **0.2.0-alpha.1** on crates.io and NuGet. Pin that exact prerelease while evaluating this breaking API; `0.1` examples use the retired API.
+This page targets **0.3.0-alpha.1** of the SDK and all five device families. Check the matching GitHub releases and registries for availability before installing; release preparation does not establish publication. Pin the exact prerelease while evaluating this breaking API. Earlier examples may use retired constructors.
 
 Read the [initial testing notes](initial-testing.md) for post-publication findings and the distinction between the published alpha and prepared source fixes.
 
 For Rust, use Rust 1.85 or newer and add the facade plus the device package you need:
 
 ```sh
-cargo add instrument-components@=0.2.0-alpha.1 --no-default-features
-cargo add instrument-driver-keysight@=0.2.0-alpha.1
+cargo add instrument-components@=0.3.0-alpha.1 --no-default-features
+cargo add instrument-driver-keysight@=0.3.0-alpha.1
 ```
 
 For C#, use a .NET 8 or .NET 10 console project:
 
 ```sh
-dotnet add package InstrumentComponents --version 0.2.0-alpha.1
-dotnet add package InstrumentComponents.Drivers.Keysight --version 0.2.0-alpha.1
+dotnet add package InstrumentComponents --version "[0.3.0-alpha.1]"
+dotnet add package InstrumentComponents.Drivers.Keysight --version "[0.3.0-alpha.1]"
 ```
 
 Replace Keysight with the family you need. Multiple device packages can be registered in one application. The facade has no bundled drivers. A VISA runtime is needed only when your application chooses a VISA connector; ordinary package restore and the mock example below require no hardware, credentials or VISA installation.
 
 ## Run without hardware
 
-The complete [public-package example](https://github.com/josh-hemphill/instrument-components/tree/feat/driver-sdk-extraction/validation/public-preview) contains Rust and C# console projects with version-only dependencies. Download that directory, then run from its root:
+The complete [public-package example](https://github.com/josh-hemphill/instrument-components/tree/v0.3.0-alpha.1/validation/public-preview) contains Rust and C# console projects with version-only dependencies. Download that directory, then run from its root:
 
 ```sh
 cargo run --manifest-path rust/Cargo.toml --release
@@ -64,7 +64,7 @@ These examples use an opaque in-memory backend. They prove that the facade does 
 | Passive application catalog | instrument-components (library `instrument`) | InstrumentComponents |
 | Development scripts and fault injection | instrument-testkit | InstrumentComponents.TestKit |
 
-Device packages are `instrument-driver-{vendor}` and `InstrumentComponents.Drivers.{Vendor}`, maintained in the separate [Keysight](https://github.com/josh-hemphill/instrument-components-keysight/tree/driver-v0.2.0-alpha.1), [Keithley](https://github.com/josh-hemphill/instrument-components-keithley/tree/driver-v0.2.0-alpha.1), [Rigol](https://github.com/josh-hemphill/instrument-components-rigol/tree/driver-v0.2.0-alpha.1), [Siglent](https://github.com/josh-hemphill/instrument-components-siglent/tree/driver-v0.2.0-alpha.1) and [Tektronix](https://github.com/josh-hemphill/instrument-components-tektronix/tree/driver-v0.2.0-alpha.1) repositories. These links select the published source tags; the unmerged default branches still contain repository scaffolds. All existing model hints are migrated as unvalidated source evidence.
+Device packages are `instrument-driver-{vendor}` and `InstrumentComponents.Drivers.{Vendor}`, maintained in the separate [Keysight](https://github.com/josh-hemphill/instrument-components-keysight/tree/driver-v0.3.0-alpha.1), [Keithley](https://github.com/josh-hemphill/instrument-components-keithley/tree/driver-v0.3.0-alpha.1), [Rigol](https://github.com/josh-hemphill/instrument-components-rigol/tree/driver-v0.3.0-alpha.1), [Siglent](https://github.com/josh-hemphill/instrument-components-siglent/tree/driver-v0.3.0-alpha.1) and [Tektronix](https://github.com/josh-hemphill/instrument-components-tektronix/tree/driver-v0.3.0-alpha.1) repositories. These links select the release source tags once published; the latest branches contain ongoing development. All existing model hints are migrated as unvalidated source evidence.
 
 ## C# composition
 
@@ -75,9 +75,11 @@ using InstrumentComponents.Catalog;
 using InstrumentComponents.Drivers;
 using InstrumentComponents.Drivers.Catalog;
 using InstrumentComponents.Runtime;
-using Vendor = InstrumentComponents.Drivers.Keysight.Drivers;
+using InstrumentComponents.Drivers.Keysight;
 
-var registry = new DriverRegistry(Vendor.Factories(connector));
+var factory = new QualifiedScpiFactory(QualifiedScpiModel.Agilent34401A,
+    [new(candidate.Endpoint, QualifiedScpiCommissioning.GpibScpiConfirmed)], connector);
+var registry = new DriverRegistry([factory]);
 var catalog = new DeviceCatalog(registry, new[] { candidate });
 using var handle = catalog.Device(candidate.Endpoint).Open();
 var dmm = new Dmm(handle);
@@ -92,10 +94,14 @@ Opening again requests another connection. Share one handle among class views fo
 
 ```rust,ignore
 use instrument::prelude::*;
-use std::collections::{BTreeMap, BTreeSet};
+use std::{collections::BTreeSet, sync::Arc};
+use instrument_driver_keysight::qualified_scpi::{Factory, Model, Binding, Commissioning};
 
-let factories = instrument_driver_keysight::sync_factories(connector, &BTreeMap::new())?;
-let registry = DriverRegistry::new(factories)?;
+let factory = Factory::new(Model::Agilent34401A, vec![Binding {
+    endpoint: candidate.endpoint.clone(),
+    commissioning: Commissioning::GpibScpiConfirmed,
+}], connector)?;
+let registry = DriverRegistry::new([Arc::new(factory) as Arc<dyn DriverFactory>])?;
 let catalog = DeviceCatalog::new(registry, vec![candidate.clone()])?;
 let handle = catalog.device(&candidate.endpoint)?.open(
     &Selection::default(), &BTreeSet::new(), ConnectionOwnership::Owned,
@@ -105,3 +111,11 @@ handle.close(false)?;
 ```
 
 The connector and candidate are application inputs, not globals. No runtime assembly scanning, library loading or reflection activation is involved. See [async execution](rust/async.md) and [discovery](discovery.md) for lifecycle and matching rules.
+
+## Upgrade from 0.2
+
+Upgrade the facade, SDK and every selected driver package together to the exact 0.3 prerelease. For 34401A, replace the generic vendor factory registration with the explicit qualified factory shown above. The host must confirm the configured endpoint speaks GPIB SCPI; the enum records a host assertion and performs no discovery or protection check. The new measurement transcript is `:MEAS:VOLT:DC? DEF,DEF` with a strict scientific-format reply.
+
+`validation/upgrade-from-0.2` preserves a package-only predecessor. Run `python tools/validate-public-preview.py --output /tmp/upgrade-proof --upgrade-from 0.2.0-alpha.1` to execute both package graphs and record them. During release preparation, `--feeds /path/to/composition-proof/feeds` exercises the new graph from checksummed candidate artifacts; this mode is explicitly development-feed evidence. Ordinary execution uses fresh public registries.
+
+New qualified subsets include Agilent 34401A, 33120A, 53132A, HP 3585B, 34980A with 34937A/34922A/34950A, and Tektronix TDS1002. HP 5334A/B, 3497A, 8920A/B and 8921A remain in the Keysight package. Consult each driver's commissioning, operation and deferred-feature specifications. Relay/output changes and acquisition/status queries can change device state. None of these models has physical bench validation. Native AOT checks cover the SDK and selected drivers; the OpenTAP plugin is managed software.

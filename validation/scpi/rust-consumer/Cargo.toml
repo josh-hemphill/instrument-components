@@ -1,15 +1,15 @@
 [package]
 name = "instrument-scpi-package-consumer"
-version = "0.2.0-alpha.1"
+version = "0.3.0-alpha.1"
 edition = "2021"
 publish = false
 [workspace]
 [dependencies]
-instrument-components="=0.2.0-alpha.1"
-instrument-api = "=0.2.0-alpha.1"
-instrument-runtime = "=0.2.0-alpha.1"
-instrument-scpi = "=0.2.0-alpha.1"
-instrument-testkit = "=0.2.0-alpha.1"
+instrument-components="=0.3.0-alpha.1"
+instrument-api = "=0.3.0-alpha.1"
+instrument-runtime = "=0.3.0-alpha.1"
+instrument-scpi = "=0.3.0-alpha.1"
+instrument-testkit = "=0.3.0-alpha.1"
 tokio = { version = "1", features = ["rt", "macros"], optional = true }
 [features]
 default = []

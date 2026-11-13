@@ -3,14 +3,15 @@ using InstrumentComponents.Drivers;
 using InstrumentComponents.Drivers.Catalog;
 using InstrumentComponents.Runtime;
 using InstrumentComponents.TestKit;
-using Vendor = InstrumentComponents.Drivers.Keysight.Drivers;
+using InstrumentComponents.Drivers.Keysight;
 
 // TestKit is a development fixture. This example performs no hardware IO.
 for (var mode = 0; mode < 4; mode++)
 {
-    var script = new Script([ScriptStep.Query(":MEAS:VOLT:DC?", "1.25"), ScriptStep.Close()]);
+    var script = new Script([ScriptStep.Query(":MEAS:VOLT:DC? DEF,DEF", "+1.25000000E+00"), ScriptStep.Close()]);
     var candidate = new DeviceCandidate(new("scpi", "preview-mock"), new("Keysight Technologies", "34401A"));
-    var registry = new DriverRegistry(Vendor.Factories(script, nativeConnector: script));
+    var registry = new DriverRegistry([new QualifiedScpiFactory(QualifiedScpiModel.Agilent34401A,
+        [new(candidate.Endpoint, QualifiedScpiCommissioning.GpibScpiConfirmed)], script, script)]);
     Require(registry.Select(candidate).DriverId == "keysight.34401a", "Passive selection");
     Require(script.Opens == 0, "Selection performed IO");
     var catalog = new DeviceCatalog(registry, [candidate]);
@@ -49,5 +50,5 @@ for (var mode = 0; mode < 4; mode++)
     script.AssertComplete();
     Require(script.Opens == 1 && script.Closes == 1, "Connection lifetime mismatch");
 }
-Console.WriteLine("PASS public C# four frontends: 1.25 Volt, passive matching, pre-open requirements, checked close; no hardware");
+Console.WriteLine("PASS preview C# four frontends: 1.25 Volt, passive matching, pre-open requirements, checked close; no hardware");
 static void Require(bool value, string message) { if (!value) throw new InvalidOperationException(message); }

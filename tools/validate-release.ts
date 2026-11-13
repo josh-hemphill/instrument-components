@@ -11,7 +11,7 @@ export function validateRelease(tag: string): string {
   if (actual !== version) throw new Error(`Tag ${tag} disagrees with Cargo version ${actual}`);
   for (const name of ["instrument-core", "instrument-visa"]) {
     const dependency = cargo.match(new RegExp(`${name} = \{[^\n]*version = "([^"]+)"`))?.[1];
-    if (dependency !== version) throw new Error(`${name} dependency ${dependency} disagrees with ${version}`);
+    if (dependency !== `=${version}`) throw new Error(`${name} dependency ${dependency} disagrees with ${version}`);
   }
   for (const name of ["InstrumentComponents", "InstrumentComponents.Visa", "InstrumentComponents.OpenTap", "InstrumentComponents.OpenTap.Visa"]) {
     const project = readFileSync(new URL(`dotnet/src/${name}/${name}.csproj`, root), "utf8");
