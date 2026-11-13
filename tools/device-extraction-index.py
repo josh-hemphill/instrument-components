@@ -14,22 +14,31 @@ VENDORS=['keysight','keithley','rigol','siglent','tektronix']
 def read(path):return json.loads(path.read_text(encoding='utf-8'))
 def digest(path):return hashlib.sha256(path.read_bytes()).hexdigest()
 def source_digest(path):return hashlib.sha256(path.read_bytes().replace(b"\r\n",b"\n")).hexdigest()
+def packaging_metadata_matches(current,row,expected):
+    """Permit only exact package metadata substitutions, never build/runtime changes."""
+    if row['qualifiedSourceSha256']!=expected or hashlib.sha256(current).hexdigest()!=row['candidateSourceSha256']:return False
+    replacements=row['metadataReplacements']
+    if not replacements or len({r['element'] for r in replacements})!=len(replacements):return False
+    for replacement in replacements:
+        element=replacement['element']
+        if element not in {'Version','PackageProjectUrl'}:return False
+        new=('<'+element+'>'+replacement['toValue']+'</'+element+'>').encode()
+        old=('<'+element+'>'+replacement['fromValue']+'</'+element+'>').encode()
+        if current.count(new)!=1:return False
+        current=current.replace(new,old,1)
+    return hashlib.sha256(current).hexdigest()==expected
+
 def qualified_source_matches(file,expected):
     if source_digest(ROOT/file)==expected:return True
-    # The historical execution bytes are immutable. A release may change ONLY
-    # the explicit package Version element; current native gates reexecute it.
+    # Old execution bytes remain immutable; current package/native gates qualify
+    # each release. Only hash-bound Version/Project URL metadata may differ here.
     transition_path=ROOT/'spec/release-version-transitions.json'
     if not transition_path.exists():return False
     transitions=read(transition_path)
-    assert transitions['schemaVersion']==1
+    assert transitions['schemaVersion']==2
     for row in transitions['files']:
-        if row['file']!=file:continue
-        if not file.endswith('.csproj') or row['qualifiedSourceSha256']!=expected:return False
-        current=(ROOT/file).read_bytes().replace(b"\r\n",b"\n")
-        if hashlib.sha256(current).hexdigest()!=row['candidateSourceSha256']:return False
-        new=('<Version>'+row['toVersion']+'</Version>').encode()
-        old=('<Version>'+row['fromVersion']+'</Version>').encode()
-        return current.count(new)==1 and hashlib.sha256(current.replace(new,old)).hexdigest()==expected
+        if row['file']==file:
+            return file.endswith('.csproj') and packaging_metadata_matches((ROOT/file).read_bytes().replace(b"\r\n",b"\n"),row,expected)
     return False
 def write(path,value):path.write_text(json.dumps(value,indent=2,sort_keys=True)+'\n',encoding='utf-8')
 def active_opentap_cells(cells):

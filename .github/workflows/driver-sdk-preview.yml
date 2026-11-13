@@ -102,7 +102,7 @@ jobs:
           python-version: '3.12'
       - run: echo "SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)" >> "$GITHUB_ENV"
       - run: python -m pip wheel --no-deps --wheel-dir assets ./tools/driver-tools
-      - run: sha256sum assets/*.whl > assets/SHA256SUMS
+      - run: cd assets && sha256sum *.whl > SHA256SUMS
       - uses: actions/upload-artifact@v4
         with:
           name: sdk-tool-assets

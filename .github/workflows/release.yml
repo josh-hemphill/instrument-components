@@ -187,12 +187,60 @@ jobs:
           path: dotnet/src/InstrumentComponents.OpenTap/bin/Release/net8.0/*.TapPackage
           if-no-files-found: error
 
+  public-root:
+    name: Public root packages (${{ matrix.os }}, ${{ matrix.framework }})
+    needs: [validate, publish, nuget]
+    permissions:
+      contents: read
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        framework: [net8.0, net10.0]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.source_commit }}
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: driver-sdk-${{ matrix.os }}-${{ matrix.framework }}
+          path: ${{ runner.temp }}/root-sdk-artifact
+      - run: python -m pip install ./tools/driver-tools
+      - name: Execute fresh public root package consumers
+        shell: python
+        env:
+          PROOF_FRAMEWORK: ${{ matrix.framework }}
+        run: |
+          import os,pathlib,subprocess,sys
+          temp=pathlib.Path(os.environ['RUNNER_TEMP'])
+          subprocess.run([sys.executable,'tools/validate-root-packages.py','--sdk-proof',str(temp/'root-sdk-artifact'),'--output',str(temp/'public-root'),'--framework',os.environ['PROOF_FRAMEWORK'],'--public-registry'],check=True)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: public-root-${{ matrix.os }}-${{ matrix.framework }}
+          path: |
+            ${{ runner.temp }}/public-root/*.json
+            ${{ runner.temp }}/public-root/*.log
+            ${{ runner.temp }}/public-root/consumer-inputs/**
+            ${{ runner.temp }}/public-root/consumer-artifacts/**
+
   github-release:
     if: >-
-      always() && needs.nuget.result == 'success' && needs.tap-package.result == 'success' &&
+      always() && needs.nuget.result == 'success' && needs.tap-package.result == 'success' && needs.public-root.result == 'success' &&
       needs.publish.result == 'success'
     name: GitHub Release
-    needs: [validate, publish, nuget, tap-package]
+    needs: [validate, publish, nuget, tap-package, public-root]
     runs-on: ubuntu-latest
     permissions:
       contents: write
