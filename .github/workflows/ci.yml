@@ -53,6 +53,8 @@ jobs:
       - run: python tools/test-release-package.py
       - run: python tools/test-release-assets.py
       - run: python tools/test-recover-sdk-assets.py
+      - run: python tools/test-root-package-metadata.py
+      - run: python tools/test-recover-root-release.py
       - run: python tools/test-packaging-metadata.py
       - run: python tools/device-extraction-index.py
       - run: python tools/test-device-extraction-extensions.py

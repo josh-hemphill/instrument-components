@@ -1,0 +1,145 @@
+{
+  "origin": "Reduced actual root producer 43540406188; names/outcomes are a recovery contract fixture",
+  "jobs": [
+    {
+      "name": "Validate release versions",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": ".NET gate / Shared data drift check",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "CI gate / Tokio feature check",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "CI gate / Cross-compile check",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "CI gate / Package instrument-core",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "CI gate / Rust 1.85 minimum",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "CI gate / Test (windows-latest)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "CI gate / Test (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "CI gate / Test (macos-latest)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "CI gate / Driver SDK and native package proofs / SDK windows-latest / net10.0",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "CI gate / Driver SDK and native package proofs / SDK ubuntu-latest / net10.0",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "CI gate / Driver SDK and native package proofs / SDK windows-latest / net8.0",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "CI gate / Driver SDK and native package proofs / SDK ubuntu-latest / net8.0",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": ".NET gate / .NET 10 compatibility (windows-latest)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": ".NET gate / Build and test (mock)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": ".NET gate / Build VISA package (Windows)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": ".NET gate / OpenTAP package (net9.0)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": ".NET gate / Build VISA package (Linux)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": ".NET gate / .NET 10 compatibility (ubuntu-latest)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": ".NET gate / OpenTAP package (net10.0)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Publish to NuGet",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Build OpenTAP release artifact",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Publish to crates.io",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Public root packages (ubuntu-latest, net10.0)",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "name": "Public root packages (ubuntu-latest, net8.0)",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "name": "Public root packages (windows-latest, net10.0)",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "name": "Public root packages (windows-latest, net8.0)",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "name": "GitHub Release",
+      "status": "completed",
+      "conclusion": "skipped"
+    }
+  ]
+}
