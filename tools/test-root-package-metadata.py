@@ -10,14 +10,17 @@ MODULE=runpy.run_path(str(ROOT/'tools/validate-root-packages.py'))
 CAPTURE=MODULE['execute_logged']
 
 class MetadataTests(unittest.TestCase):
-    def test_output_cannot_overlap_either_checkout_or_sdk(self):
+    def test_output_protects_checkouts_and_preserves_sdk_sidecar(self):
         with tempfile.TemporaryDirectory() as directory:
             base=Path(directory);source=base/'payload';helper=base/'helper';sdk=base/'sdk'
-            for root in [source,helper,sdk]:
+            for root in [source,helper]:
                 for output in [root,root/'output',base]:
                     with self.subTest(root=root,output=output):
                         with self.assertRaises(ValueError):MODULE['validate_output_location'](output,source,helper,sdk)
             MODULE['validate_output_location'](base/'separate',source,helper,sdk)
+            for output in [sdk,base]:
+                with self.assertRaises(ValueError):MODULE['validate_output_location'](output,source,helper,sdk)
+            MODULE['validate_output_location'](sdk/'root-packages',source,helper,sdk)
     def test_network_diagnostics_do_not_corrupt_json(self):
         with tempfile.TemporaryDirectory() as directory:
             out=Path(directory)

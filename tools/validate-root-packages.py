@@ -46,8 +46,10 @@ def execute_logged(name, command, *, cwd, env, output, structured_output=False):
 
 
 def validate_output_location(output, source, helper, sdk):
-    if any(output == path or path in output.parents or output in path.parents for path in [source, helper, sdk]):
-        raise ValueError('Separate output outside payload, helper and SDK inputs required')
+    # SDK CI intentionally retains this sidecar at sdk/root-packages. Protect
+    # the input directory itself and both checkouts while allowing that layout.
+    if any(output == path or path in output.parents or output in path.parents for path in [source, helper]) or output == sdk or output in sdk.parents:
+        raise ValueError('Output must protect payload/helper checkouts and the SDK input directory')
 
 
 def main():
