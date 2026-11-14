@@ -1,56 +1,54 @@
-name: Public preview getting-started
+name: Preview cleanliness guard probe
 on:
   workflow_dispatch:
-  pull_request:
-    paths: ['validation/public-preview/**', 'tools/validate-public-preview.py', '.github/workflows/public-preview.yml', 'docs-site/docs/getting-started.md']
 permissions:
   contents: read
 jobs:
-  version-coherence:
-    runs-on: ubuntu-latest
+  windows-guard:
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: 4105d6659ad46b163ca9f252cc250b01fc5e0ba8
+          path: payload
+      - uses: actions/checkout@v4
+        with:
+          ref: f9ec63cc0b144d29e3650438dd55c2994c142f42
+          path: preview-helper
+          sparse-checkout: |
+            .gitignore
+            tools/validate-public-preview.py
+            tools/qualification_logs.py
+          sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python tools/validate-public-preview.py --check
-  consumer:
-    if: github.event_name == 'workflow_dispatch'
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-        framework: [net8.0, net10.0]
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: |
-            8.0.x
-            10.0.x
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev
-      - name: Restore public packages into fresh caches and execute the documented example
+      - name: Exercise actual guard and staging without compiler or registry calls
         shell: python
         env:
-          FRAMEWORK: ${{ matrix.framework }}
+          PYTHONDONTWRITEBYTECODE: '1'
         run: |
-          import os,pathlib,subprocess,sys
-          output=pathlib.Path(os.environ['RUNNER_TEMP'])/'public-preview'
-          subprocess.run([sys.executable,'tools/validate-public-preview.py','--output',str(output),'--framework',os.environ['FRAMEWORK']],check=True)
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: public-preview-${{ matrix.os }}-${{ matrix.framework }}
-          path: |
-            ${{ runner.temp }}/public-preview/*.json
-            ${{ runner.temp }}/public-preview/*.log
-            ${{ runner.temp }}/public-preview/native/Preview*
+          import json,os,pathlib,runpy,subprocess,sys
+          from unittest.mock import patch
+          payload=pathlib.Path('payload').resolve();helper=pathlib.Path('preview-helper').resolve()
+          sys.path.insert(0,str(helper/'tools'))
+          namespace=runpy.run_path(str(helper/'tools/validate-public-preview.py'));main=namespace['main']
+          class ReachedCommand(Exception):pass
+          def stop(*args,**kwargs):raise ReachedCommand()
+          main.__globals__['execute_logged']=stop
+          results=[]
+          for baseline in [False,True]:
+              output=pathlib.Path(os.environ['RUNNER_TEMP'])/('baseline' if baseline else 'current')
+              args=['preview','--source-root',str(payload),'--output',str(output)]+(['--baseline'] if baseline else [])
+              with patch.object(sys,'argv',args):
+                  try:main()
+                  except ReachedCommand:results.append(dict(baseline=baseline,reachedFirstCommand=True))
+                  else:raise AssertionError('Did not reach command staging')
+          probe=payload/'guard-unignored-probe.txt';probe.write_text('synthetic guard test')
+          with patch.object(sys,'argv',['preview','--source-root',str(payload),'--output',str(pathlib.Path(os.environ['RUNNER_TEMP'])/'negative')]):
+              try:main()
+              except ValueError as error:
+                  if probe.name not in str(error):raise
+                  results.append(dict(unignoredEditRejected=True))
+              else:raise AssertionError('Dirty payload accepted')
+          print(json.dumps(dict(scope='Windows guard/staging only; no package execution or hardware claim',results=results),indent=2))
