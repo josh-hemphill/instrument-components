@@ -52,6 +52,8 @@ jobs:
           instrument-driver generate-tests --input spec/driver-choice-cases.json --output-dir validation/scpi/choice-generated --module choice_cases --namespace GeneratedChoice --check
           python -m unittest discover -s tools/driver-tools/tests
           python tools/test-release-package.py
+          python tools/test-release-assets.py
+          python tools/test-recover-sdk-assets.py
           python tools/test-packaging-metadata.py
       - name: SDK and existing scenario regression gates
         shell: bash
