@@ -13,6 +13,8 @@ import subprocess
 import tomllib
 import xml.etree.ElementTree as ET
 
+from qualification_logs import execute_logged
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -24,9 +26,11 @@ def main():
     parser.add_argument('--upgrade-from', choices=['0.2.0-alpha.1'])
     parser.add_argument('--baseline', action='store_true', help=argparse.SUPPRESS)
     parser.add_argument('--framework', choices=['net8.0', 'net10.0'], default='net8.0')
+    parser.add_argument('--source-root', type=Path, default=ROOT, help='Immutable sample/payload checkout when the qualification helper is corrected separately')
     args = parser.parse_args()
-    version = '0.2.0-alpha.1' if args.baseline else json.loads((ROOT / 'spec/driver-sdk-release.json').read_text())['version']
-    sample = ROOT / ('validation/upgrade-from-0.2' if args.baseline else 'validation/public-preview')
+    root = args.source_root.resolve()
+    version = '0.2.0-alpha.1' if args.baseline else json.loads((root / 'spec/driver-sdk-release.json').read_text())['version']
+    sample = root / ('validation/upgrade-from-0.2' if args.baseline else 'validation/public-preview')
     manifest = tomllib.loads((sample / 'rust/Cargo.toml').read_text())
     for name, value in manifest['dependencies'].items():
         if name.startswith('instrument-'):
@@ -42,8 +46,10 @@ def main():
     if args.output is None:
         parser.error('--output required for execution')
     out = args.output.resolve()
-    if out == ROOT or ROOT in out.parents or out in ROOT.parents:
+    if any(out == source or source in out.parents or out in source.parents for source in [root, ROOT]):
         raise ValueError('Use a separate empty output directory outside the checkout')
+    if any(subprocess.check_output(['git', 'status', '--porcelain'], cwd=source, text=True).strip() for source in {root, ROOT}):
+        raise ValueError('Committed payload and qualification helper required')
     if out.exists() and any(out.iterdir()):
         raise ValueError('Use an empty output directory')
     if platform.system() not in ['Linux', 'Windows'] or platform.machine().lower() not in ['x86_64', 'amd64']:
@@ -70,16 +76,15 @@ def main():
     def sha(file):
         return hashlib.sha256(file.read_bytes()).hexdigest()
 
-    def run(name, command, cwd):
+    def run(name, command, cwd, structured_output=False):
         print(name, flush=True)
-        log = out / (name + '.log')
-        with log.open('w') as stream:
-            result = subprocess.run(list(map(str, command)), cwd=cwd, env=env, stdout=stream, stderr=subprocess.STDOUT)
-        records.append(dict(name=name, command=list(map(str, command)), exitCode=result.returncode, log=log.name, sha256=sha(log)))
-        (out / 'execution.json').write_text(json.dumps(records, indent=2) + '\n')
-        text = log.read_text(errors='replace')
-        if result.returncode or re.search(r'\bwarning IL\d+\b', text, re.I):
-            raise RuntimeError(name + ' failed:\n' + text[-8000:])
+        phase = execute_logged(name, command, cwd=cwd, env=env, output=out, structured_output=structured_output)
+        records.append(phase)
+        (out / 'execution.json').write_text(json.dumps(records, indent=2) + '\n', encoding='utf-8')
+        text = (out / phase['log']).read_text(encoding='utf-8', errors='replace')
+        diagnostic = (out / phase['stderrLog']).read_text(encoding='utf-8', errors='replace') if 'stderrLog' in phase else ''
+        if phase['exitCode'] or re.search(r'\bwarning IL\d+\b', text + diagnostic, re.I):
+            raise RuntimeError(name + ' failed:\n' + (text + diagnostic)[-8000:])
         return text
 
     for features in [[], ['--features', 'async']]:
@@ -88,7 +93,7 @@ def main():
         if ('PASS public Rust sync' if args.baseline else 'PASS preview Rust sync') not in output or (features and ('PASS public Rust native async' if args.baseline else 'PASS preview Rust native async') not in output):
             raise ValueError('Expected Rust execution markers')
         run('rust-' + suffix + '-clippy', ['cargo', 'clippy', '--release'] + features + ['--', '-D', 'warnings'], rust)
-    metadata = json.loads(run('cargo-metadata', ['cargo', 'metadata', '--format-version', '1', '--features', 'async'], rust))
+    metadata = json.loads(run('cargo-metadata', ['cargo', 'metadata', '--format-version', '1', '--features', 'async'], rust, structured_output=True))
     for package in metadata['packages']:
         if package['name'].startswith('instrument-') and package['name'] != 'instrument-public-preview':
             if (not args.feeds and package.get('source') != 'registry+https://github.com/rust-lang/crates.io-index') or package['version'] != version:
@@ -127,19 +132,19 @@ def main():
     for key in assets['libraries']:
         name, version = key.split('/')
         if name.startswith('InstrumentComponents'):
-            if version != ('0.2.0-alpha.1' if args.baseline else json.loads((ROOT / 'spec/driver-sdk-release.json').read_text())['version']):
+            if version != ('0.2.0-alpha.1' if args.baseline else json.loads((root / 'spec/driver-sdk-release.json').read_text())['version']):
                 raise ValueError('Unexpected public NuGet version: ' + key)
             archive = Path(env['NUGET_PACKAGES']) / name.lower() / version / (name.lower() + '.' + version + '.nupkg')
             packages.append(dict(ecosystem='NuGet', name=name, version=version, sha256=sha(archive)))
-    (out / 'proof.json').write_text(json.dumps(dict(mode=mode, framework=args.framework, rid=rid,
+    (out / 'proof.json').write_text(json.dumps(dict(mode=mode, framework=args.framework, rid=rid, payloadSourceCommit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip(), helperSourceCommit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(), helperSha256=sha(Path(__file__)), loggerSha256=sha(ROOT/'tools/qualification_logs.py'),
         nativeExecuted=True, nativeSha256=sha(binary), hardwareAccessed=False, packages=packages,
-        sourceFiles={str(p.relative_to(ROOT)): sha(p) for p in sample.rglob('*') if p.is_file() and not {'bin', 'obj', 'target'} & set(p.parts)}), indent=2) + '\n')
+        sourceFiles={str(p.relative_to(root)): sha(p) for p in sample.rglob('*') if p.is_file() and not {'bin', 'obj', 'target'} & set(p.parts)}), indent=2) + '\n')
     if args.upgrade_from:
         before = out / 'upgrade-before'
-        subprocess.run([os.sys.executable, __file__, '--baseline', '--output', str(before), '--framework', args.framework], check=True)
+        subprocess.run([os.sys.executable, __file__, '--baseline', '--output', str(before), '--framework', args.framework, '--source-root', str(root)], check=True)
         old = json.loads((before / 'proof.json').read_text())
         new = json.loads((out / 'proof.json').read_text())
-        (out / 'upgrade.json').write_text(json.dumps(dict(fromVersion=args.upgrade_from, toVersion=json.loads((ROOT / 'spec/driver-sdk-release.json').read_text())['version'],
+        (out / 'upgrade.json').write_text(json.dumps(dict(fromVersion=args.upgrade_from, toVersion=json.loads((root / 'spec/driver-sdk-release.json').read_text())['version'],
             before=old, after=new, breakingChange='Replace generic 34401A factory with explicit qualified factory and commissioned endpoint'), indent=2) + '\n')
     print('PASS ' + mode + ' getting-started example, four frontends and Native AOT')
 
