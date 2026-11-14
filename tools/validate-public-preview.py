@@ -48,8 +48,9 @@ def main():
     out = args.output.resolve()
     if any(out == source or source in out.parents or out in source.parents for source in [root, ROOT]):
         raise ValueError('Use a separate empty output directory outside the checkout')
-    if any(subprocess.check_output(['git', 'status', '--porcelain'], cwd=source, text=True).strip() for source in {root, ROOT}):
-        raise ValueError('Committed payload and qualification helper required')
+    dirty = {str(source): subprocess.check_output(['git', 'status', '--porcelain'], cwd=source, text=True).strip() for source in {root, ROOT}}
+    if any(dirty.values()):
+        raise ValueError('Committed payload and qualification helper required: ' + json.dumps(dirty))
     if out.exists() and any(out.iterdir()):
         raise ValueError('Use an empty output directory')
     if platform.system() not in ['Linux', 'Windows'] or platform.machine().lower() not in ['x86_64', 'amd64']:
