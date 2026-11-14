@@ -30,6 +30,21 @@ def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def execute_logged(name, command, *, cwd, env, output, structured_output=False):
+    log = output / (name + '.log')
+    diagnostics = output / (name + '.stderr.log')
+    with log.open('w', encoding='utf-8') as stream:
+        if structured_output:
+            with diagnostics.open('w', encoding='utf-8') as errors:
+                result = subprocess.run(list(map(str, command)), cwd=cwd, env=env, stdout=stream, stderr=errors)
+        else:
+            result = subprocess.run(list(map(str, command)), cwd=cwd, env=env, stdout=stream, stderr=subprocess.STDOUT)
+    phase = dict(name=name, command=list(map(str, command)), exitCode=result.returncode, log=log.name, sha256=sha(log))
+    if structured_output:
+        phase.update(stderrLog=diagnostics.name, stderrSha256=sha(diagnostics))
+    return phase
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--sdk-proof', required=True, type=Path)
@@ -37,13 +52,20 @@ def main():
     parser.add_argument('--framework', required=True, choices=['net8.0', 'net10.0'])
     parser.add_argument('--development-inputs', action='store_true')
     parser.add_argument('--public-registry', action='store_true', help='Fresh public consumers; packed artifacts remain reference inputs only')
+    parser.add_argument('--source-root', type=Path, default=ROOT, help='Clean published payload checkout for a separately versioned public qualification helper')
     args = parser.parse_args()
-    dirty = bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT, text=True).strip())
+    root = args.source_root.resolve()
+    if root != ROOT and (not args.public_registry or args.development_inputs):
+        raise ValueError('A separate source root requires public qualification of committed payloads')
+    dirty = bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=root, text=True).strip())
+    helper_dirty = dirty if root == ROOT else bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT, text=True).strip())
+    if helper_dirty and not args.development_inputs:
+        raise ValueError('Committed qualification helper required')
     if dirty and not args.development_inputs:
         raise ValueError('Committed source required; use explicit development mode for local iteration')
     mode = 'fresh-public-registry' if args.public_registry else 'local-development-sdk-artifact-bootstrap' if args.development_inputs else 'pinned-sdk-artifact-bootstrap'
     out, sdk = args.output.resolve(), args.sdk_proof.resolve()
-    if out == ROOT or ROOT in out.parents or out in ROOT.parents or out == sdk:
+    if out == root or root in out.parents or out in root.parents or out == sdk:
         raise ValueError('Separate output outside the source checkout required')
     if out.exists() and any(out.iterdir()):
         raise ValueError('Empty output required')
@@ -83,21 +105,20 @@ def main():
         shutil.copy2(path, target)
         binaries.append(dict(phase=phase, kind=kind, file=str(target.relative_to(out)).replace('\\', '/'), sha256=sha(target)))
 
-    def run(name, command, cwd=out):
-        log = out / (name + '.log')
+    def run(name, command, cwd=out, structured_output=False):
         print(name, flush=True)
-        with log.open('w', encoding='utf-8') as stream:
-            result = subprocess.run(list(map(str, command)), cwd=cwd, env=env, stdout=stream, stderr=subprocess.STDOUT)
-        execution.append(dict(name=name, command=list(map(str, command)), exitCode=result.returncode, log=log.name, sha256=sha(log)))
+        phase = execute_logged(name, command, cwd=cwd, env=env, output=out, structured_output=structured_output)
+        execution.append(phase)
         (out / 'execution.json').write_text(json.dumps(execution, indent=2) + '\n', encoding='utf-8')
-        if result.returncode:
-            raise RuntimeError(name + ': ' + log.read_text(encoding='utf-8', errors='replace')[-10000:])
+        if phase['exitCode']:
+            logs = [phase['log']] + ([phase['stderrLog']] if 'stderrLog' in phase else [])
+            raise RuntimeError(name + ': ' + '\n'.join((out / log).read_text(encoding='utf-8', errors='replace')[-10000:] for log in logs))
 
     workspace = out / 'source-workspace'
     workspace.mkdir()
     for name in ['Cargo.toml', 'Cargo.lock', 'README.md', 'LICENSE-MIT', 'LICENSE-APACHE']:
-        shutil.copy2(ROOT / name, workspace / name)
-    shutil.copytree(ROOT / 'crates', workspace / 'crates', ignore=IGNORE)
+        shutil.copy2(root / name, workspace / name)
+    shutil.copytree(root / 'crates', workspace / 'crates', ignore=IGNORE)
     packages = out / 'packages'
     packages.mkdir()
     records = []
@@ -114,15 +135,15 @@ def main():
                 raise ValueError('Root Rust dependency boundary')
         members = {str(p.relative_to(directory)).replace('\\', '/'): sha(p) for p in directory.rglob('*') if p.is_file()}
         shipped_sources = {n for n in members if n.startswith('src/')}
-        expected_sources = {str(p.relative_to(ROOT / 'crates' / name)).replace('\\', '/') for p in (ROOT / 'crates' / name / 'src').rglob('*') if p.is_file()}
+        expected_sources = {str(p.relative_to(root / 'crates' / name)).replace('\\', '/') for p in (root / 'crates' / name / 'src').rglob('*') if p.is_file()}
         if shipped_sources != expected_sources:
             raise ValueError('Root Rust source member inventory mismatch')
         for relative in members:
             if relative in {'Cargo.toml', 'Cargo.lock', '.cargo_vcs_info.json'}:
                 continue
-            source = ROOT / 'crates' / name / ('Cargo.toml' if relative == 'Cargo.toml.orig' else relative)
+            source = root / 'crates' / name / ('Cargo.toml' if relative == 'Cargo.toml.orig' else relative)
             if relative == 'README.md':
-                source = ROOT / 'README.md'
+                source = root / 'README.md'
             if not source.is_file() or (directory / relative).read_bytes().replace(b'\r\n', b'\n') != source.read_bytes().replace(b'\r\n', b'\n'):
                 raise ValueError('Packaged root Rust source/resource differs: ' + relative)
         (directory / '.cargo-checksum.json').write_text(json.dumps(dict(files=members, package=sha(archive))), encoding='utf-8')
@@ -137,7 +158,7 @@ def main():
     core = out / 'core-consumer'
     (core / 'src').mkdir(parents=True)
     (core / 'Cargo.toml').write_text('[package]\nname="root-core-package-proof"\nversion="0.0.0"\nedition="2021"\npublish=false\n[workspace]\n[dependencies]\ninstrument-core="=' + VERSION + '"\ntokio={version="1",features=["rt"],optional=true}\n[features]\ndefault=[]\nasync=["instrument-core/async","dep:tokio"]\n', encoding='utf-8')
-    shutil.copy2(ROOT / 'validation/root-packages/core.rs', core / 'src/main.rs')
+    shutil.copy2(root / 'validation/root-packages/core.rs', core / 'src/main.rs')
     for flags in [[], ['--features', 'async']]:
         run('core-async' if flags else 'core-default', ['cargo', 'run'] + offline + ['--release'] + flags, core)
         retain_binary('core-async' if flags else 'core-default', out / 'cargo-target/release' / ('root-core-package-proof.exe' if os.name == 'nt' else 'root-core-package-proof'), 'Rust-native')
@@ -148,7 +169,7 @@ def main():
     for flags in [[], ['--features', 'tokio']]:
         run('visa-tokio-check' if flags else 'visa-default-check', ['cargo', 'check'] + offline + flags, visa)
     for label, consumer, flags in [('core', core, ['--features', 'async']), ('visa', visa, ['--features', 'tokio'])]:
-        run(label + '-package-metadata', ['cargo', 'metadata'] + offline + ['--format-version', '1'] + flags, consumer)
+        run(label + '-package-metadata', ['cargo', 'metadata'] + offline + ['--format-version', '1'] + flags, consumer, structured_output=True)
         metadata = json.loads((out / (label + '-package-metadata.log')).read_text(encoding='utf-8'))
         for package in metadata['packages']:
             if package['name'].startswith('instrument-'):
@@ -163,9 +184,9 @@ def main():
                 raise ValueError('Installed public root crate archive identity mismatch')
             public_cargo_packages.append(dict(package=package['name'], version=VERSION, sha256=sha(archives[0]), registryChecksum=package['checksum']))
     staged_dotnet = out / 'source-dotnet'
-    shutil.copytree(ROOT / 'dotnet/src', staged_dotnet / 'src', ignore=IGNORE)
-    shutil.copy2(ROOT / 'dotnet/README.md', staged_dotnet / 'README.md')
-    shutil.copy2(ROOT / 'dotnet/DriverSdk.Package.targets', staged_dotnet / 'DriverSdk.Package.targets')
+    shutil.copytree(root / 'dotnet/src', staged_dotnet / 'src', ignore=IGNORE)
+    shutil.copy2(root / 'dotnet/README.md', staged_dotnet / 'README.md')
+    shutil.copy2(root / 'dotnet/DriverSdk.Package.targets', staged_dotnet / 'DriverSdk.Package.targets')
     expected_dependencies = {
         'InstrumentComponents.Visa': {'InstrumentComponents': '[' + VERSION + ']', 'IviFoundation.Visa': '8.0.2'},
         'InstrumentComponents.OpenTap': {'InstrumentComponents': '[' + VERSION + ']', 'OpenTAP': '9.32.2'},
@@ -182,7 +203,7 @@ def main():
                 raise ValueError('Root NuGet metadata/dependency boundary: ' + name + ' ' + str(deps))
             if {Path(n).name for n in z.namelist() if n.endswith('.dll')} != {name + '.dll'}:
                 raise ValueError('Unexpected root NuGet DLL closure')
-            if z.read('README.md').replace(b'\r\n', b'\n') != (ROOT / 'dotnet/README.md').read_bytes().replace(b'\r\n', b'\n'):
+            if z.read('README.md').replace(b'\r\n', b'\n') != (root / 'dotnet/README.md').read_bytes().replace(b'\r\n', b'\n'):
                 raise ValueError('Packaged README differs from source')
         shutil.copy2(archive, packages / archive.name)
         records.append(dict(package=name, ecosystem='NuGet', file=archive.name, sha256=sha(archive), dependencies=deps, members=z.namelist()))
@@ -193,12 +214,12 @@ def main():
             env[key] = str(path)
     managed = out / 'managed-consumer'
     managed.mkdir()
-    program = (ROOT / 'validation/opentap-release/Program.cs').read_text(encoding='utf-8')
+    program = (root / 'validation/opentap-release/Program.cs').read_text(encoding='utf-8')
     marker = '// This managed fixture'
     assertions = 'if(typeof(InstrumentComponents.Visa.VisaSessionOpener).Assembly.GetName().Name!="InstrumentComponents.Visa"||typeof(InstrumentComponents.OpenTap.Visa.OpenTapVisaDeviceProvider).Assembly.GetName().Name!="InstrumentComponents.OpenTap.Visa")throw new InvalidOperationException("Root package assemblies missing");\n'
     program = program.replace(marker, assertions + marker).replace('references DLLs installed from the TapPackage, never projects.', 'restores released-form package DLLs, never source projects.').replace('PASS installed managed OpenTAP plugin discovery', 'PASS package-only managed OpenTAP plugin discovery')
     (managed / 'Program.cs').write_text(program, encoding='utf-8')
-    shutil.copy2(ROOT / 'validation/neutral/OpaqueDevice.cs', managed / 'OpaqueDevice.cs')
+    shutil.copy2(root / 'validation/neutral/OpaqueDevice.cs', managed / 'OpaqueDevice.cs')
     references = ''.join('<PackageReference Include="' + n + '" Version="[' + VERSION + ']"/>' for n in ['InstrumentComponents'] + DOTNET)
     (managed / 'Root.csproj').write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>' + args.framework + '</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><TreatWarningsAsErrors>true</TreatWarningsAsErrors></PropertyGroup><ItemGroup>' + references + '</ItemGroup></Project>', encoding='utf-8')
     if args.public_registry:
@@ -231,10 +252,10 @@ def main():
         if version != VERSION or not args.public_registry and sha(archive) != expected:
             raise ValueError('Consumed root NuGet archive identity mismatch')
         consumed.append(dict(package=name, version=version, sha256=sha(archive)))
-    (out / 'packages.json').write_text(json.dumps(dict(mode='reference-candidate-packages' if args.public_registry else mode, qualificationMode=mode, version=VERSION, sourceCommit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(), packages=records, sdkPackages=feed['packages']), indent=2) + '\n', encoding='utf-8')
-    source_files = [ROOT / 'dotnet/README.md', ROOT / 'validation/root-packages/core.rs', ROOT / 'validation/opentap-release/Program.cs', ROOT / 'validation/neutral/OpaqueDevice.cs']
-    source_files += [p for p in (ROOT / 'dotnet/src').rglob('*') if p.is_file() and p.suffix in ['.cs', '.csproj'] and not {'bin', 'obj'} & set(p.parts)]
-    (out / 'proof.json').write_text(json.dumps(dict(mode=mode, framework=args.framework, sourceDirty=dirty, platform=platform.system(), referenceCandidatePackages=records, consumedPublicCargo=public_cargo_packages, consumedNuGet=consumed, sourceFiles={str(p.relative_to(ROOT)): sha(p) for p in source_files}, managedPlanExecuted=True, consumerSources=consumer_sources, consumerOutputs=binaries, rustCoreDefaultAsyncExecuted=True, visaDefaultTokioCompileChecked=True, actualVisaProviderActivated=False, openTapNativeAotClaim=False, hardwareValidated=False), indent=2) + '\n', encoding='utf-8')
+    (out / 'packages.json').write_text(json.dumps(dict(mode='reference-candidate-packages' if args.public_registry else mode, qualificationMode=mode, version=VERSION, sourceCommit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip(), packages=records, sdkPackages=feed['packages']), indent=2) + '\n', encoding='utf-8')
+    source_files = [root / 'dotnet/README.md', root / 'validation/root-packages/core.rs', root / 'validation/opentap-release/Program.cs', root / 'validation/neutral/OpaqueDevice.cs']
+    source_files += [p for p in (root / 'dotnet/src').rglob('*') if p.is_file() and p.suffix in ['.cs', '.csproj'] and not {'bin', 'obj'} & set(p.parts)]
+    (out / 'proof.json').write_text(json.dumps(dict(mode=mode, framework=args.framework, sourceCommit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip(), helperSourceCommit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(), helperSha256=sha(Path(__file__)), helperSourceDirty=helper_dirty, sourceDirty=dirty, platform=platform.system(), referenceCandidatePackages=records, consumedPublicCargo=public_cargo_packages, consumedNuGet=consumed, sourceFiles={str(p.relative_to(root)): sha(p) for p in source_files}, managedPlanExecuted=True, consumerSources=consumer_sources, consumerOutputs=binaries, rustCoreDefaultAsyncExecuted=True, visaDefaultTokioCompileChecked=True, actualVisaProviderActivated=False, openTapNativeAotClaim=False, hardwareValidated=False), indent=2) + '\n', encoding='utf-8')
     print('PASS ' + mode + ': five standalone root payloads, Rust core execution/VISA compilation and managed package-only plan; no hardware')
 
 

@@ -54,6 +54,7 @@ jobs:
           python tools/test-release-package.py
           python tools/test-release-assets.py
           python tools/test-recover-sdk-assets.py
+          python tools/test-root-package-metadata.py
           python tools/test-packaging-metadata.py
       - name: SDK and existing scenario regression gates
         shell: bash
