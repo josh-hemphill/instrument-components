@@ -14,12 +14,17 @@ on:
         description: Optional source ref; must resolve to the exact existing release tag commit
         required: false
         type: string
+      recover_sdk_assets_from_run:
+        description: Recover only SDK assets from an existing qualified producer run; no registry publication
+        required: false
+        type: string
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   validate:
+    if: inputs.recover_sdk_assets_from_run == ''
     name: Validate release versions
     runs-on: ubuntu-latest
     outputs:
@@ -262,3 +267,35 @@ jobs:
         with:
           name: publication-release-assets
           path: release-assets-proof.json
+
+  recover-sdk-assets:
+    if: github.event_name == 'workflow_dispatch' && inputs.recover_sdk_assets_from_run != ''
+    name: Recover immutable SDK release assets
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify producer, source, original artifact and immutable release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RECOVERY_TAG: ${{ inputs.tag }}
+          RECOVERY_RUN: ${{ inputs.recover_sdk_assets_from_run }}
+          RECOVERY_SOURCE: ${{ inputs.source_ref }}
+          RECOVERY_OUTPUT: ${{ runner.temp }}/sdk-asset-recovery
+        run: python tools/recover-sdk-assets.py --tag "$RECOVERY_TAG" --producer-run-id "$RECOVERY_RUN" --source "$RECOVERY_SOURCE" --output "$RECOVERY_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sdk-asset-recovery
+          path: |
+            ${{ runner.temp }}/sdk-asset-recovery/*.json
+            ${{ runner.temp }}/sdk-asset-recovery/*.zip
+            ${{ runner.temp }}/sdk-asset-recovery/*.log
+            ${{ runner.temp }}/sdk-asset-recovery/assets/*
