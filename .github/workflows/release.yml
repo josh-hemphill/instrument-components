@@ -18,13 +18,17 @@ on:
         description: Recover only SDK assets from an existing qualified producer run; no registry publication
         required: false
         type: string
+      recover_root_from_run:
+        description: Requalify public root packages and recover only the original TapPackage; no registry publication
+        required: false
+        type: string
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   validate:
-    if: inputs.recover_sdk_assets_from_run == ''
+    if: inputs.recover_sdk_assets_from_run == '' && inputs.recover_root_from_run == ''
     name: Validate release versions
     runs-on: ubuntu-latest
     outputs:
@@ -269,6 +273,7 @@ jobs:
           path: release-assets-proof.json
 
   recover-sdk-assets:
+    needs: recovery-inputs
     if: github.event_name == 'workflow_dispatch' && inputs.recover_sdk_assets_from_run != ''
     name: Recover immutable SDK release assets
     runs-on: ubuntu-latest
@@ -299,3 +304,107 @@ jobs:
             ${{ runner.temp }}/sdk-asset-recovery/*.zip
             ${{ runner.temp }}/sdk-asset-recovery/*.log
             ${{ runner.temp }}/sdk-asset-recovery/assets/*
+
+  recovery-inputs:
+    if: github.event_name == 'workflow_dispatch' && (inputs.recover_sdk_assets_from_run != '' || inputs.recover_root_from_run != '')
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Require exactly one recovery mode
+        shell: python
+        env:
+          SDK_RUN: ${{ inputs.recover_sdk_assets_from_run }}
+          ROOT_RUN: ${{ inputs.recover_root_from_run }}
+        run: |
+          import os
+          if bool(os.environ['SDK_RUN']) == bool(os.environ['ROOT_RUN']):
+              raise ValueError('Choose exactly one source-bound recovery mode')
+
+  recover-public-root:
+    needs: recovery-inputs
+    if: github.event_name == 'workflow_dispatch' && inputs.recover_root_from_run != ''
+    name: Recover public root (${{ matrix.os }}, ${{ matrix.framework }})
+    permissions:
+      contents: read
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        framework: [net8.0, net10.0]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Qualify original public packages with the corrected helper
+        shell: python
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RECOVERY_TAG: ${{ inputs.tag }}
+          RECOVERY_RUN: ${{ inputs.recover_root_from_run }}
+          RECOVERY_SOURCE: ${{ inputs.source_ref }}
+          RECOVERY_FRAMEWORK: ${{ matrix.framework }}
+        run: |
+          import os,pathlib,subprocess,sys
+          output=pathlib.Path(os.environ['RUNNER_TEMP'])/'root-recovery'
+          subprocess.run([sys.executable,'tools/recover-root-release.py','--mode','qualify','--tag',os.environ['RECOVERY_TAG'],'--source',os.environ['RECOVERY_SOURCE'],'--producer-run-id',os.environ['RECOVERY_RUN'],'--framework',os.environ['RECOVERY_FRAMEWORK'],'--output',str(output)],check=True)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: public-root-${{ matrix.os }}-${{ matrix.framework }}
+          path: |
+            ${{ runner.temp }}/root-recovery/public-root/*.json
+            ${{ runner.temp }}/root-recovery/public-root/*.log
+            ${{ runner.temp }}/root-recovery/public-root/consumer-inputs/**
+            ${{ runner.temp }}/root-recovery/public-root/consumer-artifacts/**
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: root-recovery-inputs-${{ matrix.os }}-${{ matrix.framework }}
+          path: |
+            ${{ runner.temp }}/root-recovery/*.json
+            ${{ runner.temp }}/root-recovery/*.log
+            ${{ runner.temp }}/root-recovery/*.zip
+
+  recover-root-assets:
+    needs: recover-public-root
+    if: github.event_name == 'workflow_dispatch' && inputs.recover_root_from_run != ''
+    name: Recover original OpenTAP release asset
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Publish only the original qualified TapPackage after four public proofs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RECOVERY_TAG: ${{ inputs.tag }}
+          RECOVERY_RUN: ${{ inputs.recover_root_from_run }}
+          RECOVERY_SOURCE: ${{ inputs.source_ref }}
+          RECOVERY_OUTPUT: ${{ runner.temp }}/root-asset-recovery
+        run: python tools/recover-root-release.py --mode assets --tag "$RECOVERY_TAG" --source "$RECOVERY_SOURCE" --producer-run-id "$RECOVERY_RUN" --output "$RECOVERY_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: root-asset-recovery
+          path: |
+            ${{ runner.temp }}/root-asset-recovery/*.json
+            ${{ runner.temp }}/root-asset-recovery/*.log
+            ${{ runner.temp }}/root-asset-recovery/*.zip
+            ${{ runner.temp }}/root-asset-recovery/opentap-package/*

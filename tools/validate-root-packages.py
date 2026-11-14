@@ -45,6 +45,11 @@ def execute_logged(name, command, *, cwd, env, output, structured_output=False):
     return phase
 
 
+def validate_output_location(output, source, helper, sdk):
+    if any(output == path or path in output.parents or output in path.parents for path in [source, helper, sdk]):
+        raise ValueError('Separate output outside payload, helper and SDK inputs required')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--sdk-proof', required=True, type=Path)
@@ -65,8 +70,7 @@ def main():
         raise ValueError('Committed source required; use explicit development mode for local iteration')
     mode = 'fresh-public-registry' if args.public_registry else 'local-development-sdk-artifact-bootstrap' if args.development_inputs else 'pinned-sdk-artifact-bootstrap'
     out, sdk = args.output.resolve(), args.sdk_proof.resolve()
-    if out == root or root in out.parents or out in root.parents or out == sdk:
-        raise ValueError('Separate output outside the source checkout required')
+    validate_output_location(out, root, ROOT, sdk)
     if out.exists() and any(out.iterdir()):
         raise ValueError('Empty output required')
     if platform.system() not in ['Windows', 'Linux'] or platform.machine().lower() not in ['amd64', 'x86_64']:

@@ -6,9 +6,18 @@ import runpy,subprocess,sys,tempfile,unittest
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'tools/driver-tools/src'))
-CAPTURE=runpy.run_path(str(ROOT/'tools/validate-root-packages.py'))['execute_logged']
+MODULE=runpy.run_path(str(ROOT/'tools/validate-root-packages.py'))
+CAPTURE=MODULE['execute_logged']
 
 class MetadataTests(unittest.TestCase):
+    def test_output_cannot_overlap_either_checkout_or_sdk(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base=Path(directory);source=base/'payload';helper=base/'helper';sdk=base/'sdk'
+            for root in [source,helper,sdk]:
+                for output in [root,root/'output',base]:
+                    with self.subTest(root=root,output=output):
+                        with self.assertRaises(ValueError):MODULE['validate_output_location'](output,source,helper,sdk)
+            MODULE['validate_output_location'](base/'separate',source,helper,sdk)
     def test_network_diagnostics_do_not_corrupt_json(self):
         with tempfile.TemporaryDirectory() as directory:
             out=Path(directory)
